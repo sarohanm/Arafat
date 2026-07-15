@@ -1115,7 +1115,11 @@ function renderJourneys(){
             </div>
             <div class="accTextWrap">
               <div class="accName">${getUserName(u)}${uPhoneVal && uPhoneVal !== '-' ? ` <span style="font-weight:400;color:#5b6b7a;font-size:12.5px;">· ${uPhoneVal}</span> <button type="button" onclick="event.stopPropagation();callChoice('${uPhoneVal}','${uPhoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;vertical-align:middle;padding:0;"><i class="fas fa-phone"></i></button>` : ''}</div>
-              ${u.agent_id ? `<div class="accSub" style="color:var(--gold);font-weight:600;"><i class="fas fa-user-tie" style="margin-right:4px;"></i>${agentName}${agentPhone ? ' · ' + agentPhone : ''}</div>` : ''}
+              ${u.agent_id ? (() => {
+                const agentPhoneDigits = (agentPhone || '').replace(/[^0-9]/g, '');
+                const agentPhoneWithCC = agentPhoneDigits ? (agentPhoneDigits.startsWith('88') ? agentPhoneDigits : ('88' + agentPhoneDigits.replace(/^0/, ''))) : '';
+                return `<div class="accSub" style="color:var(--gold);font-weight:600;display:flex;align-items:center;gap:5px;flex-wrap:wrap;"><span><i class="fas fa-user-tie" style="margin-right:4px;"></i>${agentName}${agentPhone ? ' · ' + agentPhone : ''}</span>${agentPhone ? `<button type="button" onclick="event.stopPropagation();callChoice('${agentPhone}','${agentPhoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;padding:0;"><i class="fas fa-phone"></i></button>` : ''}</div>`;
+              })() : ''}
               <div class="accSub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                 <span>${flag} ${u.country || '-'}${u.visa_type_id && visaTypes[u.visa_type_id] ? ' · ' + visaTypes[u.visa_type_id].name : ''}</span>
                 <span class="stagePill ${pillCls}" style="font-size:9.5px;padding:2px 7px;">${pillLabel}</span>
@@ -2551,14 +2555,23 @@ function buildVisaDetailsBlockHtml(m){
   const v = m.visaId ? visaTypes[m.visaId] : null;
   if(!v) return '';
   const msgFlag = COUNTRY_FLAGS[m.country] || '🌍';
-  return `<div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:6px 0;background:#fbf9f5;">
+  const countryUserIds = Object.entries(usersCache).filter(([uid, u]) => u.country === m.country).map(([uid]) => uid);
+  const active = Object.values(journeysCache).filter(j => countryUserIds.includes(j.user_id) && j.current_stage !== 'DEPARTED' && j.current_stage !== 'MEDICAL_FAILED').length;
+  const departed = Object.values(journeysCache).filter(j => countryUserIds.includes(j.user_id) && j.current_stage === 'DEPARTED').length;
+  return `<div class="visaCard" style="margin:6px 0;">
       <div class="vc-head">
         <div class="vc-title">${msgFlag} ${m.country || ''}</div>
         <span class="vc-price"><i class="fas fa-tag"></i> ভিসার মূল্য${v.fee ? `: ৳${v.fee.toLocaleString('bn-BD')}` : ''}</span>
       </div>
       ${v.name ? `<div class="visaDetailLine">${formatDetailChip(`ভিসার : ${v.name}`)}</div>` : ''}
-      ${v.quota ? `<div class="visaDetailLine">${formatDetailChip(`মোট ভিসা : ${v.quota}`)}</div>` : ''}
-      ${(v.details || []).map(d => `<div class="visaDetailLine">${formatDetailChip(d)}</div>`).join('')}
+      ${(v.details || []).length ? `<div class="visaDetailLines">${(v.details || []).map(d => `<div class="visaDetailLine">${formatDetailChip(d)}</div>`).join('')}</div>` : ''}
+      <div class="visaStatRow">
+        <div class="vsr-stats">
+          <span>ভিসা <b>${v.quota || 0}</b></span>
+          <span>প্রসেসিং <b style="color:var(--gold);">${active}</b></span>
+          <span>সম্পন্ন <b style="color:var(--ok);">${departed}</b></span>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -2716,11 +2729,14 @@ function renderVmReplyMessages(){
     wrap.innerHTML = `<p class="hint" style="margin:auto;">এখনো কোনো মেসেজ নেই।</p>`;
     return;
   }
-  wrap.innerHTML = threadEntries.map(t => `
-    <div style="align-self:${t.sender==='admin'?'flex-end':'flex-start'};max-width:85%;padding:8px 10px;border-radius:8px;white-space:pre-wrap;font-size:13px;font-weight:400;${t.sender==='admin' ? 'background:rgba(37,99,235,.09);border:1px solid rgba(37,99,235,.18);color:var(--navy);' : 'background:#f2ede2;border:1px solid var(--border);color:#3b4552;'}">
-      <div style="font-size:10.5px;font-weight:700;opacity:.65;margin-bottom:2px;">${t.sender==='admin' ? 'এডমিন' : (m.agentName || 'এজেন্ট')}</div>
-      ${escapeHtmlForHl(t.text || '')}
-    </div>`).join('');
+  wrap.innerHTML = threadEntries.map(t => {
+    const mine = t.sender === 'admin';
+    const time = t.at ? new Date(t.at).toLocaleString('bn-BD') : '';
+    return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'};max-width:78%;">
+      <div style="background:${mine ? 'var(--navy)' : '#f0ede6'};color:${mine ? '#fff' : '#1c2733'};padding:8px 12px;border-radius:14px;${mine ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'}font-size:13px;font-weight:400;white-space:pre-wrap;word-break:break-word;">${escapeHtmlForHl(t.text || '')}</div>
+      <div style="font-size:9.5px;color:#8896ab;margin-top:2px;text-align:${mine ? 'right' : 'left'};">${mine ? '' : ((m.agentName || 'এজেন্ট') + ' · ')}${time}</div>
+    </div>`;
+  }).join('');
   wrap.scrollTop = wrap.scrollHeight;
 }
 
