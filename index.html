@@ -748,8 +748,7 @@
         </select>
         <select id="cfCountry" onchange="handleCfCountryChange(this)">
           <option value="">দেশ নির্বাচন করুন</option>
-          <option value="__add__">নতুন দেশ যোগ করুন  ➕</option>
-          <option value="__delete__">দেশ মুছে ফেলুন  ➖</option>
+          <option value="__manage__">দেশ যোগ/মুছুন  ➕➖</option>
         </select>
         <select id="cfVisaSelect" style="display:none;">
           <option value="">এই দেশের সকল ভিসার জন্য</option>
@@ -1137,7 +1136,7 @@ function renderJourneys(){
             <div class="accSectionTitle" style="margin-top:0;"><i class="fas fa-note-sticky"></i>পরবর্তী ধাপ / নোট</div>
             <div class="accRow">
               <textarea class="noteBox" id="note-${uid}" placeholder="পরবর্তী ধাপে কী করতে হবে লিখে রাখুন..." ${currentRole === 'admin' ? '' : 'readonly'}>${u.notes || ''}</textarea>
-              ${currentRole === 'admin' ? `<button type="button" class="btn small" style="margin-top:6px;" onclick="saveUserNote('${uid}')"><i class="fas fa-floppy-disk"></i> নোট সেভ করুন</button>` : ''}
+              ${currentRole === 'admin' ? `<button type="button" class="btn small" style="margin-top:6px;" onclick="saveUserNote('${uid}')" title="নোট সেভ করুন"><i class="fas fa-floppy-disk"></i></button>` : ''}
             </div>
             <div class="accSectionTitle" ${currentRole === 'admin' ? `style="cursor:pointer;" onclick="event.stopPropagation();openDocUploadForUser('${uid}')"` : ''}>
               <i class="fas fa-folder-open"></i>ডকুমেন্ট স্ট্যাটাস
@@ -1153,7 +1152,32 @@ function renderJourneys(){
         </div>`;
       }).join('');
       const emptyMsg = q ? 'ফিল্টারে কোনো ইউজার পাওয়া যায়নি' : 'কোনো ইউজার নেই';
-      document.getElementById('journeyRows').innerHTML = rows || `<p class="hint">${emptyMsg}</p>`;
+      const container = document.getElementById('journeyRows');
+      // রিয়েলটাইম ডেটাবেজে যেকোনো পরিবর্তন এলেই পুরো তালিকাটা আবার রেন্ডার হয়, যার ফলে
+      // আগে খোলা অ্যাকর্ডিয়ন বন্ধ হয়ে যেত এবং নোট বক্সে টাইপ/ফোকাস করা অবস্থায় থাকলে সেটাও
+      // হারিয়ে যেত — তাই নিচে খোলা অ্যাকর্ডিয়ন ও ফোকাসড নোট বক্সের অবস্থা সংরক্ষণ করে
+      // রেন্ডারের পর আবার ফিরিয়ে দেওয়া হচ্ছে, যাতে একাধিকবার ক্লিক করতে না হয়
+      const openIds = container ? Array.from(container.querySelectorAll('.accBody')).filter(el => el.style.display === 'block').map(el => el.id) : [];
+      const active = document.activeElement;
+      let focusedNote = null;
+      if(active && active.classList && active.classList.contains('noteBox') && active.id && active.id.startsWith('note-')){
+        focusedNote = { id: active.id, selStart: active.selectionStart, selEnd: active.selectionEnd, value: active.value };
+      }
+      container.innerHTML = rows || `<p class="hint">${emptyMsg}</p>`;
+      openIds.forEach(accId => {
+        const el = document.getElementById(accId);
+        const chev = document.getElementById('chev-' + accId.slice(4));
+        if(el) el.style.display = 'block';
+        if(chev) chev.classList.add('open');
+      });
+      if(focusedNote){
+        const ta = document.getElementById(focusedNote.id);
+        if(ta){
+          if(ta.value !== focusedNote.value) ta.value = focusedNote.value;
+          ta.focus();
+          try{ ta.setSelectionRange(focusedNote.selStart, focusedNote.selEnd); }catch(e){}
+        }
+      }
   }
 }
 
@@ -2918,7 +2942,7 @@ function renderCountrySelects(){
   const cfSel = document.getElementById('cfCountry');
   if(cfSel){
     const current = cfSel.value;
-    cfSel.innerHTML = '<option value="">দেশ নির্বাচন করুন</option>' + opts + '<option value="__add__">নতুন দেশ যোগ করুন  ➕</option><option value="__delete__">দেশ মুছে ফেলুন  ➖</option>';
+    cfSel.innerHTML = '<option value="">দেশ নির্বাচন করুন</option>' + opts + '<option value="__manage__">দেশ যোগ/মুছুন  ➕➖</option>';
     cfSel.value = current;
   }
   renderCountryList();
@@ -3250,14 +3274,9 @@ function sharePaymentStatus(jid){
 }
 
 function handleCfCountryChange(sel){
-  if(sel.value === '__add__'){
+  if(sel.value === '__manage__'){
     sel.value = sel.dataset.prev || '';
-    addCountry('cfCountry');
-    return;
-  }
-  if(sel.value === '__delete__'){
-    sel.value = sel.dataset.prev || '';
-    deleteCountryByName();
+    manageCountry('cfCountry');
     return;
   }
   sel.dataset.prev = sel.value;
@@ -3267,26 +3286,27 @@ function handleCfCountryChange(sel){
   }
 }
 
-function addCountry(targetId){
+function manageCountry(targetId){
   targetId = targetId || 'uCountry';
-  const name = prompt('নতুন দেশের নাম লিখুন:');
-  if(!name || !name.trim()) return;
-  const trimmed = name.trim();
+  const input = prompt('দেশের নাম লিখুন (নতুন দেশ যোগ হবে)\nঅথবা "ডিলিট দেশের নাম" লিখুন (যেমন: ডিলিট ওমান) দেশটা মুছে ফেলতে:');
+  if(!input || !input.trim()) return;
+  const trimmed = input.trim();
+
+  const delMatch = trimmed.match(/^ডিলিট\s+(.+)$/);
+  if(delMatch){
+    const targetName = delMatch[1].trim();
+    const entry = Object.entries(countries).find(([id, n]) => n === targetName);
+    if(!entry){ alert(`"${targetName}" নামে কোনো দেশ তালিকায় পাওয়া যায়নি। ঠিক বানানে লিখুন (যেমন তালিকায় আছে)।`); return; }
+    deleteCountry(entry[0], entry[1]);
+    return;
+  }
+
   if(Object.values(countries).includes(trimmed)){ alert('এই দেশটা ইতিমধ্যে তালিকায় আছে।'); return; }
   db.ref('countries').push(trimmed).then(ref => {
     const target = document.getElementById(targetId);
     if(target) target.value = trimmed;
     if(targetId === 'uCountry') renderCustomFieldInputs();
   }).catch(err => { alert('দেশ যোগ করতে ব্যর্থ: ' + err.message); console.error(err); });
-}
-
-function deleteCountryByName(){
-  const name = prompt('যে দেশটি মুছে ফেলতে চান তার নাম লিখুন:');
-  if(!name || !name.trim()) return;
-  const trimmed = name.trim();
-  const entry = Object.entries(countries).find(([id, n]) => n === trimmed);
-  if(!entry){ alert(`"${trimmed}" নামে কোনো দেশ তালিকায় পাওয়া যায়নি। ঠিক বানানে লিখুন (যেমন তালিকায় আছে)।`); return; }
-  deleteCountry(entry[0], entry[1]);
 }
 
 /* ================= CUSTOM FIELDS (FORM BUILDER) ================= */
