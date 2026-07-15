@@ -573,13 +573,17 @@
 
   <!-- VISA MESSAGE REPLY / NOTE MODAL (এই নির্দিষ্ট আবেদন ভিসা সম্পর্কে লেখার জন্য) -->
   <div class="modalOverlay" id="vmReplyModal">
-    <div class="modalBox">
+    <div class="modalBox" style="display:flex;flex-direction:column;max-height:88vh;">
       <button class="close-x" onclick="closeVmReplyModal()"><i class="fas fa-xmark"></i></button>
-      <h3 style="margin-top:0;">মেসেজ লিখুন</h3>
-      <p class="hint" style="margin-top:0;" id="vmReplyLabel"></p>
-      <textarea id="vmReplyText" rows="4" placeholder="এই ভিসা আবেদন সম্পর্কে লিখুন..." style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>
-      <div id="vmReplyMsg" style="font-size:12px;margin-top:6px;"></div>
-      <div style="margin-top:10px;"><button class="btn small" style="width:100%;" onclick="saveVmReply()">সংরক্ষণ করুন</button></div>
+      <h3 style="margin-top:0;margin-bottom:2px;">মেসেজ</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:6px;" id="vmReplyLabel"></p>
+      <div id="vmReplyVisaInfo"></div>
+      <div id="vmReplyMessagesList" style="flex:1;overflow-y:auto;min-height:180px;max-height:50vh;display:flex;flex-direction:column;gap:10px;padding:6px 2px;"></div>
+      <div id="vmReplyMsg" style="font-size:12px;margin-top:2px;"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <textarea id="vmReplyText" rows="1" placeholder="এই ভিসা আবেদন সম্পর্কে লিখুন..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;box-sizing:border-box;font-family:inherit;"></textarea>
+        <button type="button" class="btn small" style="width:auto;padding:0 16px;flex-shrink:0;" onclick="saveVmReply()"><i class="fas fa-paper-plane"></i></button>
+      </div>
     </div>
   </div>
 
@@ -1956,6 +1960,41 @@ function getUnreadChatCount(uid){
   return Object.values(chats).filter(m => m && !m.readByAdmin).length;
 }
 
+// মোবাইলে চ্যাট মোডাল খোলা অবস্থায় কিবোর্ড উঠলে মোডালবক্সটা (মেসেজ + ইনপুট) স্বাভাবিকভাবে
+// স্ক্রিনের উপরের দিকেই থেকে যায় (কনটেন্ট কম থাকলে), ফলে বক্স আর কিবোর্ডের মাঝে অনেকটা
+// ফাঁকা জায়গা তৈরি হয়। visualViewport এর মাধ্যমে কিবোর্ড কতটা উঁচু হয়েছে সেটা মেপে,
+// কিবোর্ড খোলা থাকা অবস্থায় বক্সটাকে ভিজিবল স্ক্রিনের একদম নিচে (কিবোর্ডের ঠিক উপরে) নামিয়ে আনা হচ্ছে।
+function setupKeyboardAwareModal(modalId){
+  const overlay = document.getElementById(modalId);
+  if(!overlay || !window.visualViewport) return;
+  const box = overlay.querySelector('.modalBox');
+  if(!box) return;
+  const vv = window.visualViewport;
+  function reposition(){
+    if(!overlay.classList.contains('active')) return;
+    const keyboardOpen = (window.innerHeight - vv.height - vv.offsetTop) > 80;
+    if(keyboardOpen){
+      overlay.style.alignItems = 'flex-end';
+      overlay.style.paddingTop = '8px';
+      overlay.style.paddingBottom = '8px';
+      box.style.marginTop = '0';
+      box.style.maxHeight = Math.max(220, vv.height - 20) + 'px';
+    } else {
+      overlay.style.alignItems = '';
+      overlay.style.paddingTop = '';
+      overlay.style.paddingBottom = '';
+      box.style.marginTop = '';
+      box.style.maxHeight = '';
+    }
+  }
+  vv.addEventListener('resize', reposition);
+  vv.addEventListener('scroll', reposition);
+  overlay._kbReposition = reposition;
+}
+setupKeyboardAwareModal('userChatModal');
+setupKeyboardAwareModal('agentChatModal');
+setupKeyboardAwareModal('vmReplyModal');
+
 function openUserChat(uid){
   ucCurrentUid = uid;
   const u = usersCache[uid] || {};
@@ -1974,7 +2013,11 @@ function openUserChat(uid){
   renderUserChatMessages();
   document.getElementById('userChatModal').classList.add('active');
   markUserChatRead(uid);
-  setTimeout(() => document.getElementById('ucInputText').focus(), 200);
+  setTimeout(() => {
+    document.getElementById('ucInputText').focus();
+    const r = document.getElementById('userChatModal')._kbReposition;
+    if(r) setTimeout(r, 300);
+  }, 200);
 }
 function closeUserChatModal(){
   document.getElementById('userChatModal').classList.remove('active');
@@ -2052,7 +2095,11 @@ function openAgentChat(uid){
   renderAgentChatMessages();
   document.getElementById('agentChatModal').classList.add('active');
   markAgentChatRead(uid);
-  setTimeout(() => document.getElementById('acInputText').focus(), 200);
+  setTimeout(() => {
+    document.getElementById('acInputText').focus();
+    const r = document.getElementById('agentChatModal')._kbReposition;
+    if(r) setTimeout(r, 300);
+  }, 200);
 }
 function closeAgentChatModal(){
   document.getElementById('agentChatModal').classList.remove('active');
@@ -2142,9 +2189,9 @@ function renderAgents(){
           <i class="fas fa-comment-dots"></i>
           ${agentUnread ? `<span style="position:absolute;top:-6px;right:-7px;background:var(--fail);color:#fff;font-size:9px;line-height:1;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;">${agentUnread}</span>` : ''}
         </button>`;
-    const contactIconsHtml = `<div style="display:flex;align-items:center;gap:9px;flex-shrink:0;">
-          ${a.phone ? `<button type="button" onclick="event.stopPropagation();callChoice('${a.phone}','${withCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;cursor:pointer;padding:0;"><i class="fas fa-phone"></i></button>` : ''}
+    const contactIconsHtml = `<div style="display:flex;align-items:center;gap:9px;flex-shrink:0;margin-right:4px;">
           ${messageIconHtml}
+          ${a.phone ? `<button type="button" onclick="event.stopPropagation();callChoice('${a.phone}','${withCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;cursor:pointer;padding:0;"><i class="fas fa-phone"></i></button>` : ''}
         </div>`;
     const actionsHtml = `<div class="accActions">
           <button class="btn small" onclick="openEditAgentModal('${uid}')"><i class="fas fa-pen"></i> এডিট</button>
@@ -2420,37 +2467,60 @@ function loadVisaMessages(){
 
 function renderVisaMessages(){
   const wrap = document.getElementById('visaMessageRows');
-  if(!wrap) return;
-  const searchEl = document.getElementById('waitingCustomerSearch');
-  const q = ((searchEl ? searchEl.value : '') || '').trim().toLowerCase();
-  let entries = Object.entries(visaMessagesCache)
-    .filter(([id, m]) => (m.status || 'pending') === 'pending')
-    .sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
-  if(q){
-    entries = entries.filter(([id, m]) => ((m.country||'') + ' ' + (m.agentName||'') + ' ' + (m.visaName||'') + ' ' + (m.fileName||'')).toLowerCase().includes(q));
-  }
-  if(!entries.length){ wrap.innerHTML = ''; return; }
-  wrap.innerHTML = entries.map(([id, m]) => {
-    const scopedId = 'vm-' + id;
-    const flag = COUNTRY_FLAGS[m.country] || '🌍';
-    const time = m.createdAt ? new Date(m.createdAt).toLocaleString('bn-BD') : '';
-    const agentPhoto = m.agentId && agentsCache[m.agentId] ? agentsCache[m.agentId].photoBase64 : null;
-    const avatarHtml = agentPhoto
-      ? `<img src="${agentPhoto}" class="avatarCircle" style="object-fit:cover;" alt="">`
-      : `<div class="avatarCircle">${flag}</div>`;
-    return `
-    <div class="accItem" style="background:rgba(212,146,42,.06);">
-      <div class="accHead" onclick='toggleVmAccItem("${scopedId}", ${JSON.stringify(id)})'>
-        ${avatarHtml}
-        <div class="accTextWrap">
-          <div class="accName">${m.country || ''} ${m.visaName ? '— ' + m.visaName : ''}</div>
-          <div class="accSub">এজেন্ট: ${m.agentName || 'অজানা'} · ${time}</div>
+  if(wrap){
+    const searchEl = document.getElementById('waitingCustomerSearch');
+    const q = ((searchEl ? searchEl.value : '') || '').trim().toLowerCase();
+    let entries = Object.entries(visaMessagesCache)
+      .filter(([id, m]) => (m.status || 'pending') === 'pending')
+      .sort((a, b) => (b[1].createdAt || 0) - (a[1].createdAt || 0));
+    if(q){
+      entries = entries.filter(([id, m]) => ((m.country||'') + ' ' + (m.agentName||'') + ' ' + (m.visaName||'') + ' ' + (m.fileName||'')).toLowerCase().includes(q));
+    }
+    wrap.innerHTML = entries.length ? entries.map(([id, m]) => {
+      const scopedId = 'vm-' + id;
+      const flag = COUNTRY_FLAGS[m.country] || '🌍';
+      const time = m.createdAt ? new Date(m.createdAt).toLocaleString('bn-BD') : '';
+      const agentPhoto = m.agentId && agentsCache[m.agentId] ? agentsCache[m.agentId].photoBase64 : null;
+      const avatarHtml = agentPhoto
+        ? `<img src="${agentPhoto}" class="avatarCircle" style="object-fit:cover;" alt="">`
+        : `<div class="avatarCircle">${flag}</div>`;
+      return `
+      <div class="accItem" style="background:rgba(212,146,42,.06);">
+        <div class="accHead" onclick='toggleVmAccItem("${scopedId}", ${JSON.stringify(id)})'>
+          ${avatarHtml}
+          <div class="accTextWrap">
+            <div class="accName">${m.country || ''} ${m.visaName ? '— ' + m.visaName : ''}</div>
+            <div class="accSub">এজেন্ট: ${m.agentName || 'অজানা'} · ${time}</div>
+          </div>
+          <span id="chev-${scopedId}" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
         </div>
-        <span id="chev-${scopedId}" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
+        <div class="accBody" id="acc-${scopedId}" data-loaded="0"></div>
+      </div>`;
+    }).join('') : '';
+  }
+  // মেসেজ মোডাল খোলা অবস্থায় ডেটা আপডেট হলে (এডমিন নিজে পাঠালে বা এজেন্ট নতুন মেসেজ দিলে),
+  // মোডালের ভেতরের থ্রেডটাও সাথে সাথে রিফ্রেশ হচ্ছে যাতে বন্ধ করে আবার না খুলতে হয়
+  if(vmReplyId && document.getElementById('vmReplyModal') && document.getElementById('vmReplyModal').classList.contains('active')){
+    renderVmReplyMessages();
+  }
+}
+
+// "ভিসা তথ্য" ট্যাবে যেভাবে ভিসার বিস্তারিত (দেশ/মূল্য/শর্তাবলী) দেখানো হয়, একদম সেই একই
+// ফরম্যাটে একটা ভিসা মেসেজের বিস্তারিত দেখানোর জন্য শেয়ার্ড ফাংশন — যাতে ওয়েটিং কার্ড আর
+// মেসেজ মোডাল দুই জায়গাতেই একই রকম দেখায়
+function buildVisaDetailsBlockHtml(m){
+  const v = m.visaId ? visaTypes[m.visaId] : null;
+  if(!v) return '';
+  const msgFlag = COUNTRY_FLAGS[m.country] || '🌍';
+  return `<div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:6px 0;background:#fbf9f5;">
+      <div class="vc-head">
+        <div class="vc-title">${msgFlag} ${m.country || ''}</div>
+        <span class="vc-price"><i class="fas fa-tag"></i> ভিসার মূল্য${v.fee ? `: ৳${v.fee.toLocaleString('bn-BD')}` : ''}</span>
       </div>
-      <div class="accBody" id="acc-${scopedId}" data-loaded="0"></div>
+      ${v.name ? `<div class="visaDetailLine">${formatDetailChip(`ভিসার : ${v.name}`)}</div>` : ''}
+      ${v.quota ? `<div class="visaDetailLine">${formatDetailChip(`মোট ভিসা : ${v.quota}`)}</div>` : ''}
+      ${(v.details || []).map(d => `<div class="visaDetailLine">${formatDetailChip(d)}</div>`).join('')}
     </div>`;
-  }).join('');
 }
 
 // আবেদনের বিস্তারিত (ছবি/ফাইলসহ) শুধু ক্লিক করলেই তৈরি ও লোড হয়; বাকিগুলো লোড হয় না — পারফরম্যান্সের জন্য
@@ -2470,19 +2540,7 @@ function buildVmBodyHtml(id){
         return `<a href="${f.fileBase64}" download="${f.fileName || 'file'}" class="hint" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;aspect-ratio:1/1;border:1px solid var(--border);border-radius:8px;text-align:center;padding:4px;box-sizing:border-box;"><i class="fas fa-file-arrow-down" style="font-size:18px;"></i><span style="font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;">${f.fileName || 'ফাইল'}</span></a>`;
       }).join('')}</div>`
     : `<div class="hint" style="margin-bottom:8px;">কোনো ফাইল সংযুক্ত নেই।</div>`;
-  const v = m.visaId ? visaTypes[m.visaId] : null;
-  const msgFlag = COUNTRY_FLAGS[m.country] || '🌍';
-  const visaDetailsHtml = v
-    ? `<div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:6px 0;background:#fbf9f5;">
-        <div class="vc-head">
-          <div class="vc-title">${msgFlag} ${m.country || ''}</div>
-          <span class="vc-price"><i class="fas fa-tag"></i> ভিসার মূল্য${v.fee ? `: ৳${v.fee.toLocaleString('bn-BD')}` : ''}</span>
-        </div>
-        ${v.name ? `<div class="visaDetailLine">${formatDetailChip(`ভিসার : ${v.name}`)}</div>` : ''}
-        ${v.quota ? `<div class="visaDetailLine">${formatDetailChip(`মোট ভিসা : ${v.quota}`)}</div>` : ''}
-        ${(v.details || []).map(d => `<div class="visaDetailLine">${formatDetailChip(d)}</div>`).join('')}
-      </div>`
-    : '';
+  const visaDetailsHtml = buildVisaDetailsBlockHtml(m);
   const messageHtml = m.message ? `<div style="margin:6px 0;white-space:pre-wrap;font-size:13px;">${escapeHtmlForHl(m.message)}</div>` : '';
   const threadEntries = m.thread ? Object.values(m.thread).sort((a,b) => (a.at||0)-(b.at||0)) : [];
   const adminReplyHtml = threadEntries.length
@@ -2609,13 +2667,46 @@ async function sendVisaMessage(){
 }
 
 let vmReplyId = null;
+function renderVmReplyMessages(){
+  const wrap = document.getElementById('vmReplyMessagesList');
+  if(!wrap || !vmReplyId) return;
+  const m = visaMessagesCache[vmReplyId];
+  if(!m) return;
+  let threadEntries = m.thread ? Object.values(m.thread).sort((a,b) => (a.at||0)-(b.at||0)) : [];
+  // পুরনো ডেটায় (thread যোগ হওয়ার আগে) শুধু একটাই adminReply ফিল্ড থাকতে পারে — সেটাও থ্রেডের
+  // শুরুতে একটা এন্ট্রি হিসেবে দেখানো হচ্ছে যাতে পুরনো রিপ্লাইও চোখে পড়ে
+  if(!threadEntries.length && m.adminReply){
+    threadEntries = [{ sender: 'admin', text: m.adminReply, at: m.adminReplyAt || 0 }];
+  }
+  if(m.message && (!threadEntries.length || threadEntries[0].at === undefined || threadEntries[0].at > (m.createdAt||0))){
+    threadEntries = [{ sender: 'agent', text: m.message, at: m.createdAt || 0 }].concat(threadEntries);
+  }
+  if(!threadEntries.length){
+    wrap.innerHTML = `<p class="hint" style="margin:auto;">এখনো কোনো মেসেজ নেই।</p>`;
+    return;
+  }
+  wrap.innerHTML = threadEntries.map(t => `
+    <div style="align-self:${t.sender==='admin'?'flex-end':'flex-start'};max-width:85%;padding:8px 10px;border-radius:8px;white-space:pre-wrap;font-size:13px;${t.sender==='admin' ? 'background:rgba(37,99,235,.09);border:1px solid rgba(37,99,235,.18);color:var(--navy);' : 'background:#f2ede2;border:1px solid var(--border);color:#3b4552;'}">
+      <div style="font-size:10.5px;font-weight:700;opacity:.65;margin-bottom:2px;">${t.sender==='admin' ? 'এডমিন' : (m.agentName || 'এজেন্ট')}</div>
+      ${escapeHtmlForHl(t.text || '')}
+    </div>`).join('');
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
 function openVmReplyModal(id){
   vmReplyId = id;
   const m = visaMessagesCache[id];
   document.getElementById('vmReplyLabel').textContent = m ? `${m.country || ''}${m.visaName ? ' — ' + m.visaName : ''} সম্পর্কে` : '';
-  document.getElementById('vmReplyText').value = (m && m.adminReply) || '';
+  document.getElementById('vmReplyVisaInfo').innerHTML = m ? buildVisaDetailsBlockHtml(m) : '';
+  document.getElementById('vmReplyText').value = '';
   document.getElementById('vmReplyMsg').textContent = '';
+  renderVmReplyMessages();
   document.getElementById('vmReplyModal').classList.add('active');
+  setTimeout(() => {
+    document.getElementById('vmReplyText').focus();
+    const r = document.getElementById('vmReplyModal')._kbReposition;
+    if(r) setTimeout(r, 300);
+  }, 200);
 }
 
 function closeVmReplyModal(){
@@ -2625,7 +2716,8 @@ function closeVmReplyModal(){
 
 async function saveVmReply(){
   const msgEl = document.getElementById('vmReplyMsg');
-  const text = document.getElementById('vmReplyText').value.trim();
+  const textEl = document.getElementById('vmReplyText');
+  const text = textEl.value.trim();
   if(!vmReplyId){ return; }
   if(!text){ msgEl.style.color = 'var(--fail)'; msgEl.textContent = 'অনুগ্রহ করে কিছু লিখুন।'; return; }
   try{
@@ -2643,12 +2735,11 @@ async function saveVmReply(){
         createdAt: Date.now()
       });
     }
-    msgEl.style.color = 'var(--ok)';
-    msgEl.textContent = 'সংরক্ষণ করা হয়েছে।';
-    setTimeout(closeVmReplyModal, 700);
+    textEl.value = '';
+    msgEl.textContent = '';
   }catch(e){
     msgEl.style.color = 'var(--fail)';
-    msgEl.textContent = 'সংরক্ষণ করতে ব্যর্থ: ' + e.message;
+    msgEl.textContent = 'পাঠাতে ব্যর্থ: ' + e.message;
   }
 }
 
@@ -2658,6 +2749,20 @@ function processVisaMessage(id){
   openAddUserModal(m.country, m.visaId, m.agentId);
   db.ref('visaMessages/' + id).update({ status: 'done' })
     .catch(err => console.error('processVisaMessage error:', err));
+
+  // এজেন্টের ইনবক্সে জানিয়ে দেওয়া হচ্ছে যে তার পাঠানো আবেদনটি প্রসেস করা হয়েছে —
+  // আগে এই নোটিফিকেশনটা পাঠানো হতো না, ফলে এজেন্ট লগ/নোটিফিকেশনে কিছুই দেখতে পেতেন না
+  if(m.agentId){
+    db.ref('agentMessages/' + m.agentId).push({
+      type: 'application_processed',
+      text: `আপনার পাঠানো "${m.country || ''}${m.visaName ? ' — ' + m.visaName : ''}" আবেদনটি প্রসেস করা হয়েছে।`,
+      relatedCountry: m.country || '',
+      relatedVisaName: m.visaName || '',
+      visaMessageId: id,
+      read: false,
+      createdAt: Date.now()
+    }).catch(err => console.error('processVisaMessage notify error:', err));
+  }
 
   const attached = (m.files && m.files.length) ? m.files : (m.fileBase64 ? [{ fileBase64: m.fileBase64, fileName: m.fileName || 'document' }] : []);
   if(!attached.length) return;
@@ -2697,14 +2802,16 @@ async function confirmDeleteVisaMessage(){
   const m = visaMessagesCache[id] || {};
   const reason = document.getElementById('vmDeleteReason').value.trim();
   try{
-    // কারণ লেখা থাকলে সেটা এজেন্টের নিজস্ব ইনবক্সে (agentMessages/{agentId}) সংরক্ষণ করা হয়,
-    // যাতে visaMessages/{id} ডিলিট হয়ে গেলেও এজেন্ট কারণটা দেখতে পান।
-    if(reason && m.agentId){
+    // ডিলিট করলে এজেন্টের নিজস্ব ইনবক্সে (agentMessages/{agentId}) সবসময় জানানো হয় — কারণ
+    // লেখা থাকলে সেটাও যোগ হয়, নাহলে একটা সাধারণ বার্তা পাঠানো হয় — যাতে visaMessages/{id}
+    // ডিলিট হয়ে গেলেও এজেন্ট নোটিফিকেশনে বিষয়টা দেখতে পান
+    if(m.agentId){
       await db.ref('agentMessages/' + m.agentId).push({
-        text: reason,
+        text: reason || `আপনার পাঠানো "${m.country || ''}${m.visaName ? ' — ' + m.visaName : ''}" আবেদনটি ডিলিট করা হয়েছে।`,
         type: 'application_deleted',
         relatedCountry: m.country || '',
         relatedVisaName: m.visaName || '',
+        read: false,
         createdAt: Date.now()
       });
     }
