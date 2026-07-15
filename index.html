@@ -560,7 +560,8 @@
     <div class="modalBox">
       <button class="close-x" onclick="closeVisaMessageModal()"><i class="fas fa-xmark"></i></button>
       <h3 style="margin-top:0;">মেসেজ পাঠান</h3>
-      <p class="hint" style="margin-top:0;" id="vmVisaLabel"></p>
+      <p class="hint" style="margin-top:0;margin-bottom:6px;" id="vmVisaLabel"></p>
+      <div id="vmVisaInfo"></div>
       <input type="file" id="vmFile" accept="image/*,.pdf" onchange="handleVmFileSelect(event)" style="width:100%;box-sizing:border-box;">
       <div id="vmFilePreviewWrap" style="display:none;text-align:center;margin-top:10px;">
         <img id="vmFilePreview" style="max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--border);" alt="">
@@ -575,8 +576,13 @@
   <div class="modalOverlay" id="vmReplyModal">
     <div class="modalBox" style="display:flex;flex-direction:column;max-height:88vh;">
       <button class="close-x" onclick="closeVmReplyModal()"><i class="fas fa-xmark"></i></button>
-      <h3 style="margin-top:0;margin-bottom:2px;">মেসেজ</h3>
-      <p class="hint" style="margin-top:0;margin-bottom:6px;" id="vmReplyLabel"></p>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div id="vmReplyAvatar" class="avatarCircle" style="width:38px;height:38px;font-size:14px;flex-shrink:0;"></div>
+        <div style="min-width:0;">
+          <h3 style="margin:0;" id="vmReplyTitle">মেসেজ</h3>
+          <div class="hint" style="margin:0;font-size:11px;" id="vmReplyLabel"></div>
+        </div>
+      </div>
       <div id="vmReplyVisaInfo"></div>
       <div id="vmReplyMessagesList" style="flex:1;overflow-y:auto;min-height:180px;max-height:50vh;display:flex;flex-direction:column;gap:10px;padding:6px 2px;"></div>
       <div id="vmReplyMsg" style="font-size:12px;margin-top:2px;"></div>
@@ -2069,7 +2075,7 @@ function renderUserChatMessages(){
     const mine = m.from === 'admin';
     const time = m.createdAt ? new Date(m.createdAt).toLocaleString('bn-BD') : '';
     return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'};max-width:78%;">
-      <div style="background:${mine ? 'var(--navy)' : '#f0ede6'};color:${mine ? '#fff' : '#1c2733'};padding:8px 12px;border-radius:14px;${mine ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'}font-size:13px;white-space:pre-wrap;word-break:break-word;">${escapeHtmlForHl(m.text || '')}</div>
+      <div style="background:${mine ? 'var(--navy)' : '#f0ede6'};color:${mine ? '#fff' : '#1c2733'};padding:8px 12px;border-radius:14px;${mine ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'}font-size:13px;font-weight:400;white-space:pre-wrap;word-break:break-word;">${escapeHtmlForHl(m.text || '')}</div>
       <div style="font-size:9.5px;color:#8896ab;margin-top:2px;text-align:${mine ? 'right' : 'left'};">${mine ? '' : ((m.fromName || 'এজেন্ট') + ' · ')}${time}</div>
     </div>`;
   }).join('');
@@ -2151,7 +2157,7 @@ function renderAgentChatMessages(){
     const mine = m.from === 'admin';
     const time = m.createdAt ? new Date(m.createdAt).toLocaleString('bn-BD') : '';
     return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'};max-width:78%;">
-      <div style="background:${mine ? 'var(--navy)' : '#f0ede6'};color:${mine ? '#fff' : '#1c2733'};padding:8px 12px;border-radius:14px;${mine ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'}font-size:13px;white-space:pre-wrap;word-break:break-word;">${escapeHtmlForHl(m.text || '')}</div>
+      <div style="background:${mine ? 'var(--navy)' : '#f0ede6'};color:${mine ? '#fff' : '#1c2733'};padding:8px 12px;border-radius:14px;${mine ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'}font-size:13px;font-weight:400;white-space:pre-wrap;word-break:break-word;">${escapeHtmlForHl(m.text || '')}</div>
       <div style="font-size:9.5px;color:#8896ab;margin-top:2px;text-align:${mine ? 'right' : 'left'};">${mine ? '' : ((m.fromName || 'এজেন্ট') + ' · ')}${time}</div>
     </div>`;
   }).join('');
@@ -2647,6 +2653,7 @@ function handleVmFileSelect(event){
 function openVisaMessageModal(country, visaId, visaName){
   vmContext = { country, visaId, visaName };
   document.getElementById('vmVisaLabel').textContent = `${country}${visaName ? ' — ' + visaName : ''} সম্পর্কে ফাইল`;
+  document.getElementById('vmVisaInfo').innerHTML = buildVisaDetailsBlockHtml({ country, visaId });
   document.getElementById('vmFile').value = '';
   document.getElementById('vmFilePreviewWrap').style.display = 'none';
   vmFileBase64 = null; vmFileName = null; vmFileType = null;
@@ -2710,7 +2717,7 @@ function renderVmReplyMessages(){
     return;
   }
   wrap.innerHTML = threadEntries.map(t => `
-    <div style="align-self:${t.sender==='admin'?'flex-end':'flex-start'};max-width:85%;padding:8px 10px;border-radius:8px;white-space:pre-wrap;font-size:13px;${t.sender==='admin' ? 'background:rgba(37,99,235,.09);border:1px solid rgba(37,99,235,.18);color:var(--navy);' : 'background:#f2ede2;border:1px solid var(--border);color:#3b4552;'}">
+    <div style="align-self:${t.sender==='admin'?'flex-end':'flex-start'};max-width:85%;padding:8px 10px;border-radius:8px;white-space:pre-wrap;font-size:13px;font-weight:400;${t.sender==='admin' ? 'background:rgba(37,99,235,.09);border:1px solid rgba(37,99,235,.18);color:var(--navy);' : 'background:#f2ede2;border:1px solid var(--border);color:#3b4552;'}">
       <div style="font-size:10.5px;font-weight:700;opacity:.65;margin-bottom:2px;">${t.sender==='admin' ? 'এডমিন' : (m.agentName || 'এজেন্ট')}</div>
       ${escapeHtmlForHl(t.text || '')}
     </div>`).join('');
@@ -2720,7 +2727,16 @@ function renderVmReplyMessages(){
 function openVmReplyModal(id){
   vmReplyId = id;
   const m = visaMessagesCache[id];
+  document.getElementById('vmReplyTitle').textContent = (m && m.agentName) || 'এজেন্ট';
   document.getElementById('vmReplyLabel').textContent = m ? `${m.country || ''}${m.visaName ? ' — ' + m.visaName : ''} সম্পর্কে` : '';
+  const vmAvatarEl = document.getElementById('vmReplyAvatar');
+  const agentPhoto = m && m.agentId && agentsCache[m.agentId] ? agentsCache[m.agentId].photoBase64 : null;
+  if(agentPhoto){
+    vmAvatarEl.innerHTML = `<img src="${agentPhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`;
+  } else {
+    vmAvatarEl.innerHTML = '';
+    vmAvatarEl.textContent = ((m && m.agentName) || '-').trim().charAt(0).toUpperCase() || '?';
+  }
   document.getElementById('vmReplyVisaInfo').innerHTML = m ? buildVisaDetailsBlockHtml(m) : '';
   document.getElementById('vmReplyText').value = '';
   document.getElementById('vmReplyMsg').textContent = '';
