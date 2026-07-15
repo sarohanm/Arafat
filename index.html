@@ -755,7 +755,7 @@
         </select>
         <input id="cfOptions" style="display:none;">
         <div class="flex" id="cfVisaFeeQuotaRow" style="gap:8px;display:none;">
-          <input id="cfVisaName" placeholder="ভিসার ধরন" value="ওয়ার্কার ভিসা" style="flex:1;">
+          <input id="cfVisaName" placeholder="ভিসার ধরন (যেমন: ওয়ার্কার ভিসা)" style="flex:1;">
           <input id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;">
           <input id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;">
         </div>
@@ -2095,8 +2095,8 @@ function sendUserChatMessage(){
     readByAdmin: true, readByAgent: false
   });
   input.value = '';
+  input.focus();
 }
-function markUserChatRead(uid){
   const chats = userChatsCache[uid] || {};
   Object.entries(chats).forEach(([id, m]) => {
     if(m && !m.readByAdmin){
@@ -2177,6 +2177,7 @@ function sendAgentChatMessage(){
     readByAdmin: true, readByAgent: false
   });
   input.value = '';
+  input.focus();
 }
 function markAgentChatRead(uid){
   const chats = agentChatsCache[uid] || {};
@@ -2793,6 +2794,7 @@ async function saveVmReply(){
     }
     textEl.value = '';
     msgEl.textContent = '';
+    textEl.focus();
   }catch(e){
     msgEl.style.color = 'var(--fail)';
     msgEl.textContent = 'পাঠাতে ব্যর্থ: ' + e.message;
@@ -3028,6 +3030,12 @@ function openCfFormModal(){
   const typeSel = document.getElementById('cfType');
   typeSel.value = 'visa';
   typeSel.style.display = 'none';
+  const countrySel = document.getElementById('cfCountry');
+  countrySel.value = '';
+  countrySel.dataset.prev = '';
+  document.getElementById('cfVisaName').value = '';
+  document.getElementById('cfVisaFee').value = '';
+  document.getElementById('cfVisaQuota').value = '';
   const detailsBox = document.getElementById('cfVisaDetails');
   detailsBox.value = '';
   detailsBox.style.height = 'auto';
@@ -3709,14 +3717,13 @@ function populateCfVisaSelect(country){
 function addCustomField(){
   const country = document.getElementById('cfCountry').value;
   if(!country){ alert('ভিসার ধরন যোগ করতে একটা নির্দিষ্ট দেশ নির্বাচন করুন (সকল দেশের জন্য প্রযোজ্য দিয়ে হবে না)।'); return; }
-  const name = document.getElementById('cfVisaName').value.trim();
-  if(!name){ alert('ভিসার নাম দিন।'); return; }
+  const name = document.getElementById('cfVisaName').value.trim() || 'ওয়ার্কার ভিসা';
   const fee = parseInt(document.getElementById('cfVisaFee').value) || 0;
   const quota = parseInt(document.getElementById('cfVisaQuota').value) || 0;
   const details = document.getElementById('cfVisaDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const key = db.ref('visa_types').push().key;
   db.ref('visa_types/' + key).set({ country, name, fee, quota, details, created_at: Date.now() }).then(() => {
-    document.getElementById('cfVisaName').value = 'ওয়ার্কার ভিসা';
+    document.getElementById('cfVisaName').value = '';
     document.getElementById('cfVisaFee').value = '';
     document.getElementById('cfVisaQuota').value = '';
     document.getElementById('cfVisaDetails').value = '';
