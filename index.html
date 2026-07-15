@@ -139,8 +139,8 @@
   .visaDetailLines{display:flex;flex-direction:column;gap:5px;margin-top:2px;}
   .visaDetailLine{font-size:13px;font-weight:600;color:#3b4552;line-height:1.4;}
   .visaDetailLine .chipKey{color:#a8710f;font-weight:800;}
-  .visaStatRow{display:flex;flex-wrap:nowrap;justify-content:flex-start;align-items:center;gap:14px;font-size:11px;color:#5b6b7a;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
-  .visaStatRow .vsr-stats{display:flex;gap:14px;flex-shrink:1;min-width:0;}
+  .visaStatRow{display:flex;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:14px;font-size:11px;color:#5b6b7a;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
+  .visaStatRow .vsr-stats{display:flex;justify-content:space-between;gap:14px;flex:1;min-width:0;}
   .visaStatRow .vsr-stats span{white-space:nowrap;}
   .visaStatRow b{color:var(--navy);font-size:13px;}
   .visaStatRow .vsr-actions{display:flex;gap:14px;flex-shrink:0;}
@@ -730,7 +730,7 @@
       <div style="margin-top:10px;">
         <div class="hlWrap">
           <div id="veDetailsHl" class="hlBackdrop"></div>
-          <textarea id="veDetails" rows="5" style="width:100%;" placeholder="কোম্পানি: সিডার গ্রুপ&#10;মাসিক বেতন: 2000 রিয়াল&#10;দৈনিক ডিউটি: ৮ ঘন্টা প্লাস কভার টাইম"></textarea>
+          <textarea id="veDetails" rows="5" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="কোম্পানি: সিডার গ্রুপ&#10;মাসিক বেতন: 2000 রিয়াল&#10;দৈনিক ডিউটি: ৮ ঘন্টা প্লাস কভার টাইম"></textarea>
         </div>
       </div>
       <div style="margin-top:10px;"><button type="button" class="btn small" style="width:100%;" onclick="saveVisaEdit()">সেভ করুন</button></div>
@@ -755,7 +755,7 @@
         </select>
         <input id="cfOptions" style="display:none;">
         <div class="flex" id="cfVisaFeeQuotaRow" style="gap:8px;display:none;">
-          <input id="cfVisaName" placeholder="ভিসার ধরন" value="ওয়ার্কার ভিসা" style="flex:1;">
+          <input id="cfVisaName" placeholder="ভিসার ধরন (যেমন: ওয়ার্কার ভিসা)" style="flex:1;">
           <input id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;">
           <input id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;">
         </div>
@@ -2894,18 +2894,10 @@ function deleteAgent(uid){
 
 /* ================= COUNTRIES ================= */
 let countries = {};
-const DEFAULT_COUNTRIES = ['সৌদি আরব','সংযুক্ত আরব আমিরাত (দুবাই)','কাতার','ওমান','কুয়েত','বাহরাইন','মালয়েশিয়া','সিঙ্গাপুর'];
 
 function loadCountries(){
   db.ref('countries').on('value', snap => {
     countries = snap.val() || {};
-    if(Object.keys(countries).length === 0){
-      // প্রথমবার — ডিফল্ট দেশগুলো সেভ করে দাও
-      const seed = {};
-      DEFAULT_COUNTRIES.forEach(name => { seed[db.ref('countries').push().key] = name; });
-      db.ref('countries').set(seed).catch(err => console.error('seed countries error:', err));
-      return; // পরের 'value' ইভেন্টেই রেন্ডার হবে
-    }
     renderCountrySelects();
   });
 }
@@ -3142,6 +3134,9 @@ function openVisaEditModal(vid){
   document.getElementById('veFee').value = v.fee || '';
   document.getElementById('veQuota').value = v.quota || '';
   document.getElementById('veDetails').value = (v.details || []).join('\n');
+  const veDetailsEl = document.getElementById('veDetails');
+  veDetailsEl.style.height = 'auto';
+  veDetailsEl.style.height = veDetailsEl.scrollHeight + 'px';
   syncDetailsHighlight('veDetails', 'veDetailsHl');
   document.getElementById('visaEditModal').classList.add('active');
 }
@@ -3716,7 +3711,7 @@ function addCustomField(){
   const details = document.getElementById('cfVisaDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const key = db.ref('visa_types').push().key;
   db.ref('visa_types/' + key).set({ country, name, fee, quota, details, created_at: Date.now() }).then(() => {
-    document.getElementById('cfVisaName').value = 'ওয়ার্কার ভিসা';
+    document.getElementById('cfVisaName').value = '';
     document.getElementById('cfVisaFee').value = '';
     document.getElementById('cfVisaQuota').value = '';
     document.getElementById('cfVisaDetails').value = '';
