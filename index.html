@@ -614,6 +614,25 @@
     </div>
   </div>
 
+  <!-- AGENT DIRECT CHAT MODAL (এজেন্ট ও অ্যাডমিনের সরাসরি মেসেজ, কোনো নির্দিষ্ট ইউজার ছাড়াই) -->
+  <div class="modalOverlay" id="agentChatModal">
+    <div class="modalBox" style="display:flex;flex-direction:column;max-height:88vh;">
+      <button class="close-x" onclick="closeAgentChatModal()"><i class="fas fa-xmark"></i></button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div id="acModalAvatar" class="avatarCircle" style="width:38px;height:38px;font-size:14px;flex-shrink:0;"></div>
+        <div style="min-width:0;">
+          <h3 style="margin:0;" id="acModalTitle">মেসেজ</h3>
+          <div class="hint" style="margin:0;font-size:11px;" id="acModalSubtitle">সরাসরি মেসেজ</div>
+        </div>
+      </div>
+      <div id="acMessagesList" style="flex:1;overflow-y:auto;min-height:180px;max-height:50vh;display:flex;flex-direction:column;gap:10px;padding:6px 2px;"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <textarea id="acInputText" rows="1" placeholder="লিখুন..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;box-sizing:border-box;font-family:inherit;"></textarea>
+        <button type="button" class="btn small" style="width:auto;padding:0 16px;flex-shrink:0;" onclick="sendAgentChatMessage()"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
   <!-- EDIT AGENT MODAL (ইমেইল, পাসওয়ার্ড, ফেসলক পরিবর্তন) -->
   <!-- CALL CHOICE BOTTOM SHEET -->
   <div class="callSheetOverlay" id="callSheetOverlay" onclick="if(event.target===this)closeCallSheet()">
@@ -955,6 +974,7 @@ async function enterApp(){
   loadUsers();
   loadAgents();
   loadUserChats();
+  loadAgentChats();
   loadCountries();
   loadCustomFields();
   loadVisaMessages();
@@ -1999,6 +2019,84 @@ function markUserChatRead(uid){
   });
 }
 
+/* ================= AGENT DIRECT CHAT (এজেন্ট-অ্যাডমিন সরাসরি মেসেজ, ইউজার-নিরপেক্ষ) ================= */
+let agentChatsCache = {};
+let acCurrentUid = null;
+
+function loadAgentChats(){
+  db.ref('agentChats').on('value', snap => {
+    agentChatsCache = snap.val() || {};
+    renderAgents();
+    if(acCurrentUid) renderAgentChatMessages();
+  });
+}
+
+function getAgentUnreadChatCount(uid){
+  const chats = agentChatsCache[uid] || {};
+  return Object.values(chats).filter(m => m && !m.readByAdmin).length;
+}
+
+function openAgentChat(uid){
+  acCurrentUid = uid;
+  const a = agentsCache[uid] || {};
+  document.getElementById('acModalTitle').textContent = a.name || 'এজেন্ট';
+  document.getElementById('acModalSubtitle').textContent = 'সরাসরি মেসেজ';
+  const acAvatarEl = document.getElementById('acModalAvatar');
+  const acInitials = (a.name || '-').trim().charAt(0).toUpperCase() || '?';
+  if(a.photoBase64){
+    acAvatarEl.innerHTML = `<img src="${a.photoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`;
+  } else {
+    acAvatarEl.innerHTML = '';
+    acAvatarEl.textContent = acInitials;
+  }
+  renderAgentChatMessages();
+  document.getElementById('agentChatModal').classList.add('active');
+  markAgentChatRead(uid);
+  setTimeout(() => document.getElementById('acInputText').focus(), 200);
+}
+function closeAgentChatModal(){
+  document.getElementById('agentChatModal').classList.remove('active');
+  acCurrentUid = null;
+}
+function renderAgentChatMessages(){
+  if(!acCurrentUid) return;
+  const chats = agentChatsCache[acCurrentUid] || {};
+  const entries = Object.entries(chats).sort((a,b) => (a[1].createdAt||0) - (b[1].createdAt||0));
+  const el = document.getElementById('acMessagesList');
+  if(!entries.length){
+    el.innerHTML = '<div class="hint" style="text-align:center;margin-top:20px;">কোনো মেসেজ নেই, কথা শুরু করুন।</div>';
+    return;
+  }
+  el.innerHTML = entries.map(([id, m]) => {
+    const mine = m.from === 'admin';
+    const time = m.createdAt ? new Date(m.createdAt).toLocaleString('bn-BD') : '';
+    return `<div style="align-self:${mine ? 'flex-end' : 'flex-start'};max-width:78%;">
+      <div style="background:${mine ? 'var(--navy)' : '#f0ede6'};color:${mine ? '#fff' : '#1c2733'};padding:8px 12px;border-radius:14px;${mine ? 'border-bottom-right-radius:4px;' : 'border-bottom-left-radius:4px;'}font-size:13px;white-space:pre-wrap;word-break:break-word;">${escapeHtmlForHl(m.text || '')}</div>
+      <div style="font-size:9.5px;color:#8896ab;margin-top:2px;text-align:${mine ? 'right' : 'left'};">${mine ? '' : ((m.fromName || 'এজেন্ট') + ' · ')}${time}</div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+function sendAgentChatMessage(){
+  if(!acCurrentUid) return;
+  const input = document.getElementById('acInputText');
+  const text = (input.value || '').trim();
+  if(!text) return;
+  db.ref('agentChats/' + acCurrentUid).push({
+    text, from: 'admin', fromName: 'অ্যাডমিন', createdAt: Date.now(),
+    readByAdmin: true, readByAgent: false
+  });
+  input.value = '';
+}
+function markAgentChatRead(uid){
+  const chats = agentChatsCache[uid] || {};
+  Object.entries(chats).forEach(([id, m]) => {
+    if(m && !m.readByAdmin){
+      db.ref('agentChats/' + uid + '/' + id + '/readByAdmin').set(true);
+    }
+  });
+}
+
 function loadAgents(){
   db.ref('admins').on('value', snap => {
     const all = snap.val() || {};
@@ -2039,11 +2137,15 @@ function renderAgents(){
     const agentDue = agentTotalFee - agentPaid;
     const digits = (a.phone || '').replace(/[^0-9]/g, '');
     const withCC = digits ? (digits.startsWith('88') ? digits : ('88' + digits.replace(/^0/, ''))) : '';
-    const contactIconsHtml = a.phone
-      ? `<div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
-          <button type="button" onclick="event.stopPropagation();callChoice('${a.phone}','${withCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;cursor:pointer;padding:0;"><i class="fas fa-phone"></i></button>
-        </div>`
-      : '';
+    const agentUnread = getAgentUnreadChatCount(uid);
+    const messageIconHtml = `<button type="button" onclick="event.stopPropagation();openAgentChat('${uid}')" style="position:relative;width:auto;height:auto;background:none;color:var(--gold);border:none;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;cursor:pointer;padding:0;">
+          <i class="fas fa-comment-dots"></i>
+          ${agentUnread ? `<span style="position:absolute;top:-6px;right:-7px;background:var(--fail);color:#fff;font-size:9px;line-height:1;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;">${agentUnread}</span>` : ''}
+        </button>`;
+    const contactIconsHtml = `<div style="display:flex;align-items:center;gap:9px;flex-shrink:0;">
+          ${a.phone ? `<button type="button" onclick="event.stopPropagation();callChoice('${a.phone}','${withCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;cursor:pointer;padding:0;"><i class="fas fa-phone"></i></button>` : ''}
+          ${messageIconHtml}
+        </div>`;
     const actionsHtml = `<div class="accActions">
           <button class="btn small" onclick="openEditAgentModal('${uid}')"><i class="fas fa-pen"></i> এডিট</button>
           <button class="btn small" onclick="toggleAgentActive('${uid}')"><i class="fas fa-power-off"></i> ${active ? 'নিষ্ক্রিয় করুন' : 'সক্রিয় করুন'}</button>
@@ -2382,7 +2484,14 @@ function buildVmBodyHtml(id){
       </div>`
     : '';
   const messageHtml = m.message ? `<div style="margin:6px 0;white-space:pre-wrap;font-size:13px;">${escapeHtmlForHl(m.message)}</div>` : '';
-  const adminReplyHtml = m.adminReply ? `<div style="margin:6px 0;padding:8px 10px;border-radius:8px;background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.18);white-space:pre-wrap;font-size:13px;color:var(--navy);"><i class="fas fa-comment-dots" style="margin-right:5px;color:var(--teal);"></i>${escapeHtmlForHl(m.adminReply)}</div>` : '';
+  const threadEntries = m.thread ? Object.values(m.thread).sort((a,b) => (a.at||0)-(b.at||0)) : [];
+  const adminReplyHtml = threadEntries.length
+    ? `<div style="margin:6px 0;display:flex;flex-direction:column;gap:6px;">${threadEntries.map(t => `
+        <div style="align-self:${t.sender==='admin'?'flex-end':'flex-start'};max-width:85%;padding:8px 10px;border-radius:8px;white-space:pre-wrap;font-size:13px;${t.sender==='admin' ? 'background:rgba(37,99,235,.09);border:1px solid rgba(37,99,235,.18);color:var(--navy);margin-left:auto;' : 'background:#f2ede2;border:1px solid var(--border);color:#3b4552;'}">
+          <div style="font-size:10.5px;font-weight:700;opacity:.65;margin-bottom:2px;">${t.sender==='admin' ? 'এডমিন' : (m.agentName || 'এজেন্ট')}</div>
+          ${escapeHtmlForHl(t.text || '')}
+        </div>`).join('')}</div>`
+    : (m.adminReply ? `<div style="margin:6px 0;padding:8px 10px;border-radius:8px;background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.18);white-space:pre-wrap;font-size:13px;color:var(--navy);"><i class="fas fa-comment-dots" style="margin-right:5px;color:var(--teal);"></i>${escapeHtmlForHl(m.adminReply)}</div>` : '');
   const agentPhone = m.agentId && agentsCache[m.agentId] ? (agentsCache[m.agentId].phone || '') : '';
   const digits = agentPhone.replace(/[^0-9]/g, '');
   const withCC = digits ? (digits.startsWith('88') ? digits : ('88' + digits.replace(/^0/, ''))) : '';
@@ -2520,7 +2629,20 @@ async function saveVmReply(){
   if(!vmReplyId){ return; }
   if(!text){ msgEl.style.color = 'var(--fail)'; msgEl.textContent = 'অনুগ্রহ করে কিছু লিখুন।'; return; }
   try{
+    const m = visaMessagesCache[vmReplyId] || {};
     await db.ref('visaMessages/' + vmReplyId).update({ adminReply: text, adminReplyAt: Date.now() });
+    await db.ref('visaMessages/' + vmReplyId + '/thread').push({ sender: 'admin', text, at: Date.now() });
+    if(m.agentId){
+      await db.ref('agentMessages/' + m.agentId).push({
+        type: 'admin_reply',
+        text,
+        relatedCountry: m.country || '',
+        relatedVisaName: m.visaName || '',
+        visaMessageId: vmReplyId,
+        read: false,
+        createdAt: Date.now()
+      });
+    }
     msgEl.style.color = 'var(--ok)';
     msgEl.textContent = 'সংরক্ষণ করা হয়েছে।';
     setTimeout(closeVmReplyModal, 700);
