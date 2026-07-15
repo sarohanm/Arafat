@@ -796,6 +796,13 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
+/* ================= DEV: সাময়িকভাবে লগইন স্ক্রিন বাদ দেওয়া =================
+   এটা true থাকা অবস্থায় পেজ লোড হওয়ার সাথে সাথেই সরাসরি admin হিসেবে অ্যাপে
+   ঢুকিয়ে দেবে — ইমেইল/পাসওয়ার্ড বা ফেস-ভেরিফিকেশন কিছুই লাগবে না।
+   আসল লগইন আবার চালু করতে চাইলে শুধু এটা false করে দিন। */
+const SKIP_LOGIN_FOR_DEV = true;
+if (SKIP_LOGIN_FOR_DEV) document.getElementById('loginScreen').style.display = 'none';
+
 /* ================= STATE MACHINE ================= */
 const VALID_TRANSITIONS = {
   DOC_COLLECTED:      ["PASSPORT_APPLIED"],
@@ -4238,6 +4245,13 @@ function setupHlTextarea(taId, bdId){
   syncDetailsHighlight(taId, bdId);
 }
 [['veDetails','veDetailsHl'], ['cfVisaDetails','cfVisaDetailsHl']].forEach(([taId, bdId]) => setupHlTextarea(taId, bdId));
+
+/* DEV: SKIP_LOGIN_FOR_DEV উপরে true থাকলে এখানেই সরাসরি অ্যাপে ঢুকিয়ে দেওয়া হচ্ছে */
+if (SKIP_LOGIN_FOR_DEV) {
+  pendingUid = "default-admin-uid";
+  enterApp();
+}
+
 </script>
 </body>
 </html>
