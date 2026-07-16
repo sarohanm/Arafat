@@ -46,7 +46,7 @@
   .btn.danger{background:var(--fail);}
   .btn.success{background:var(--ok);}
   .btn.info{background:var(--teal);}
-  #faceStep{display:none;text-align:center;}
+  #faceStep{text-align:center;}
   video, canvas{border-radius:10px;width:100%;max-width:280px;}
   #loginMsg{font-size:12px;color:var(--fail);min-height:16px;margin-top:4px;}
 
@@ -268,19 +268,20 @@
     <h1>Talent Overseas Pvt. Ltd.</h1>
     <p class="sub">Admin / Agent Panel — লগইন করুন</p>
 
-    <div id="passStep">
-      <input id="loginEmail" type="email" placeholder="Email">
-      <input id="loginPass" type="password" placeholder="Password">
-      <button class="btn" onclick="handlePasswordLogin()">লগইন</button>
-    </div>
-
     <div id="faceStep">
-      <p style="font-size:13px;margin-bottom:8px;">দ্বিতীয় ধাপ: ফেস ভেরিফিকেশন</p>
+      <p style="font-size:13px;margin-bottom:8px;">ফেস দিয়ে লগইন করুন</p>
       <video id="video" autoplay muted></video>
       <div style="margin-top:10px;" class="flex">
-        <button class="btn small" onclick="verifyFace()">ভেরিফাই করুন</button>
-        <button class="btn small gold" onclick="enrollFace()">প্রথমবার হলে এনরোল করুন</button>
+        <button class="btn small" onclick="tryFaceLogin()">লগইন করুন</button>
       </div>
+      <p style="font-size:12px;margin-top:10px;cursor:pointer;color:var(--teal);text-decoration:underline;" onclick="showPassStep()">ফেস কাজ না করলে ইমেইল-পাসওয়ার্ড দিয়ে ঢুকুন</p>
+    </div>
+
+    <div id="passStep" style="display:none;">
+      <input id="loginEmail" type="text" placeholder="Email">
+      <input id="loginPass" type="password" placeholder="Password">
+      <button class="btn" onclick="handlePasswordLogin()">লগইন</button>
+      <p style="font-size:12px;margin-top:10px;cursor:pointer;color:var(--teal);text-decoration:underline;" onclick="showFaceStep()">ফেস দিয়ে আবার চেষ্টা করুন</p>
     </div>
 
     <div id="loginMsg"></div>
@@ -436,13 +437,24 @@
             <div style="font-weight:700;">পাসওয়ার্ড পরিবর্তন করুন</div>
           </div>
           <div class="formGrid">
-            <input id="pcEmail" type="email" placeholder="পূর্বের ইমেইল">
+            <input id="pcEmail" type="text" placeholder="পূর্বের ইমেইল">
             <input id="pcCurrentPass" type="password" placeholder="বর্তমান পাসওয়ার্ড">
-            <input id="pcNewEmail" type="email" placeholder="নতুন ইমেইল">
+            <input id="pcNewEmail" type="text" placeholder="নতুন ইমেইল">
             <input id="pcNewPass" type="password" placeholder="নতুন পাসওয়ার্ড">
           </div>
           <div style="margin-top:12px;"><button class="btn small" onclick="changeAdminPassword()">পরিবর্তন করুন</button></div>
           <div id="pcMsg" style="font-size:12px;margin-top:6px;"></div>
+
+          <div class="fieldRow" style="cursor:default;margin-top:16px;">
+            <div style="font-weight:700;">ফেস লগইন এনরোল/আপডেট করুন</div>
+          </div>
+          <div style="font-size:12px;color:#777;margin:4px 0 8px;">লগইন স্ক্রিনে ফেস দিয়ে ঢুকতে চাইলে এখানে আপনার মুখ এনরোল করুন।</div>
+          <video id="settingsVideo" autoplay muted style="width:200px;height:150px;border-radius:8px;background:#000;display:none;"></video>
+          <div style="margin-top:8px;" class="flex">
+            <button class="btn small" onclick="startSettingsCamera()">ক্যামেরা চালু করুন</button>
+            <button class="btn small gold" onclick="enrollMyFace()">এনরোল করুন</button>
+          </div>
+          <div id="settingsFaceMsg" style="font-size:12px;margin-top:6px;"></div>
         </div>
       </div>
     </div>
@@ -797,6 +809,29 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
+/* ================= FIRST-TIME ADMIN SETUP =================
+   যদি ডেটাবেসে 'admins' নোডে role:'admin' কোনো অ্যাকাউন্টই না থাকে, একবারই একটা
+   ডিফল্ট এডমিন অ্যাকাউন্ট তৈরি করে দেওয়া হয় যাতে প্রথমবার লগইন করা যায়।
+   লগইন করার পর Settings থেকে ইমেইল-পাসওয়ার্ড বদলে নেওয়াই ভালো। */
+const DEFAULT_ADMIN_EMAIL = "admin";
+const DEFAULT_ADMIN_PASSWORD = "admin";
+(async function bootstrapDefaultAdmin(){
+  try{
+    const snap = await db.ref('admins').orderByChild('role').equalTo('admin').once('value');
+    if(!snap.exists()){
+      await db.ref('admins').push().set({
+        role: 'admin',
+        name: 'Admin',
+        email: DEFAULT_ADMIN_EMAIL,
+        password: DEFAULT_ADMIN_PASSWORD,
+        active: true,
+        created_at: Date.now()
+      });
+      console.log('Default admin account created.');
+    }
+  }catch(e){ console.error('Admin bootstrap failed:', e.message); }
+})();
+
 /* ================= STATE MACHINE ================= */
 const VALID_TRANSITIONS = {
   DOC_COLLECTED:      ["PASSPORT_APPLIED"],
@@ -859,37 +894,96 @@ function stageTrackHtml(stageKey){
   return `<div class="stageTrack">${dots}</div><div class="stageTrackLbl"><span>শুরু</span><span>${pct}% সম্পন্ন</span></div>`;
 }
 
-let currentUser = null;   // firebase auth user
+let currentUser = null;   // logged-in admin/agent id (key in 'admins' node)
 let currentRole = "agent";
-let pendingUid = null;    // uid waiting on face verification
+let pendingUid = null;    // matched uid during face login
 
-/* ================= LOGIN: STEP 1 - PASSWORD ================= */
-function handlePasswordLogin(){
-  const email = document.getElementById('loginEmail').value.trim();
+/* ================= LOGIN STEP TOGGLES ================= */
+function showFaceStep(){
+  document.getElementById('passStep').style.display = 'none';
+  document.getElementById('faceStep').style.display = 'block';
+  document.getElementById('loginMsg').textContent = '';
+  startCamera();
+}
+function showPassStep(){
+  stopCamera();
+  document.getElementById('faceStep').style.display = 'none';
+  document.getElementById('passStep').style.display = 'block';
+  document.getElementById('loginMsg').textContent = '';
+}
+
+/* ================= LOGIN: FACE FIRST =================
+   ক্যামেরা থেকে লাইভ ফেস স্ক্যান করে 'admins' নোডের সব ইউজারের সংরক্ষিত faceDescriptor-এর
+   সাথে তুলনা করা হয়; সবচেয়ে কাছের মিল (dist < 0.5) পাওয়া গেলে সরাসরি লগইন হয়ে যায়।
+   মিল না পেলে ইমেইল-পাসওয়ার্ড দিয়ে লগইনের অপশন দেখানো হয় (showPassStep)। */
+async function tryFaceLogin(){
+  const msg = document.getElementById('loginMsg');
+  msg.style.color = '';
+  msg.textContent = "মুখ শনাক্ত করা হচ্ছে...";
+  try{
+    const liveDescriptor = await getDescriptor('video');
+    const snap = await db.ref('admins').once('value');
+    const all = snap.val() || {};
+
+    let bestUid = null, bestDist = Infinity;
+    Object.entries(all).forEach(([uid, rec]) => {
+      if(rec.active === false || !rec.faceDescriptor) return;
+      const dist = faceapi.euclideanDistance(liveDescriptor, rec.faceDescriptor);
+      if(dist < bestDist){ bestDist = dist; bestUid = uid; }
+    });
+
+    if(bestUid && bestDist < 0.5){
+      pendingUid = bestUid;
+      msg.style.color = "var(--ok)";
+      msg.textContent = "ফেস মিলেছে, প্রবেশ করানো হচ্ছে...";
+      stopCamera();
+      await enterApp();
+    } else {
+      msg.style.color = "var(--fail)";
+      msg.textContent = "ফেস শনাক্ত করা যায়নি। ইমেইল-পাসওয়ার্ড দিয়ে লগইন করুন।";
+    }
+  }catch(e){
+    msg.style.color = "var(--fail)";
+    msg.textContent = e.message + " — ইমেইল-পাসওয়ার্ড দিয়ে লগইন করুন।";
+  }
+}
+
+/* ================= LOGIN: EMAIL/PASSWORD (FALLBACK) =================
+   Firebase Authentication ব্যবহার হয় না (Email/Password provider কনফিগার করা নেই)।
+   এজেন্ট/এডমিন সবার ইমেইল+পাসওয়ার্ড সরাসরি Realtime Database-এর 'admins/{id}' নোডে
+   রাখা আছে, তাই লগইনও সরাসরি সেখান থেকেই মিলিয়ে করা হয়। */
+async function handlePasswordLogin(){
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value;
   const msg = document.getElementById('loginMsg');
   msg.textContent = "";
 
-  // ⚠️ TEMPORARY DEFAULT LOGIN — Firebase Authentication বাইপাস করে সরাসরি প্রবেশ।
-  // এটা নিরাপত্তাহীন (কেউ এই কোড দেখলে/জানলে বিনা পাসওয়ার্ডে ঢুকতে পারবে)।
-  // আসল Firebase user সেটআপ হয়ে গেলে এই ব্লকটা মুছে দেওয়া জরুরি।
-  if (email === "admin" && pass === "12345") {
-    pendingUid = "default-admin-uid";
-    currentRole = "admin";
-    document.getElementById('passStep').style.display = 'none';
-    document.getElementById('faceStep').style.display = 'block';
-    startCamera();
-    return;
-  }
+  if(!email || !pass){ msg.textContent = "ইমেইল ও পাসওয়ার্ড দিন।"; return; }
 
-  auth.signInWithEmailAndPassword(email, pass)
-    .then(cred => {
-      pendingUid = cred.user.uid;
-      document.getElementById('passStep').style.display = 'none';
-      document.getElementById('faceStep').style.display = 'block';
-      startCamera();
-    })
-    .catch(err => { msg.textContent = "লগইন ব্যর্থ: " + err.message; });
+  try{
+    const snap = await db.ref('admins').orderByChild('email').equalTo(email).once('value');
+    if(!snap.exists()){
+      msg.textContent = "লগইন ব্যর্থ: এই ইমেইলে কোনো অ্যাকাউন্ট পাওয়া যায়নি।";
+      return;
+    }
+    const data = snap.val();
+    const uid = Object.keys(data)[0];
+    const record = data[uid];
+
+    if(record.active === false){
+      msg.textContent = "লগইন ব্যর্থ: এই অ্যাকাউন্ট নিষ্ক্রিয় করা আছে।";
+      return;
+    }
+    if(record.password !== pass){
+      msg.textContent = "লগইন ব্যর্থ: পাসওয়ার্ড সঠিক নয়।";
+      return;
+    }
+
+    pendingUid = uid;
+    await enterApp();
+  }catch(err){
+    msg.textContent = "লগইন ব্যর্থ: " + err.message;
+  }
 }
 
 function startCamera(){
@@ -900,10 +994,12 @@ function startCamera(){
 }
 function stopCamera(){
   const video = document.getElementById('video');
-  if(video.srcObject){ video.srcObject.getTracks().forEach(t=>t.stop()); }
+  if(video && video.srcObject){ video.srcObject.getTracks().forEach(t=>t.stop()); }
 }
+// ফেস লগইন এখন ডিফল্ট প্রথম ধাপ, তাই লগইন স্ক্রিন লোড হলেই ক্যামেরা চালু হয়ে যায়
+startCamera();
 
-/* ================= LOGIN: STEP 2 - FACE (face-api.js) ================= */
+/* ================= FACE MODELS (face-api.js) ================= */
 let modelsLoaded = false;
 async function loadModels(){
   if(modelsLoaded) return;
@@ -914,56 +1010,42 @@ async function loadModels(){
   modelsLoaded = true;
 }
 
-async function getDescriptor(){
+async function getDescriptor(videoId){
   await loadModels();
-  const video = document.getElementById('video');
+  const video = document.getElementById(videoId || 'video');
   const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
     .withFaceLandmarks().withFaceDescriptor();
   if(!detection) throw new Error("মুখ শনাক্ত করা যায়নি, ভালো আলোতে চেষ্টা করুন।");
   return Array.from(detection.descriptor);
 }
 
-async function enrollFace(){
-  const msg = document.getElementById('loginMsg');
+/* ================= SETTINGS: ENROLL/UPDATE OWN FACE ================= */
+function startSettingsCamera(){
+  const video = document.getElementById('settingsVideo');
+  video.style.display = 'block';
+  navigator.mediaDevices.getUserMedia({video:{width:280,height:210}})
+    .then(stream => { video.srcObject = stream; })
+    .catch(() => { document.getElementById('settingsFaceMsg').textContent = "ক্যামেরা এক্সেস দিতে হবে।"; });
+}
+async function enrollMyFace(){
+  const msg = document.getElementById('settingsFaceMsg');
+  msg.style.color = '';
   try{
-    const descriptor = await getDescriptor();
-    await db.ref('admins/' + pendingUid + '/faceDescriptor').set(descriptor);
+    if(!currentUser){ msg.style.color = "var(--fail)"; msg.textContent = "লগইন অবস্থায় থাকতে হবে।"; return; }
+    const descriptor = await getDescriptor('settingsVideo');
+    await db.ref('admins/' + currentUser + '/faceDescriptor').set(descriptor);
     msg.style.color = "var(--ok)";
-    msg.textContent = "ফেস এনরোল সম্পন্ন হয়েছে। এখন 'ভেরিফাই করুন' চাপুন।";
+    msg.textContent = "ফেস এনরোল/আপডেট সফল হয়েছে।";
+    const video = document.getElementById('settingsVideo');
+    if(video.srcObject){ video.srcObject.getTracks().forEach(t=>t.stop()); }
+    video.style.display = 'none';
   }catch(e){ msg.style.color="var(--fail)"; msg.textContent = e.message; }
 }
 
-async function verifyFace(){
-  const msg = document.getElementById('loginMsg');
-  try{
-    const liveDescriptor = await getDescriptor();
-    const snap = await db.ref('admins/' + pendingUid + '/faceDescriptor').once('value');
-    if(!snap.exists()){
-      msg.style.color="var(--fail)";
-      msg.textContent = "কোনো এনরোল করা ফেস পাওয়া যায়নি। আগে 'এনরোল করুন' চাপুন।";
-      return;
-    }
-    const stored = snap.val();
-    const dist = faceapi.euclideanDistance(liveDescriptor, stored);
-    if(dist < 0.5){
-      msg.style.color = "var(--ok)";
-      msg.textContent = "ভেরিফাই সফল, প্রবেশ করানো হচ্ছে...";
-      stopCamera();
-      await enterApp();
-    } else {
-      msg.style.color="var(--fail)";
-      msg.textContent = "ফেস মিলেনি (dist: " + dist.toFixed(2) + "), আবার চেষ্টা করুন।";
-    }
-  }catch(e){ msg.style.color="var(--fail)"; msg.textContent = e.message; }
-}
 
 async function enterApp(){
-  if (pendingUid === "default-admin-uid") {
-    currentRole = "admin"; // টেমপোরারি ডিফল্ট লগইনের জন্য সরাসরি admin role
-  } else {
-    const roleSnap = await db.ref('admins/' + pendingUid + '/role').once('value');
-    currentRole = roleSnap.exists() ? roleSnap.val() : 'agent';
-  }
+  const roleSnap = await db.ref('admins/' + pendingUid + '/role').once('value');
+  currentRole = roleSnap.exists() ? roleSnap.val() : 'agent';
   currentUser = pendingUid;
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
@@ -1004,15 +1086,6 @@ function logout(){
   auth.signOut();
   location.reload();
 }
-
-/* ================= TEMPORARY: LOGIN + FACE VERIFICATION HOLD =================
-   বারবার আপডেটের সময় ঝামেলা এড়াতে লগইন/ফেস ভেরিফিকেশন আপাতত স্কিপ করা হচ্ছে।
-   সরাসরি admin role নিয়ে অ্যাপে ঢুকিয়ে দেওয়া হচ্ছে।
-   ⚠️ এই ব্লকটা রিমুভ করলে আগের লগইন + ফেস ভেরিফিকেশন ফ্লো ফিরে আসবে (কোডে অক্ষত রাখা আছে)।
-   পাবলিক/লাইভ সাইটে আপলোডের আগে এই ব্লকটা মুছে ফেলা জরুরি।
-*/
-pendingUid = "default-admin-uid";
-enterApp();
 
 /* ================= TABS ================= */
 function showTab(name){
@@ -1962,43 +2035,87 @@ async function generateContractPdf(uid){
   const name = getUserName(u);
   const phone = getUserPhone(u);
   const passport = getUserPassport(u);
+  const nid = getUserField(u, 'nid', ['nid','জাতীয় পরিচয়পত্র','এনআইডি']) || '-';
+  const address = getUserField(u, 'address', ['ঠিকানা','address']) || '-';
   const country = u.country || '-';
+  const flag = COUNTRY_FLAGS[u.country] || '';
+  const visaTypeName = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id].name : '-';
+  const stageLabel = j ? (STAGE_LABEL[j.current_stage] || j.current_stage || '-') : '-';
   const fee = j ? (j.agency_fee || 0) : 0;
   const payments = j ? (j.payments || {}) : {};
-  const paid = Object.values(payments).reduce((sum, p) => sum + (p.amount || 0), 0);
+  const paidEntries = Object.values(payments).sort((a,b) => (a.date||0) - (b.date||0));
+  const paid = paidEntries.reduce((sum, p) => sum + (p.amount || 0), 0);
   const due = fee - paid;
+  const pct = fee > 0 ? Math.min(100, Math.max(0, Math.round((paid/fee)*100))) : 0;
   const today = new Date().toLocaleDateString('bn-BD');
+  const contractNo = 'TO-' + String(uid).slice(-6).toUpperCase() + '-' + new Date().getFullYear();
+  const paymentRowsHtml = paidEntries.length ? paidEntries.map((p,i) => `
+      <tr>
+        <td style="padding:5px 8px;border-bottom:1px solid #eee;font-size:12px;">${i+1}</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #eee;font-size:12px;">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #eee;font-size:12px;">৳${p.amount || 0}</td>
+        <td style="padding:5px 8px;border-bottom:1px solid #eee;font-size:12px;">${p.note || '-'}</td>
+      </tr>`).join('') : `<tr><td colspan="4" style="padding:8px;font-size:12px;color:#8a93a3;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
 
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:780px;padding:50px;background:#fff;font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;color:#1a2233;line-height:1.9;';
+  wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:780px;padding:50px;background:#fff;font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;color:#1a2233;line-height:1.85;';
   wrap.innerHTML = `
-    <div style="text-align:center;margin-bottom:26px;">
-      <div style="font-size:24px;font-weight:800;color:#d4922a;">Talent Overseas</div>
-      <div style="font-size:18px;font-weight:700;margin-top:10px;">সেবা চুক্তিনামা</div>
-      <div style="font-size:13px;color:#8a93a3;">তারিখ: ${today}</div>
+    <div style="text-align:center;border-bottom:3px solid #d4922a;padding-bottom:16px;margin-bottom:22px;">
+      <div style="font-size:26px;font-weight:800;color:#d4922a;letter-spacing:0.5px;">Talent Overseas</div>
+      <div style="font-size:12px;color:#8a93a3;margin-top:2px;">Overseas Employment & Visa Processing Services</div>
+      <div style="font-size:19px;font-weight:700;margin-top:14px;">সেবা চুক্তিনামা</div>
+      <div style="font-size:12px;color:#8a93a3;margin-top:6px;">চুক্তি নং: ${contractNo} &nbsp;|&nbsp; তারিখ: ${today}</div>
     </div>
-    <p>এই চুক্তিটি Talent Overseas (এজেন্সি) এবং নিম্নস্বাক্ষরকারী গ্রাহকের মধ্যে সম্পাদিত হলো, যার শর্তাবলী নিম্নরূপ:</p>
-    <table style="width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;">
-      <tr><td style="padding:6px 0;color:#8a93a3;width:180px;">গ্রাহকের নাম</td><td style="padding:6px 0;font-weight:700;">${name}</td></tr>
-      <tr><td style="padding:6px 0;color:#8a93a3;">ফোন নম্বর</td><td style="padding:6px 0;">${phone}</td></tr>
-      <tr><td style="padding:6px 0;color:#8a93a3;">পাসপোর্ট নম্বর</td><td style="padding:6px 0;">${passport}</td></tr>
-      <tr><td style="padding:6px 0;color:#8a93a3;">কর্মস্থল দেশ</td><td style="padding:6px 0;">${country}</td></tr>
-      <tr><td style="padding:6px 0;color:#8a93a3;">মোট এজেন্সি ফি</td><td style="padding:6px 0;font-weight:700;">৳${fee}</td></tr>
-      <tr><td style="padding:6px 0;color:#8a93a3;">পরিশোধিত</td><td style="padding:6px 0;color:#1a9e5c;font-weight:700;">৳${paid}</td></tr>
-      <tr><td style="padding:6px 0;color:#8a93a3;">বাকি</td><td style="padding:6px 0;color:${due > 0 ? '#dc3545' : '#1a9e5c'};font-weight:700;">৳${due}</td></tr>
+
+    <p style="font-size:13.5px;">এই চুক্তিটি নিম্নবর্ণিত শর্তাবলীর ভিত্তিতে <b>Talent Overseas</b> (এখানে "এজেন্সি" বলে উল্লেখিত) এবং নিম্নস্বাক্ষরকারী গ্রাহকের ("গ্রাহক") মধ্যে সম্পাদিত হলো।</p>
+
+    <div style="font-size:14.5px;font-weight:700;margin-top:18px;margin-bottom:6px;color:#d4922a;">গ্রাহকের বিবরণ</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tr><td style="padding:5px 0;color:#8a93a3;width:170px;">নাম</td><td style="padding:5px 0;font-weight:700;">${name}</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">ফোন নম্বর</td><td style="padding:5px 0;">${phone || '-'}</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">পাসপোর্ট নম্বর</td><td style="padding:5px 0;">${passport}</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">জাতীয় পরিচয়পত্র (NID)</td><td style="padding:5px 0;">${nid}</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">ঠিকানা</td><td style="padding:5px 0;">${address}</td></tr>
     </table>
-    <div style="font-size:15px;font-weight:700;margin-top:10px;">শর্তাবলী:</div>
-    <ol style="font-size:13.5px;padding-left:20px;">
-      <li>এজেন্সি গ্রাহকের পাসপোর্ট, ভিসা, মেডিকেল ও ফ্লাইট সংক্রান্ত সমস্ত প্রক্রিয়া সম্পন্ন করতে সহায়তা করবে।</li>
-      <li>উপরে উল্লেখিত মোট ফি গ্রাহককে সম্মত কিস্তি অনুযায়ী পরিশোধ করতে হবে।</li>
-      <li>ভিসা প্রত্যাখ্যাত হলে অফেরতযোগ্য খরচ বাদে বাকি অর্থ ফেরতযোগ্য থাকবে, প্রযোজ্য নীতি অনুযায়ী।</li>
-      <li>গ্রাহকের দেওয়া সকল তথ্য ও কাগজপত্র সঠিক ও প্রকৃত বলে গণ্য হবে।</li>
-      <li>উভয় পক্ষ এই চুক্তির শর্তাবলীতে সম্মত থেকে স্বাক্ষর করছেন।</li>
-    </ol>
-    <div style="display:flex;justify-content:space-between;margin-top:60px;font-size:13px;">
-      <div style="text-align:center;width:220px;"><div style="border-top:1px solid #444;padding-top:6px;">গ্রাহকের স্বাক্ষর</div></div>
-      <div style="text-align:center;width:220px;"><div style="border-top:1px solid #444;padding-top:6px;">এজেন্সির পক্ষে স্বাক্ষর</div></div>
+
+    <div style="font-size:14.5px;font-weight:700;margin-top:20px;margin-bottom:6px;color:#d4922a;">সেবার বিবরণ</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tr><td style="padding:5px 0;color:#8a93a3;width:170px;">কর্মস্থল দেশ</td><td style="padding:5px 0;">${flag} ${country}</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">ভিসার ধরন</td><td style="padding:5px 0;">${visaTypeName}</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">বর্তমান ধাপ</td><td style="padding:5px 0;">${stageLabel}</td></tr>
+    </table>
+
+    <div style="font-size:14.5px;font-weight:700;margin-top:20px;margin-bottom:6px;color:#d4922a;">আর্থিক বিবরণ</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px;">
+      <tr><td style="padding:5px 0;color:#8a93a3;width:170px;">মোট এজেন্সি ফি</td><td style="padding:5px 0;font-weight:700;">৳${fee}</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">পরিশোধিত</td><td style="padding:5px 0;color:#1a9e5c;font-weight:700;">৳${paid} (${pct}%)</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">বাকি</td><td style="padding:5px 0;color:${due > 0 ? '#dc3545' : '#1a9e5c'};font-weight:700;">৳${due}</td></tr>
+    </table>
+    <div style="height:8px;background:#f0ebe0;border-radius:4px;overflow:hidden;margin-bottom:14px;">
+      <div style="height:100%;width:${pct}%;background:#1a9e5c;"></div>
     </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+      <tr style="background:#f7f2ea;"><td style="padding:6px 8px;font-weight:700;">ক্রম</td><td style="padding:6px 8px;font-weight:700;">তারিখ</td><td style="padding:6px 8px;font-weight:700;">পরিমাণ</td><td style="padding:6px 8px;font-weight:700;">নোট</td></tr>
+      ${paymentRowsHtml}
+    </table>
+
+    <div style="font-size:14.5px;font-weight:700;margin-top:22px;margin-bottom:8px;color:#d4922a;">শর্তাবলী</div>
+    <ol style="font-size:12.5px;padding-left:20px;margin:0;">
+      <li style="margin-bottom:6px;">এজেন্সি গ্রাহকের পাসপোর্ট প্রস্তুতকরণ, ভিসা প্রসেসিং, মেডিকেল পরীক্ষা এবং ফ্লাইট সংক্রান্ত সমস্ত প্রয়োজনীয় প্রক্রিয়া সম্পন্ন করতে সার্বিক সহায়তা প্রদান করবে।</li>
+      <li style="margin-bottom:6px;">উপরে উল্লেখিত মোট এজেন্সি ফি গ্রাহককে সম্মত কিস্তি অনুযায়ী নির্ধারিত সময়ের মধ্যে পরিশোধ করতে হবে; বিলম্বে প্রক্রিয়া ব্যাহত হলে এজেন্সি দায়ী থাকবে না।</li>
+      <li style="margin-bottom:6px;">সরকারি/দূতাবাসের সিদ্ধান্তে ভিসা প্রত্যাখ্যাত হলে, ইতিমধ্যে ব্যয়িত অফেরতযোগ্য খরচ (মেডিকেল, দূতাবাস ফি, প্রসেসিং ব্যয়) বাদ দিয়ে অবশিষ্ট অর্থ প্রযোজ্য নীতি অনুযায়ী ফেরতযোগ্য থাকবে।</li>
+      <li style="margin-bottom:6px;">গ্রাহকের প্রদত্ত সকল ব্যক্তিগত তথ্য, কাগজপত্র ও নথি সঠিক ও প্রকৃত বলে গণ্য হবে; ভুল বা মিথ্যা তথ্যের কারণে সৃষ্ট যেকোনো জটিলতার দায় সম্পূর্ণভাবে গ্রাহকের।</li>
+      <li style="margin-bottom:6px;">প্রক্রিয়াকরণের সময়কাল দূতাবাস, সরকারি সংস্থা ও নিয়োগকর্তার সিদ্ধান্তের উপর নির্ভরশীল বিধায় এজেন্সি নির্দিষ্ট সময়সীমার নিশ্চয়তা দিতে বাধ্য নয়।</li>
+      <li style="margin-bottom:6px;">গ্রাহক নিজ ইচ্ছায় প্রক্রিয়া বাতিল করতে চাইলে ইতিমধ্যে সম্পন্ন কাজ ও ব্যয়িত খরচ সমন্বয় সাপেক্ষে অবশিষ্ট অর্থ ফেরত দেওয়া হবে।</li>
+      <li style="margin-bottom:6px;">উভয় পক্ষের মধ্যে কোনো বিরোধ দেখা দিলে তা পারস্পরিক আলোচনার মাধ্যমে সমাধানের চেষ্টা করা হবে।</li>
+      <li style="margin-bottom:0;">উভয় পক্ষ এই চুক্তির সকল শর্তাবলী সম্পূর্ণরূপে পড়ে, বুঝে ও সম্মত হয়ে স্বাক্ষর করছেন।</li>
+    </ol>
+
+    <div style="display:flex;justify-content:space-between;margin-top:70px;font-size:13px;">
+      <div style="text-align:center;width:220px;"><div style="border-top:1px solid #444;padding-top:6px;">গ্রাহকের স্বাক্ষর ও তারিখ</div></div>
+      <div style="text-align:center;width:220px;"><div style="border-top:1px solid #444;padding-top:6px;">এজেন্সির পক্ষে স্বাক্ষর ও তারিখ</div></div>
+    </div>
+    <div style="text-align:center;font-size:10.5px;color:#b8bfc9;margin-top:36px;">এটি একটি সিস্টেম-জেনারেটেড ডকুমেন্ট — Talent Overseas</div>
   `;
   document.body.appendChild(wrap);
   try{
@@ -2008,9 +2125,20 @@ async function generateContractPdf(uid){
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgWidth = pageWidth - 60;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 30;
+    const imgWidth = pageWidth - margin * 2;
     const imgHeight = canvas.height * imgWidth / canvas.width;
-    pdf.addImage(imgData, 'PNG', 30, 30, imgWidth, imgHeight);
+    let heightLeft = imgHeight;
+    let position = margin;
+    pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+    heightLeft -= (pageHeight - margin * 2);
+    while(heightLeft > 0){
+      position = heightLeft - imgHeight + margin;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - margin * 2);
+    }
     pdf.save(`${name}-চুক্তিনামা.pdf`);
   }catch(err){
     if(wrap.parentNode) document.body.removeChild(wrap);
@@ -3045,14 +3173,23 @@ async function changeAdminPassword(){
     return;
   }
   try{
-    const cred = await auth.signInWithEmailAndPassword(email, currentPass);
-    const uid = cred.user.uid;
-
-    if(newEmail.toLowerCase() !== email.toLowerCase()){
-      await cred.user.updateEmail(newEmail);
-      await db.ref('admins/' + uid + '/email').set(newEmail);
+    const snap = await db.ref('admins').orderByChild('email').equalTo(email.toLowerCase()).once('value');
+    if(!snap.exists()){
+      msg.textContent = "এই ইমেইলে কোনো অ্যাকাউন্ট পাওয়া যায়নি।";
+      return;
     }
-    await cred.user.updatePassword(newPass);
+    const data = snap.val();
+    const uid = Object.keys(data)[0];
+    const record = data[uid];
+
+    if(record.password !== currentPass){
+      msg.textContent = "বর্তমান পাসওয়ার্ড সঠিক নয়।";
+      return;
+    }
+
+    const updates = { password: newPass };
+    if(newEmail.toLowerCase() !== email.toLowerCase()) updates.email = newEmail.toLowerCase();
+    await db.ref('admins/' + uid).update(updates);
 
     msg.style.color = "var(--ok)";
     msg.textContent = "ইমেইল ও পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে। পরবর্তী লগইনে নতুন ইমেইল ও পাসওয়ার্ড ব্যবহার করুন।";
@@ -3607,17 +3744,29 @@ function renderDuDocumentsRows(){
   }
   wrap.innerHTML = duDocuments.map((d, i) => {
     const pages = d.files || [];
-    const fileLabel = pages.length
-      ? `<i class="fas fa-paperclip"></i> ${pages.length === 1 ? (pages[0].fileName || 'ফাইল সংযুক্ত হয়েছে') : pages.length + ' টি ফাইল সংযুক্ত হয়েছে'}`
-      : '<span class="hint">কোনো ফাইল যোগ করা হয়নি</span>';
     return `
     <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:8px;padding:8px;border:1px solid var(--border);border-radius:8px;">
       <div style="flex:1;display:grid;gap:6px;">
         <input type="file" id="duDocFile${i}" accept="image/*,application/pdf,.pdf,.doc,.docx,.jpg,.jpeg,.png,*/*" multiple style="display:none;" onchange="handleDuDocumentFileSelect(event,${i})">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;font-size:12px;color:#5b6b7a;">
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${fileLabel}</span>
-          <button type="button" class="btn small gold" style="width:auto;padding:4px 10px;font-size:11px;flex-shrink:0;" onclick="document.getElementById('duDocFile${i}').click()"><i class="fas fa-plus"></i> ${pages.length ? 'পরিবর্তন করুন' : 'ফাইল বাছাই করুন'}</button>
-        </div>
+        ${pages.length ? `
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;">
+            ${pages.map((p, pi) => `
+              <div style="position:relative;">
+                ${!p.fileBase64
+                  ? `<div style="width:100%;height:90px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:#f7f2ea;"><i class="fas fa-spinner fa-spin" style="font-size:18px;color:#9aa3ab;"></i></div>`
+                  : p.fileBase64.startsWith('data:image')
+                  ? `<img src="${p.fileBase64}" onclick='openHalfPreview(${JSON.stringify(pages.filter(x=>x.fileBase64 && x.fileBase64.startsWith("data:image")).map(x=>({src:x.fileBase64, filename:(x.fileName||"document").replace(/['"]/g,"")})))}, ${pages.slice(0,pi).filter(x=>x.fileBase64 && x.fileBase64.startsWith("data:image")).length}, null, this)' style="width:100%;height:90px;object-fit:cover;border-radius:6px;border:1px solid var(--border);background:#f7f2ea;cursor:zoom-in;">`
+                  : p.fileBase64.startsWith('data:video')
+                  ? `<div style="width:100%;height:90px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:#20242c;"><i class="fas fa-circle-play" style="font-size:24px;color:var(--gold);"></i></div>`
+                  : `<div style="width:100%;height:90px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--border);background:#f7f2ea;"><i class="fas fa-file-lines" style="font-size:22px;color:var(--navy2);"></i></div>`}
+                <span style="position:absolute;bottom:2px;left:2px;right:2px;background:rgba(20,24,32,.7);color:#fff;font-size:9px;padding:1px 4px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">পৃষ্ঠা ${pi+1}</span>
+                ${p.fileBase64 && p.fileBase64.startsWith('data:image') ? `<span style="position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:5px;background:rgba(20,24,32,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;pointer-events:none;"><i class="fas fa-expand"></i></span>` : ''}
+                <button type="button" onclick="removeDuDocumentFile(${i},${pi})" style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--fail);color:#fff;border:2px solid #fff;font-size:10px;line-height:1;cursor:pointer;">✕</button>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        <button type="button" class="btn small gold" style="width:auto;padding:4px 10px;font-size:11px;" onclick="document.getElementById('duDocFile${i}').click()"><i class="fas fa-plus"></i> ${pages.length ? 'আরও পৃষ্ঠা যোগ করুন' : 'ডকুমেন্ট যোগ করুন'}</button>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;">
           <input type="text" style="width:100%;box-sizing:border-box;" placeholder="ডকুমেন্টের নাম (যেমন: পাসপোর্ট, ভিসা)" value="${d.name || ''}" oninput="updateDuDocumentField(${i},'name',this.value)">
           <button type="button" class="btn small danger" style="width:auto;padding:6px 10px;flex-shrink:0;" onclick="removeDuDocumentRow(${i})"><i class="fas fa-xmark"></i></button>
@@ -3627,6 +3776,12 @@ function renderDuDocumentsRows(){
     </div>
   `;
   }).join('');
+}
+
+function removeDuDocumentFile(docIndex, fileIndex){
+  if(!duDocuments[docIndex] || !duDocuments[docIndex].files) return;
+  duDocuments[docIndex].files.splice(fileIndex, 1);
+  renderDuDocumentsRows();
 }
 
 function addDuDocumentRow(){
