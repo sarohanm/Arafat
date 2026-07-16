@@ -229,7 +229,8 @@
   .accSectionTitle{font-size:12px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:6px;margin:4px 0 8px;}
   .accSectionTitle i{color:var(--gold);width:14px;text-align:center;}
   .accBody .accRow.noBorder{border-bottom:none;}
-  .noteBox{width:100%;min-height:64px;resize:vertical;font-family:inherit;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12.5px;}
+  .noteBox{width:100%;min-height:64px;resize:vertical;font-family:inherit;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12.5px;background:#f7f7f8;}
+  .noteBox.editing{background:#fff;border-color:var(--gold);box-shadow:0 0 0 2px rgba(212,175,55,.15);}
   .card-hd{font-size:14px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px;margin-bottom:12px;}
   .chev-ico{font-size:11px;color:#8896ab;display:inline-block;transition:transform .25s cubic-bezier(.22,.68,0,1.2);}
   .chev-ico.open{transform:rotate(180deg);}
@@ -471,7 +472,7 @@
   </div>
 
   <!-- HALF-SCREEN DOCUMENT PREVIEW (উপরে ডকুমেন্ট, নিচে ফর্ম/ফাংশন দেখা যাবে; জুম + সোয়াইপ সাপোর্ট) -->
-  <div id="halfPreviewOverlay" onclick="if(event.target===this) closeHalfPreview()" style="display:none;position:fixed;top:0;left:0;right:0;height:34vh;background:#0a0c10;z-index:9999;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(0,0,0,.4);touch-action:none;">
+  <div id="halfPreviewOverlay" onclick="if(event.target===this) closeHalfPreview()" style="display:none;position:relative;width:100%;height:34vh;background:#0a0c10;border-radius:12px;margin:0 0 10px;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(0,0,0,.3);touch-action:none;overflow:hidden;">
     <button onclick="closeHalfPreview()" style="position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i class="fas fa-xmark"></i></button>
     <a id="halfPreviewDownload" href="" download="document" style="position:absolute;top:8px;left:8px;z-index:2;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-download"></i></a>
     <button id="halfPreviewPrev" onclick="hpPrev()" style="display:none;position:absolute;left:6px;top:50%;transform:translateY(-50%);z-index:2;width:28px;height:28px;border:none;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:12px;align-items:center;justify-content:center;cursor:pointer;"><i class="fas fa-chevron-left"></i></button>
@@ -1135,8 +1136,8 @@ function renderJourneys(){
             ` : ''}
             <div class="accSectionTitle" style="margin-top:0;"><i class="fas fa-note-sticky"></i>পরবর্তী ধাপ / নোট</div>
             <div class="accRow">
-              <textarea class="noteBox" id="note-${uid}" placeholder="পরবর্তী ধাপে কী করতে হবে লিখে রাখুন..." ${currentRole === 'admin' ? '' : 'readonly'}>${u.notes || ''}</textarea>
-              ${currentRole === 'admin' ? `<button type="button" class="btn small" style="margin-top:6px;" onclick="saveUserNote('${uid}')" title="নোট সেভ করুন"><i class="fas fa-floppy-disk"></i></button>` : ''}
+              <textarea class="noteBox" id="note-${uid}" placeholder="পরবর্তী ধাপে কী করতে হবে লিখে রাখুন..." readonly ${currentRole === 'admin' ? `onclick="handleNoteBoxClick('${uid}')"` : ''}>${u.notes || ''}</textarea>
+              ${currentRole === 'admin' ? `<div class="hint" style="margin-top:4px;font-size:12px;">এডিট করতে বক্সে ৪ বার ট্যাপ করুন, সেভ করতে আবার ৪ বার ট্যাপ করুন</div>` : ''}
             </div>
             <div class="accSectionTitle" ${currentRole === 'admin' ? `style="cursor:pointer;" onclick="event.stopPropagation();openDocUploadForUser('${uid}')"` : ''}>
               <i class="fas fa-folder-open"></i>ডকুমেন্ট স্ট্যাটাস
@@ -1160,7 +1161,7 @@ function renderJourneys(){
       const openIds = container ? Array.from(container.querySelectorAll('.accBody')).filter(el => el.style.display === 'block').map(el => el.id) : [];
       const active = document.activeElement;
       let focusedNote = null;
-      if(active && active.classList && active.classList.contains('noteBox') && active.id && active.id.startsWith('note-')){
+      if(active && active.classList && active.classList.contains('noteBox') && active.id && active.id.startsWith('note-') && !active.readOnly){
         focusedNote = { id: active.id, selStart: active.selectionStart, selEnd: active.selectionEnd, value: active.value };
       }
       container.innerHTML = rows || `<p class="hint">${emptyMsg}</p>`;
@@ -1174,6 +1175,8 @@ function renderJourneys(){
         const ta = document.getElementById(focusedNote.id);
         if(ta){
           if(ta.value !== focusedNote.value) ta.value = focusedNote.value;
+          ta.readOnly = false;
+          ta.classList.add('editing');
           ta.focus();
           try{ ta.setSelectionRange(focusedNote.selStart, focusedNote.selEnd); }catch(e){}
         }
@@ -1585,108 +1588,26 @@ let hpLastTap = 0;
 let hpDragStart = null;
 let hpSwipeStartX = null;
 
-let hpSavedScrollY = 0;
-let hpScrollContainer = null;
-let hpSpacerEl = null;
-let hpHiddenSiblings = [];
 let hpTriggerEl = null;
+let hpHiddenSiblings = [];
 
-// প্রিভিউটা যেহেতু ফর্ম মোডালের ভেতরেও খোলা হতে পারে, তাই আসল স্ক্রলযোগ্য এলিমেন্ট বের করা হচ্ছে —
-// মোডাল খোলা থাকলে সেই মোডালটাই স্ক্রল হবে, নাহলে পুরো পেজ
-function hpGetScrollContainer(){
-  return document.querySelector('.modalOverlay.active') || document.scrollingElement || document.documentElement;
-}
-// কালো প্রিভিউ স্ক্রিন খোলা অবস্থায়ই (যেমন ওয়েটিং লিস্টের "প্রসেস করুন" বাটনে ক্লিক করলে) মাঝেমধ্যে
-// নতুন একটা মোডাল (যেমন নতুন ইউজার যোগ করার ফর্ম) খুলে যায় — সেক্ষেত্রে আগের কনটেন্টে যোগ করা
-// জায়গাটা (padding) নতুন মোডালে প্রযোজ্য হয় না, ফলে নতুন মোডালের ফিল্ডগুলো কালো স্ক্রিনের নিচে
-// আটকে থাকে এবং স্ক্রল করেও বের হয় না। তাই কোনো মোডাল সক্রিয় (active) হলেই, প্রিভিউ তখনো খোলা
-// থাকলে জায়গাটা নতুন মোডালের জন্য পুনরায় হিসাব করা হচ্ছে।
-// কালো স্ক্রিনের নিচে কতটা ঢাকা পড়েছে সেটা বের করার জন্য একটা "অ্যাংকর" এলিমেন্ট বের করা হচ্ছে —
-// মোডালের ক্ষেত্রে মোডালবক্সটাই অ্যাংকর, আর তালিকার কার্ড থেকে খোলা হলে সেই কার্ডটাই অ্যাংকর
-// কালো স্ক্রিনের নিচে কতটা ঢাকা পড়েছে সেটা বের করার জন্য যে এলিমেন্টে ক্লিক করে প্রিভিউ খোলা
-// হয়েছে (triggerEl) তার বর্তমান পজিশনই সবচেয়ে নির্ভুল অ্যাংকর — মোডালের ভেতরের কোনো ডকুমেন্টে
-// ক্লিক করলেও এটাই ব্যবহার হবে (মোডালবক্স ব্যবহার করলে ভুল হয়: মোডাল অনেকটা স্ক্রল করা থাকলে
-// পুরো বক্সের টপ পজিশন অনেক উপরে/নেগেটিভ হয়ে যায়, ফলে হিসাব ভুল হয়ে অনেক বেশি জায়গা যোগ হয়ে যায়)
-function hpFindAnchorEl(triggerEl){
+// প্রিভিউটা আগে স্ক্রিনের একদম উপরে ফিক্সড থাকতো, যার ফলে ওপরের দিকে স্ক্রল করলে সেদিকের
+// ফিল্ডগুলো এই কালো স্ক্রিনের নিচেই ঢাকা পড়ে যেত, কোনোভাবেই দেখা/পূরণ করা যেত না। এখন প্রিভিউটা
+// ফিক্সড না রেখে, যে সেকশন/মোডালের ভেতর থেকে ছবিটা খোলা হয়েছে, ঠিক সেই সেকশনের একদম উপরে
+// (প্রথম চাইল্ড হিসেবে) স্বাভাবিক পেজ-ফ্লোতেই বসিয়ে দেওয়া হচ্ছে। ফলে ছবিটা জায়গা মতোই (উপরে)
+// থেকে যায়, আর নিচের দিকে স্ক্রল করলেই ওপরে-নিচের সব ফিল্ড একে একে স্বাভাবিকভাবে দেখা ও পূরণ করা যায়
+function hpFindContainer(triggerEl){
   if(triggerEl && triggerEl.closest){
-    return triggerEl.closest('.accItem') || triggerEl;
+    const modalBox = triggerEl.closest('.modalBox');
+    if(modalBox) return modalBox;
+    const accBody = triggerEl.closest('.accBody');
+    if(accBody) return accBody;
+    const panel = triggerEl.closest('.panel');
+    if(panel) return panel;
   }
-  return null;
+  return document.querySelector('.main') || document.body;
 }
-// আগে সবসময় কালো স্ক্রিনের পুরো উচ্চতা সমান জায়গা যোগ করা হতো, তাতে কার্ড/ফর্ম আগে থেকেই
-// দৃশ্যমান থাকলেও (যেমন স্ক্রল করে নিচের দিকে থাকা একটা তালিকার কার্ড) অযথা একটা বড় ফাঁকা
-// জায়গা তৈরি হতো। এখন অ্যাংকর এলিমেন্টটা বর্তমানে কালো স্ক্রিনের নিচে কতটুকু ঢাকা পড়েছে সেটা
-// মেপে, ঠিক ততটুকুই (দরকার হলে) জায়গা যোগ করা হচ্ছে — একদম দরকার না থাকলে কিছুই যোগ হবে না।
-// কালো স্ক্রিনের ঠিক নিচেই যেন কার্ডটা একদম গায়ে লেগে না থাকে, তার জন্য সামান্য একটা
-// ফাঁকা (সাদা/ক্রিম রঙের) জায়গা (GAP) ইচ্ছাকৃতভাবে যোগ করা হচ্ছে — এতে কালো স্ক্রিন আর
-// কার্ডের মাঝে একটা ছোট্ট সাদা বর্ডার/স্পেস দেখা যাবে (প্রথম রেফারেন্স স্ক্রিনশট অনুযায়ী)
-const HP_TOP_GAP = 32;
-function hpComputeNeededPush(anchor, overlayHeightPx){
-  if(!anchor || !anchor.getBoundingClientRect) return overlayHeightPx + HP_TOP_GAP;
-  const top = anchor.getBoundingClientRect().top;
-  const needed = (overlayHeightPx + HP_TOP_GAP) - top;
-  return needed > 0 ? Math.ceil(needed) : 0;
-}
-// প্রিভিউ খোলা অবস্থায় নতুন একটা মোডাল উপরে খুলে গেলে (রিবাইন্ড কেস), সেই নতুন মোডালের সাথে
-// প্রাসঙ্গিক কোনো নির্দিষ্ট ক্লিক-করা এলিমেন্ট থাকে না — তাই তখন মোডালবক্সের টপ পজিশনটাই ব্যবহার
-// করা হচ্ছে (নতুন মোডাল সবসময় স্ক্রল-টপ ০ থেকেই শুরু হয়, তাই এটা নির্ভুল থাকে)
-function hpRebindToActiveContainer(){
-  const overlay = document.getElementById('halfPreviewOverlay');
-  if(!overlay || overlay.style.display !== 'flex') return;
-  const newContainer = hpGetScrollContainer();
-  if(newContainer === hpScrollContainer) return;
-  if(hpScrollContainer) hpRemoveSpace(hpSpacerEl);
-  hpScrollContainer = newContainer;
-  hpSavedScrollY = hpScrollTop(hpScrollContainer);
-  const overlayHeightPx = overlay.getBoundingClientRect().height;
-  const anchor = (newContainer.classList && newContainer.classList.contains('modalOverlay'))
-    ? (newContainer.querySelector('.modalBox') || newContainer)
-    : null;
-  const neededPush = hpComputeNeededPush(anchor, overlayHeightPx);
-  hpSpacerEl = hpAddSpace(hpScrollContainer, neededPush);
-}
-(function observeModalOpensForHalfPreview(){
-  const obs = new MutationObserver(muts => {
-    for(const mut of muts){
-      const el = mut.target;
-      if(el.classList && el.classList.contains('modalOverlay') && el.classList.contains('active')){
-        setTimeout(hpRebindToActiveContainer, 0);
-        return;
-      }
-    }
-  });
-  document.querySelectorAll('.modalOverlay').forEach(el => {
-    obs.observe(el, { attributes: true, attributeFilter: ['class'] });
-  });
-})();
-function hpScrollTop(el){
-  return el === document.scrollingElement || el === document.documentElement ? window.scrollY : el.scrollTop;
-}
-function hpSetScrollTop(el, val, delta){
-  if(el === document.scrollingElement || el === document.documentElement){
-    if(delta !== undefined) window.scrollBy({ top: delta, left: 0, behavior: 'instant' });
-    else window.scrollTo({ top: val, left: 0, behavior: 'instant' });
-  } else {
-    el.scrollTop = (delta !== undefined) ? (el.scrollTop + delta) : val;
-  }
-}
-// শুধু স্ক্রল করালেই যথেষ্ট না — কনটেন্ট এমনিতেই যথেষ্ট লম্বা না হলে স্ক্রল করার মতো জায়গাই
-// থাকে না। তাই কালো স্ক্রিনের সমান জায়গা (padding) যোগ করে নিশ্চিত করা হচ্ছে যে স্ক্রল করলে
-// আসলেই নিচের কনটেন্ট কালো স্ক্রিনের নিচ থেকে বেরিয়ে দেখা যাবে
-function hpAddSpace(container, px){
-  const target = (container === document.scrollingElement || container === document.documentElement)
-    ? (document.querySelector('.main') || document.body)
-    : container;
-  target.dataset.hpOrigPaddingTop = target.style.paddingTop || '';
-  const current = parseFloat(getComputedStyle(target).paddingTop) || 0;
-  target.style.paddingTop = (current + px) + 'px';
-  return target;
-}
-function hpRemoveSpace(el){
-  if(!el) return;
-  el.style.paddingTop = el.dataset.hpOrigPaddingTop || '';
-  delete el.dataset.hpOrigPaddingTop;
-}
+
 // এটা একটা তালিকার (যেমন ওয়েটিং তালিকা) ভেতরের কার্ড থেকে খোলা হলে, প্রিভিউ চলাকালীন
 // শুধু এই কার্ডটাই দেখাবে, বাকি এজেন্ট/আইটেমগুলো সাময়িকভাবে লুকিয়ে রাখা হবে
 function hpIsolateCard(triggerEl){
@@ -1724,30 +1645,20 @@ function openHalfPreview(images, startIndex, filename, triggerEl){
   }
   if(!hpImages.length) return;
   const overlay = document.getElementById('halfPreviewOverlay');
+  hpTriggerEl = triggerEl || null;
+  const container = hpFindContainer(hpTriggerEl);
+  container.insertBefore(overlay, container.firstChild);
   overlay.style.display = 'flex';
   renderHalfPreviewImage();
-  hpIsolateCard(triggerEl);
-  // কালো স্ক্রিনটা ফিক্সড থেকে উপরের ৩৪vh জায়গা ঢেকে দেয়, তাই নিচের কনটেন্ট (ফর্ম/মোডাল হলে
-  // সেটাসহ) যেন তার নিচে ঢাকা না পড়ে এবং স্ক্রল করলে আসলেই বেরিয়ে দেখা যায়, সেজন্য ঠিক ততটুকু
-  // জায়গা যোগ করে পেজ/মোডালটা ততটুকু নামিয়ে দেওয়া হচ্ছে
-  hpScrollContainer = hpGetScrollContainer();
-  hpSavedScrollY = hpScrollTop(hpScrollContainer);
-  hpTriggerEl = triggerEl || null;
-  const overlayHeightPx = overlay.getBoundingClientRect().height;
-  const anchor = hpFindAnchorEl(hpTriggerEl);
-  const neededPush = hpComputeNeededPush(anchor, overlayHeightPx);
-  hpSpacerEl = hpAddSpace(hpScrollContainer, neededPush);
-  // এখানে ইচ্ছাকৃতভাবে scrollTop পরিবর্তন করা হচ্ছে না — উপরে padding যোগ করলেই কনটেন্ট
-  // এমনিতেই নিচে নেমে যাবে এবং কালো স্ক্রিনের নিচ থেকে বেরিয়ে আসবে। আগে এখানে সাথে সাথে
-  // ততটুকুই scroll down করা হতো, যা padding-এর প্রভাব পুরোপুরি বাতিল করে দিত (ফিল্ডগুলো
-  // কালো স্ক্রিনের নিচেই আটকে থাকতো, স্ক্রল করলেও বের হতো না) — সেই বাগটাই এখানে ঠিক করা হলো।
+  hpIsolateCard(hpTriggerEl);
 }
 
 // পোর্ট্রেট (লম্বা) ছবি হলে ৩৪vh এর কালো বক্সে অনেকটাই ফাঁকা কালো জায়গা থেকে যায়
 // (ছবিটা সরু হয়ে ছোট হয়ে যায়), তাই ছবির অ্যাসপেক্ট রেশিও অনুযায়ী কালো বক্সের উচ্চতা
 // ডাইনামিকভাবে ঠিক করা হচ্ছে — ছবিটা যতটা সম্ভব চওড়ায় (৯২%) ভরে দেখানোর জন্য যতটুকু
-// উচ্চতা দরকার, ততটুকুই দেওয়া হচ্ছে (তবে ৩০vh-৬২vh এর মধ্যে সীমাবদ্ধ রেখে, যাতে ফর্মের
-// জায়গা একদমই না হারিয়ে যায়)
+// উচ্চতা দরকার, ততটুকুই দেওয়া হচ্ছে (তবে ৩০vh-৩৮vh এর মধ্যে সীমাবদ্ধ রেখে, যাতে ফর্মের
+// জায়গা একদমই না হারিয়ে যায়) — যেহেতু প্রিভিউটা এখন স্বাভাবিক পেজ-ফ্লোতেই বসানো, উচ্চতা
+// পরিবর্তন হলে ব্রাউজার নিজে থেকেই নিচের কনটেন্ট সরিয়ে দেয়, আলাদা করে কিছু করার দরকার নেই
 function hpSetOverlayHeightForImage(img){
   const overlay = document.getElementById('halfPreviewOverlay');
   if(!overlay || !img.naturalWidth || !img.naturalHeight) return;
@@ -1758,22 +1669,11 @@ function hpSetOverlayHeightForImage(img){
   const finalPx = Math.max(minPx, Math.min(maxPx, idealPx));
   overlay.style.height = finalPx + 'px';
 }
-// ছবির সাইজ অনুযায়ী কালো বক্সের উচ্চতা পরিবর্তনের পর, নিচের ফর্ম/কার্ডকে ঠিক ততটুকুই
-// জায়গা করে দিতে পুশ-স্পেসারটাও নতুন করে হিসেব করে বসানো হচ্ছে
-function hpReflowPush(){
-  if(!hpScrollContainer) return;
-  const overlay = document.getElementById('halfPreviewOverlay');
-  if(hpSpacerEl) hpRemoveSpace(hpSpacerEl);
-  const overlayHeightPx = overlay.getBoundingClientRect().height;
-  const anchor = hpFindAnchorEl(hpTriggerEl);
-  const neededPush = hpComputeNeededPush(anchor, overlayHeightPx);
-  hpSpacerEl = hpAddSpace(hpScrollContainer, neededPush);
-}
 function renderHalfPreviewImage(){
   const item = hpImages[hpIndex];
   if(!item) return;
   const img = document.getElementById('halfPreviewImg');
-  img.onload = function(){ hpSetOverlayHeightForImage(img); hpReflowPush(); };
+  img.onload = function(){ hpSetOverlayHeightForImage(img); };
   img.src = item.src;
   const dl = document.getElementById('halfPreviewDownload');
   dl.href = item.src;
@@ -1812,12 +1712,6 @@ function closeHalfPreview(){
   hpImages = []; hpIndex = 0; hpPointers.clear();
   hpTriggerEl = null;
   hpRestoreSiblings();
-  if(hpScrollContainer){
-    hpRemoveSpace(hpSpacerEl);
-    hpSpacerEl = null;
-    hpSetScrollTop(hpScrollContainer, hpSavedScrollY);
-    hpScrollContainer = null;
-  }
 }
 
 function hpDist(pts){
@@ -1895,6 +1789,32 @@ function saveUserNote(uid){
   db.ref('users/' + uid + '/notes').set(el.value.trim())
     .then(() => alert('নোট সেভ হয়েছে।'))
     .catch(err => { alert('নোট সেভ করতে ব্যর্থ: ' + err.message); console.error('saveUserNote error:', err); });
+}
+
+// নোট বক্সে ৪ বার ট্যাপ করলে এডিট মোড চালু হয়, আবার ৪ বার ট্যাপ করলে সেভ হয়ে এডিট মোড বন্ধ হয়ে যায়
+const noteClickState = {};
+function handleNoteBoxClick(uid){
+  const state = noteClickState[uid] || (noteClickState[uid] = { count: 0, timer: null });
+  state.count++;
+  if(state.timer) clearTimeout(state.timer);
+  state.timer = setTimeout(() => { state.count = 0; }, 1500);
+  if(state.count >= 4){
+    state.count = 0;
+    clearTimeout(state.timer);
+    const ta = document.getElementById('note-' + uid);
+    if(!ta) return;
+    if(ta.readOnly){
+      ta.readOnly = false;
+      ta.classList.add('editing');
+      ta.focus();
+      const len = ta.value.length;
+      ta.setSelectionRange(len, len);
+    } else {
+      ta.readOnly = true;
+      ta.classList.remove('editing');
+      saveUserNote(uid);
+    }
+  }
 }
 
 async function generateContractPdf(uid){
