@@ -277,7 +277,7 @@
 <div id="loginScreen">
   <div class="loginBox">
     <h1><i class="fas fa-building-shield"></i>Talent Overseas Pvt. Ltd.</h1>
-    <p style="text-align:center;font-size:11px;color:#a8a29a;margin:-2px 0 16px;">Admin / Agent Panel</p>
+    <p style="text-align:center;font-size:11px;color:#a8a29a;margin:-2px 0 16px;">Admin Panel</p>
 
     <div id="faceStep">
       <div class="faceScanWrap">
@@ -993,6 +993,10 @@ async function handlePasswordLogin(){
       msg.textContent = "লগইন ব্যর্থ: এই অ্যাকাউন্ট নিষ্ক্রিয় করা আছে।";
       return;
     }
+    if(record.role !== 'admin'){
+      msg.textContent = "এটি এডমিন অ্যাকাউন্ট নয়। এজেন্ট প্যানেল থেকে লগইন করুন।";
+      return;
+    }
     if(record.password !== pass){
       msg.textContent = "লগইন ব্যর্থ: পাসওয়ার্ড সঠিক নয়।";
       return;
@@ -1100,7 +1104,7 @@ async function runFaceScan(){
       const all = snap.val() || {};
       let bestUid = null, bestDist = Infinity;
       Object.entries(all).forEach(([uid, rec]) => {
-        if(!rec || rec.active === false || !rec.faceDescriptor) return;
+        if(!rec || rec.role !== 'admin' || rec.active === false || !rec.faceDescriptor) return;
         const dist = faceapi.euclideanDistance(liveDescriptor, rec.faceDescriptor);
         if(dist < bestDist){ bestDist = dist; bestUid = uid; }
       });
