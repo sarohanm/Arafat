@@ -230,6 +230,7 @@
   .accSectionTitle i{color:var(--gold);width:14px;text-align:center;}
   .accBody .accRow.noBorder{border-bottom:none;}
   .noteBox{width:100%;min-height:64px;resize:vertical;font-family:inherit;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12.5px;}
+  .noteBoxDisplay{width:100%;min-height:64px;padding:8px;box-sizing:border-box;border-radius:8px;font-size:12.5px;font-family:inherit;white-space:pre-wrap;word-wrap:break-word;cursor:text;}
   .card-hd{font-size:14px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px;margin-bottom:12px;}
   .chev-ico{font-size:11px;color:#8896ab;display:inline-block;transition:transform .25s cubic-bezier(.22,.68,0,1.2);}
   .chev-ico.open{transform:rotate(180deg);}
@@ -1135,8 +1136,12 @@ function renderJourneys(){
             ` : ''}
             <div class="accSectionTitle" style="margin-top:0;"><i class="fas fa-note-sticky"></i>পরবর্তী ধাপ / নোট</div>
             <div class="accRow">
-              <textarea class="noteBox" id="note-${uid}" placeholder="পরবর্তী ধাপে কী করতে হবে লিখে রাখুন..." ${currentRole === 'admin' ? '' : 'readonly'}>${u.notes || ''}</textarea>
-              ${currentRole === 'admin' ? `<button type="button" class="btn small" style="margin-top:6px;" onclick="saveUserNote('${uid}')" title="নোট সেভ করুন"><i class="fas fa-floppy-disk"></i></button>` : ''}
+              ${currentRole === 'admin' ? `
+              <div id="noteDisplay-${uid}" class="noteBoxDisplay" onclick="noteBoxTapped('${uid}')" title="এডিট করতে ৩ বার ট্যাপ করুন">${u.notes && u.notes.trim() ? escapeHtmlForHl(u.notes) : '<span class="hint">পরবর্তী ধাপে কী করতে হবে লিখে রাখুন... (এডিট করতে ৩ বার ট্যাপ করুন)</span>'}</div>
+              <textarea class="noteBox" id="note-${uid}" style="display:none;border:none;outline:none;box-shadow:none;resize:none;overflow:hidden;" oninput="autoGrowNoteTa(this)" onblur="saveNoteAndCollapse('${uid}')">${u.notes || ''}</textarea>
+              ` : `
+              <div class="noteBoxDisplay">${u.notes && u.notes.trim() ? escapeHtmlForHl(u.notes) : '<span class="hint">কোনো নোট নেই</span>'}</div>
+              `}
             </div>
             <div class="accSectionTitle" ${currentRole === 'admin' ? `style="cursor:pointer;" onclick="event.stopPropagation();openDocUploadForUser('${uid}')"` : ''}>
               <i class="fas fa-folder-open"></i>ডকুমেন্ট স্ট্যাটাস
@@ -1172,8 +1177,12 @@ function renderJourneys(){
       });
       if(focusedNote){
         const ta = document.getElementById(focusedNote.id);
+        const disp = document.getElementById('noteDisplay-' + focusedNote.id.slice(5));
         if(ta){
           if(ta.value !== focusedNote.value) ta.value = focusedNote.value;
+          if(disp) disp.style.display = 'none';
+          ta.style.display = 'block';
+          autoGrowNoteTa(ta);
           ta.focus();
           try{ ta.setSelectionRange(focusedNote.selStart, focusedNote.selEnd); }catch(e){}
         }
@@ -1674,18 +1683,29 @@ function hpSetScrollTop(el, val, delta){
 // থাকে না। তাই কালো স্ক্রিনের সমান জায়গা (padding) যোগ করে নিশ্চিত করা হচ্ছে যে স্ক্রল করলে
 // আসলেই নিচের কনটেন্ট কালো স্ক্রিনের নিচ থেকে বেরিয়ে দেখা যাবে
 function hpAddSpace(container, px){
-  const target = (container === document.scrollingElement || container === document.documentElement)
+  const isDocRoot = (container === document.scrollingElement || container === document.documentElement);
+  const isModal = !isDocRoot && container.classList && container.classList.contains('modalOverlay');
+  // মোডালের ক্ষেত্রে সরাসরি modalOverlay-তে padding-top বসালে কাজ করে না — কারণ ওটা
+  // position:fixed;inset:0 (উচ্চতা সবসময় ভিউপোর্টের সমান, অটো-হাইট নিজে নিজে কমে গিয়ে
+  // padding পুষিয়ে নেয়), ফলে scrollHeight বাড়ে না আর নিচের কনটেন্ট আসলে স্ক্রল করেই বের
+  // করা যায় না। তাই মোডালের বেলায় ভেতরের .modalBox (স্বাভাবিক ফ্লো-তে থাকা এলিমেন্ট)-এ
+  // margin-top বসানো হচ্ছে, যাতে overlay-র scrollHeight সত্যিকারেই বেড়ে যায় ও স্ক্রল কাজ করে।
+  const target = isDocRoot
     ? (document.querySelector('.main') || document.body)
-    : container;
-  target.dataset.hpOrigPaddingTop = target.style.paddingTop || '';
-  const current = parseFloat(getComputedStyle(target).paddingTop) || 0;
-  target.style.paddingTop = (current + px) + 'px';
+    : (isModal ? (container.querySelector('.modalBox') || container) : container);
+  const prop = (isModal && target !== container) ? 'marginTop' : 'paddingTop';
+  target.dataset.hpOrigPushProp = prop;
+  target.dataset.hpOrigPushVal = target.style[prop] || '';
+  const current = parseFloat(getComputedStyle(target)[prop]) || 0;
+  target.style[prop] = (current + px) + 'px';
   return target;
 }
 function hpRemoveSpace(el){
   if(!el) return;
-  el.style.paddingTop = el.dataset.hpOrigPaddingTop || '';
-  delete el.dataset.hpOrigPaddingTop;
+  const prop = el.dataset.hpOrigPushProp || 'paddingTop';
+  el.style[prop] = el.dataset.hpOrigPushVal || '';
+  delete el.dataset.hpOrigPushProp;
+  delete el.dataset.hpOrigPushVal;
 }
 // এটা একটা তালিকার (যেমন ওয়েটিং তালিকা) ভেতরের কার্ড থেকে খোলা হলে, প্রিভিউ চলাকালীন
 // শুধু এই কার্ডটাই দেখাবে, বাকি এজেন্ট/আইটেমগুলো সাময়িকভাবে লুকিয়ে রাখা হবে
@@ -1893,8 +1913,47 @@ function saveUserNote(uid){
   const el = document.getElementById('note-' + uid);
   if(!el) return;
   db.ref('users/' + uid + '/notes').set(el.value.trim())
-    .then(() => alert('নোট সেভ হয়েছে।'))
     .catch(err => { alert('নোট সেভ করতে ব্যর্থ: ' + err.message); console.error('saveUserNote error:', err); });
+}
+function autoGrowNoteTa(ta){
+  if(!ta) return;
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+}
+let noteTapState = {};
+function noteBoxTapped(uid){
+  const st = noteTapState[uid] || { count: 0, timer: null };
+  st.count++;
+  if(st.timer) clearTimeout(st.timer);
+  if(st.count >= 3){
+    st.count = 0;
+    enterNoteEdit(uid);
+  } else {
+    st.timer = setTimeout(() => { st.count = 0; }, 700);
+  }
+  noteTapState[uid] = st;
+}
+function enterNoteEdit(uid){
+  const disp = document.getElementById('noteDisplay-' + uid);
+  const ta = document.getElementById('note-' + uid);
+  if(!disp || !ta) return;
+  disp.style.display = 'none';
+  ta.style.display = 'block';
+  autoGrowNoteTa(ta);
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = ta.value.length;
+}
+function saveNoteAndCollapse(uid){
+  const ta = document.getElementById('note-' + uid);
+  const disp = document.getElementById('noteDisplay-' + uid);
+  if(!ta) return;
+  saveUserNote(uid);
+  if(disp){
+    const val = ta.value.trim();
+    disp.innerHTML = val ? escapeHtmlForHl(val) : '<span class="hint">পরবর্তী ধাপে কী করতে হবে লিখে রাখুন... (এডিট করতে ৩ বার ট্যাপ করুন)</span>';
+    disp.style.display = 'block';
+  }
+  ta.style.display = 'none';
 }
 
 async function generateContractPdf(uid){
@@ -1905,6 +1964,9 @@ async function generateContractPdf(uid){
   const passport = getUserPassport(u);
   const country = u.country || '-';
   const fee = j ? (j.agency_fee || 0) : 0;
+  const payments = j ? (j.payments || {}) : {};
+  const paid = Object.values(payments).reduce((sum, p) => sum + (p.amount || 0), 0);
+  const due = fee - paid;
   const today = new Date().toLocaleDateString('bn-BD');
 
   const wrap = document.createElement('div');
@@ -1922,6 +1984,8 @@ async function generateContractPdf(uid){
       <tr><td style="padding:6px 0;color:#8a93a3;">পাসপোর্ট নম্বর</td><td style="padding:6px 0;">${passport}</td></tr>
       <tr><td style="padding:6px 0;color:#8a93a3;">কর্মস্থল দেশ</td><td style="padding:6px 0;">${country}</td></tr>
       <tr><td style="padding:6px 0;color:#8a93a3;">মোট এজেন্সি ফি</td><td style="padding:6px 0;font-weight:700;">৳${fee}</td></tr>
+      <tr><td style="padding:6px 0;color:#8a93a3;">পরিশোধিত</td><td style="padding:6px 0;color:#1a9e5c;font-weight:700;">৳${paid}</td></tr>
+      <tr><td style="padding:6px 0;color:#8a93a3;">বাকি</td><td style="padding:6px 0;color:${due > 0 ? '#dc3545' : '#1a9e5c'};font-weight:700;">৳${due}</td></tr>
     </table>
     <div style="font-size:15px;font-weight:700;margin-top:10px;">শর্তাবলী:</div>
     <ol style="font-size:13.5px;padding-left:20px;">
