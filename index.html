@@ -1226,8 +1226,10 @@ function showTab(name){
 function loadJourneys(){
   db.ref('journeys').on('value', snap => {
     journeysCache = snap.val() || {};
+    dashJourneys = journeysCache; // dashboard একই cache রিইউজ করে, আলাদা listener লাগে না
     renderJourneys();
     renderAgents();
+    if(typeof renderDashboard === 'function') renderDashboard();
   });
 }
 
@@ -1285,9 +1287,7 @@ function renderJourneys(){
             <div style="position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.72),rgba(0,0,0,0));color:#fff;font-size:10.5px;font-weight:600;padding:12px 6px 5px;">${pi === 0 ? label : `পৃষ্ঠা ${pi+1}`}</div>
           </div>`).join('');
         }).join('')}</div>${otherFilesAll.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">${otherFilesAll.map(f => `<a href="${f.fileBase64}" download="${f.fileName || 'file'}" class="hint" style="font-size:10.5px;"><i class="fas fa-file-arrow-down"></i> ${f.fileName || 'ফাইল'}</a>`).join('')}</div>` : ''}` : '<div class="accRow noBorder">-</div>';
-        const avatarHtml = u.photoBase64
-          ? `<img src="${u.photoBase64}" class="avatarCircle" style="object-fit:cover;" alt="">`
-          : `<div class="avatarCircle">${initials}</div>`;
+        const avatarHtml = getUserAvatarHtml(uid, u.photoBase64, initials);
         const agentName = u.agent_id && agentsCache[u.agent_id] ? agentsCache[u.agent_id].name : 'সরাসরি';
         const agentPhone = u.agent_id && agentsCache[u.agent_id] ? (agentsCache[u.agent_id].phone || '') : '';
         const customEntries = Object.keys(customFields)
@@ -1584,7 +1584,11 @@ function addUser(){
     const updates = { country, visa_type_id, custom_data, agent_id, notes, full_name };
     if(phone) updates.phone = phone;
     if(father_phone) updates.father_phone = father_phone;
-    if(uPhotoBase64) updates.photoBase64 = uPhotoBase64;
+    if(uPhotoBase64){
+      db.ref('userPhotos/' + editingUserUid).set(uPhotoBase64);
+      userPhotosCache[editingUserUid] = uPhotoBase64;
+      updates.photoBase64 = null; // পুরনো ডেটাতে থাকলে সরিয়ে নতুন path এ মাইগ্রেট করা হলো
+    }
     const ejVp = getJourneyForUser(editingUserUid);
     const ejVpId = ejVp ? Object.entries(journeysCache).find(([id, jj]) => jj === ejVp)[0] : null;
     const vpDaysElE = document.getElementById('uVisaPromiseDays');
@@ -1604,7 +1608,6 @@ function addUser(){
   const newUser = { country, visa_type_id, doc_status: {}, custom_data, agent_id, notes, full_name, created_at: Date.now() };
   if(phone) newUser.phone = phone;
   if(father_phone) newUser.father_phone = father_phone;
-  if(uPhotoBase64) newUser.photoBase64 = uPhotoBase64;
   const documents = {};
   uDocuments.forEach((d, i) => {
     const files = (d.files || []).filter(p => p.fileBase64);
@@ -1623,6 +1626,10 @@ function addUser(){
   const vpStart = vpStartEl ? vpStartEl.value : '';
   userRef.set(newUser)
     .then(() => {
+      if(uPhotoBase64){
+        db.ref('userPhotos/' + userRef.key).set(uPhotoBase64);
+        userPhotosCache[userRef.key] = uPhotoBase64;
+      }
       const journeyRef = db.ref('journeys').push();
       const defaultAgencyFee = (visa_type_id && visaTypes[visa_type_id] && visaTypes[visa_type_id].fee) || 0;
       const journeyData = {
@@ -1657,10 +1664,12 @@ function loadUsers(){
   db.ref('users').on('value', snap => {
     usersCache = snap.val() || {};
     window._usersCache = usersCache;
+    dashUsers = usersCache; // dashboard একই cache রিইউজ করে, আলাদা listener লাগে না
     renderVisaInfoList();
     populateCountryFilter(usersCache);
     renderJourneys();
     renderAgents();
+    if(typeof renderDashboard === 'function') renderDashboard();
   });
 }
 
@@ -3459,6 +3468,34 @@ function deleteCountry(id, name){
 let visaTypes = {};
 let journeysCache = {};
 let usersCache = {};
+
+/* ================= USER AVATARS (lazy-loaded, separate from users/ node) =================
+   ছবি এখন users/{uid}/photoBase64 এর বদলে userPhotos/{uid} তে আলাদা রাখা হচ্ছে, যাতে কোনো
+   ইউজারের সাধারণ তথ্য (নাম/স্ট্যাটাস) বদলালে পুরো লিস্টের সব ছবি বারবার ডাউনলোড না হয়। পুরনো
+   ডেটাতে u.photoBase64 থাকলে সেটাই দেখানো হয় (backward compatible); এডিট করে সেভ করলে
+   স্বয়ংক্রিয়ভাবে নতুন path এ সরে যাবে। */
+let userPhotosCache = {};
+let _avatarRerenderTimer = null;
+function scheduleAvatarRerender(){
+  clearTimeout(_avatarRerenderTimer);
+  _avatarRerenderTimer = setTimeout(() => { renderJourneys(); }, 150);
+}
+function getUserAvatarHtml(uid, inlinePhoto, initials){
+  if(inlinePhoto){
+    return `<img src="${inlinePhoto}" class="avatarCircle" style="object-fit:cover;" alt="">`;
+  }
+  if(userPhotosCache[uid] === undefined){
+    userPhotosCache[uid] = null; // লোড হচ্ছে চিহ্নিত করা, বারবার fetch আটকাতে
+    db.ref('userPhotos/' + uid).once('value').then(s => {
+      userPhotosCache[uid] = s.exists() ? s.val() : false;
+      if(userPhotosCache[uid]) scheduleAvatarRerender();
+    }).catch(() => { userPhotosCache[uid] = false; });
+  }
+  if(userPhotosCache[uid]){
+    return `<img src="${userPhotosCache[uid]}" class="avatarCircle" style="object-fit:cover;" alt="">`;
+  }
+  return `<div class="avatarCircle">${initials}</div>`;
+}
 let agentsCache = {};
 let visaMessagesCache = {};
 let vmContext = null; // { country, visaId, visaName } for the message modal in progress
@@ -3997,7 +4034,18 @@ function openEditUserModal(uid){
   uSellModeCountry = null;
   uSellModeVisaId = null;
   const u = (window._usersCache || {})[uid] || {};
-  uPhotoBase64 = u.photoBase64 || null;
+  uPhotoBase64 = u.photoBase64 || (userPhotosCache[uid] || null);
+  if(!uPhotoBase64){
+    db.ref('userPhotos/' + uid).once('value').then(s => {
+      if(s.exists() && editingUserUid === uid){
+        uPhotoBase64 = s.val();
+        userPhotosCache[uid] = uPhotoBase64;
+        document.getElementById('uPhotoPreview').src = uPhotoBase64;
+        document.getElementById('uPhotoPreview').style.display = 'block';
+        document.getElementById('uPhotoIcon').style.display = 'none';
+      }
+    });
+  }
   uDocuments = [];
   document.getElementById('uDocumentsWrap').style.display = 'none';
   document.getElementById('uDepositWrap').style.display = 'none';
@@ -4144,6 +4192,8 @@ function renderCustomFieldInputs(prefill){
 function loadLogs(){
   db.ref('notifications').limitToLast(200).on('value', snap => {
     const logs = snap.val() || {};
+    dashNotifs = logs; // dashboard একই cache রিইউজ করে, আলাদা listener লাগে না
+    if(typeof renderDashboard === 'function') renderDashboard();
     const rows = Object.entries(logs)
       .filter(([id, n]) => n.template_key === 'document_expiry') // শুধু এক্সপায়ারি ডেট নোটিফিকেশন দেখানো হবে
       .reverse().map(([id, n]) => {
@@ -4237,9 +4287,10 @@ let stageChartInstance = null;
 let dashJourneys = {}, dashUsers = {}, dashNotifs = {};
 
 function loadDashboard(){
-  db.ref('journeys').on('value', snap => { dashJourneys = snap.val() || {}; renderDashboard(); });
-  db.ref('users').on('value', snap => { dashUsers = snap.val() || {}; renderDashboard(); });
-  db.ref('notifications').limitToLast(200).on('value', snap => { dashNotifs = snap.val() || {}; renderDashboard(); });
+  // এখন আলাদা listener লাগে না — journeys/users/notifications ইতিমধ্যে
+  // loadJourneys()/loadUsers()/loadLogs() এ subscribe করা আছে, তারাই dashJourneys/
+  // dashUsers/dashNotifs আপডেট করে renderDashboard() কল করে (ডাবল ডাউনলোড বন্ধ)।
+  renderDashboard();
 }
 
 function renderDashboard(){
