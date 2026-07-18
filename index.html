@@ -147,8 +147,10 @@
   .vc-price i{color:var(--gold-dark, #b8860b);}
   .visaChip{background:#f0ece4;border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11.5px;font-weight:600;color:#3b4552;}
   .visaChip .chipKey{color:#a8710f;font-weight:800;}
-  .visaDetailLines{display:flex;flex-direction:column;gap:5px;margin-top:2px;}
-  .visaDetailLine{font-size:13px;font-weight:600;color:#3b4552;line-height:1.4;}
+  .visaDetailTitle{text-align:center;font-weight:800;font-size:15px;color:var(--navy);padding-bottom:6px;margin-bottom:2px;border-bottom:2px solid var(--navy);}
+  .visaDetailLines{display:flex;flex-direction:column;gap:0;margin-top:4px;}
+  .visaDetailLine{font-size:13px;font-weight:600;color:#3b4552;line-height:1.3;padding:4px 0;border-bottom:1px dashed var(--border);}
+  .visaDetailLines .visaDetailLine:last-child{border-bottom:none;padding-bottom:0;}
   .visaDetailLine .chipKey{color:#a8710f;font-weight:800;}
   .visaStatRow{display:flex;flex-wrap:nowrap;justify-content:space-between;align-items:center;gap:14px;font-size:11px;color:#5b6b7a;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
   .visaStatRow .vsr-stats{display:flex;justify-content:space-between;gap:14px;flex:1;min-width:0;}
@@ -459,17 +461,6 @@
           </div>
           <div style="margin-top:12px;"><button class="btn small" onclick="changeAdminPassword()">পরিবর্তন করুন</button></div>
           <div id="pcMsg" style="font-size:12px;margin-top:6px;"></div>
-
-          <div class="fieldRow" style="cursor:default;margin-top:16px;">
-            <div style="font-weight:700;">ফেস লগইন এনরোল/আপডেট করুন</div>
-          </div>
-          <div style="font-size:12px;color:#777;margin:4px 0 8px;">লগইন স্ক্রিনে ফেস দিয়ে ঢুকতে চাইলে এখানে আপনার মুখ এনরোল করুন।</div>
-          <video id="settingsVideo" autoplay muted style="width:200px;height:150px;border-radius:8px;background:#000;display:none;"></video>
-          <div style="margin-top:8px;" class="flex">
-            <button class="btn small" onclick="startSettingsCamera()">ক্যামেরা চালু করুন</button>
-            <button class="btn small gold" onclick="enrollMyFace()">এনরোল করুন</button>
-          </div>
-          <div id="settingsFaceMsg" style="font-size:12px;margin-top:6px;"></div>
         </div>
       </div>
     </div>
@@ -756,6 +747,7 @@
         </div>
       </div>
       <div style="margin-top:10px;">
+        <input id="veTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
         <div class="hlWrap">
           <div id="veDetailsHl" class="hlBackdrop"></div>
           <textarea id="veDetails" rows="5" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="কোম্পানি: সিডার গ্রুপ&#10;মাসিক বেতন: 2000 রিয়াল&#10;দৈনিক ডিউটি: ৮ ঘন্টা প্লাস কভার টাইম"></textarea>
@@ -787,9 +779,12 @@
           <input id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;">
           <input id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;">
         </div>
-        <div class="hlWrap" id="cfVisaDetailsWrap" style="display:none;">
-          <div id="cfVisaDetailsHl" class="hlBackdrop"></div>
-          <textarea id="cfVisaDetails" rows="4" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="অতিরিক্ত বিস্তারিত তথ্য (ঐচ্ছিক, প্রতি লাইনে একটা, যেমন: কোম্পানি: সিডার গ্রুপ)"></textarea>
+        <div id="cfVisaDetailsWrap" style="display:none;">
+          <input id="cfVisaTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
+          <div class="hlWrap">
+            <div id="cfVisaDetailsHl" class="hlBackdrop"></div>
+            <textarea id="cfVisaDetails" rows="4" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="অতিরিক্ত বিস্তারিত তথ্য (ঐচ্ছিক, প্রতি লাইনে একটা, যেমন: কোম্পানি: সিডার গ্রুপ)"></textarea>
+          </div>
         </div>
         <button type="button" class="btn small" id="cfVisaAddBtn" style="display:none;" onclick="addCustomField()">ভিসা যোগ করুন</button>
       </div>
@@ -1183,7 +1178,9 @@ async function enterApp(){
     else { navAvatarEl.style.display = 'none'; }
   }).catch(() => { navAvatarEl.style.display = 'none'; });
   db.ref('admins/' + pendingUid + '/name').once('value').then(s => {
-    document.getElementById('adminNameTag').textContent = s.exists() ? s.val() : '';
+    const nm = s.exists() ? s.val() : '';
+    const roleTxt = document.getElementById('roleTag').textContent;
+    document.getElementById('adminNameTag').textContent = (nm && nm !== roleTxt) ? nm : '';
   }).catch(() => {});
   if(currentRole !== 'admin'){
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
@@ -2917,8 +2914,7 @@ function buildVisaDetailsBlockHtml(m){
         <div class="vc-title">${msgFlag} ${m.country || ''}</div>
         <span class="vc-price"><i class="fas fa-tag"></i> ভিসার মূল্য${v.fee ? `: ৳${v.fee.toLocaleString('bn-BD')}` : ''}</span>
       </div>
-      ${v.name ? `<div class="visaDetailLine">${formatDetailChip(`ভিসার : ${v.name}`)}</div>` : ''}
-      ${(v.details || []).length ? `<div class="visaDetailLines">${(v.details || []).map(d => `<div class="visaDetailLine">${formatDetailChip(d)}</div>`).join('')}</div>` : ''}
+      ${buildDetailsLinesHtml(v.details, v.name)}
       <div class="visaStatRow">
         <div class="vsr-stats">
           <span>ভিসা <b>${v.quota || 0}</b></span>
@@ -3524,7 +3520,13 @@ function openVisaEditModal(vid){
   document.getElementById('veName').value = v.name || '';
   document.getElementById('veFee').value = v.fee || '';
   document.getElementById('veQuota').value = v.quota || '';
-  document.getElementById('veDetails').value = (v.details || []).join('\n');
+  const detailsList = (v.details || []).slice();
+  let title = '';
+  if(detailsList.length && detailsList[0].search(COLON_RE) === -1){
+    title = detailsList.shift();
+  }
+  document.getElementById('veTitle').value = title;
+  document.getElementById('veDetails').value = detailsList.join('\n');
   document.getElementById('visaEditModal').classList.add('active');
   const veDetailsEl = document.getElementById('veDetails');
   veDetailsEl.style.height = 'auto';
@@ -3534,6 +3536,7 @@ function openVisaEditModal(vid){
 
 function closeVisaEditModal(){
   document.getElementById('visaEditModal').classList.remove('active');
+  document.getElementById('veTitle').value = '';
   editingVisaId = null;
 }
 
@@ -3543,7 +3546,9 @@ function saveVisaEdit(){
   if(!name){ alert('ভিসার নাম দিন'); return; }
   const fee = parseInt(document.getElementById('veFee').value) || 0;
   const quota = parseInt(document.getElementById('veQuota').value) || 0;
-  const details = document.getElementById('veDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const title = document.getElementById('veTitle').value.trim();
+  const rest = document.getElementById('veDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const details = title ? [title, ...rest] : rest;
   db.ref('visa_types/' + editingVisaId).update({ name, fee, quota, details })
     .then(() => closeVisaEditModal())
     .catch(err => { alert('সেভ করতে ব্যর্থ: ' + err.message); console.error(err); });
@@ -3588,8 +3593,7 @@ function renderVisaInfoList(){
           <div class="vc-title">${flag} ${country}</div>
           <span class="vc-price" style="cursor:pointer;" onclick='showVisaCharges(${JSON.stringify(country)}, ${JSON.stringify([v])})'><i class="fas fa-tag"></i> ভিসার মূল্য${v.fee ? `: ৳${v.fee.toLocaleString('bn-BD')}` : ''}</span>
         </div>
-        ${v.name ? `<div class="visaDetailLine">${formatDetailChip(`ভিসার : ${v.name}`)}</div>` : ''}
-        ${v.details.length ? `<div class="visaDetailLines">${v.details.map(d => `<div class="visaDetailLine">${formatDetailChip(d)}</div>`).join('')}</div>` : ''}
+        ${buildDetailsLinesHtml(v.details, v.name)}
         <div class="visaStatRow">
           <div class="vsr-stats">
             <span>ভিসা <b>${v.quota || 0}</b></span>
@@ -4138,12 +4142,15 @@ function addCustomField(){
   if(!name){ alert('ভিসার নাম দিন।'); return; }
   const fee = parseInt(document.getElementById('cfVisaFee').value) || 0;
   const quota = parseInt(document.getElementById('cfVisaQuota').value) || 0;
-  const details = document.getElementById('cfVisaDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const title = document.getElementById('cfVisaTitle').value.trim();
+  const rest = document.getElementById('cfVisaDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const details = title ? [title, ...rest] : rest;
   const key = db.ref('visa_types').push().key;
   db.ref('visa_types/' + key).set({ country, name, fee, quota, details, created_at: Date.now() }).then(() => {
     document.getElementById('cfVisaName').value = '';
     document.getElementById('cfVisaFee').value = '';
     document.getElementById('cfVisaQuota').value = '';
+    document.getElementById('cfVisaTitle').value = '';
     document.getElementById('cfVisaDetails').value = '';
     document.getElementById('cfVisaDetails').style.height = 'auto';
     syncDetailsHighlight('cfVisaDetails', 'cfVisaDetailsHl');
@@ -4615,6 +4622,16 @@ function renderCalDayList(flightsByDate){
 const COLON_RE = /[:：﹕︓∶]/;
 function escapeHtmlForHl(s){
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function buildDetailsLinesHtml(details, name){
+  const list = (details || []).slice();
+  let titleHtml = '';
+  if(list.length && list[0].search(COLON_RE) === -1){
+    titleHtml = `<div class="visaDetailTitle">${escapeHtmlForHl(list.shift())}</div>`;
+  }
+  const nameHtml = name ? `<div class="visaDetailLine">${formatDetailChip(`ভিসা : ${name}`)}</div>` : '';
+  const linesHtml = list.length ? `<div class="visaDetailLines">${list.map(d => `<div class="visaDetailLine">${formatDetailChip(d)}</div>`).join('')}</div>` : '';
+  return titleHtml + nameHtml + linesHtml;
 }
 function formatDetailChip(d){
   const idx = d.search(COLON_RE);
