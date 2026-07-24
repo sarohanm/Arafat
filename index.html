@@ -25,6 +25,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(typeof pdfjsLib !== 'undefined'){ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }</script>
 
 <style>
   :root{
@@ -437,7 +439,7 @@
       <div class="topbar"><h1>নোটিফিকেশন লগ</h1></div>
       <div class="card">
         <table>
-          <thead><tr><th>সময়</th><th>ডকুমেন্ট</th><th>চ্যানেল</th><th>টেমপ্লেট</th><th>স্ট্যাটাস</th><th></th></tr></thead>
+          <thead><tr><th>সময়</th><th>বিবরণ</th><th>চ্যানেল</th><th>টেমপ্লেট</th><th>স্ট্যাটাস</th><th></th></tr></thead>
           <tbody id="logRows"></tbody>
         </table>
       </div>
@@ -1447,7 +1449,6 @@ function renderJourneys(){
               })() : ''}
               <div class="accSub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                 <span>${flag} ${u.country || '-'}${u.visa_type_id && visaTypes[u.visa_type_id] ? ' · ' + visaTypes[u.visa_type_id].name : ''}</span>
-                <span class="stagePill ${pillCls}" style="font-size:9.5px;padding:2px 7px;">${pillLabel}</span>
                 <span>${j ? visaPromiseCompactHtml(j) : ''}</span>
               </div>
             </div>
@@ -1459,12 +1460,16 @@ function renderJourneys(){
             ${renderPaymentSection(jid, j)}
             ` : ''}
             <div class="accSectionTitle" style="margin-top:0;"><i class="fas fa-note-sticky"></i>পরবর্তী ধাপ / নোট</div>
-            <div class="accRow">
+            <div class="accRow" style="flex-direction:column;align-items:stretch;gap:6px;">
               ${currentRole === 'admin' ? `
-              <div id="noteDisplay-${uid}" class="noteBoxDisplay" onclick="noteBoxTapped('${uid}')" title="এডিট করতে ৩ বার ট্যাপ করুন">${u.notes && u.notes.trim() ? escapeHtmlForHl(u.notes) : '<span class="hint">পরবর্তী ধাপে কী করতে হবে লিখে রাখুন... (এডিট করতে ৩ বার ট্যাপ করুন)</span>'}</div>
+              <div id="noteDisplay-${uid}" class="noteBoxDisplay" onclick="noteBoxTapped('${uid}')" title="এডিট করতে ৩ বার ট্যাপ করুন">${noteDisplayHtml(u)}</div>
               <textarea class="noteBox" id="note-${uid}" style="display:none;border:none;outline:none;box-shadow:none;resize:none;overflow:hidden;" oninput="autoGrowNoteTa(this)" onblur="saveNoteAndCollapse('${uid}')">${u.notes || ''}</textarea>
+              <div id="noteExpiryWrap-${uid}" style="display:none;align-items:center;gap:6px;">
+                <span class="hint" style="font-size:11.5px;"><i class="fas fa-calendar-day"></i> মেয়াদ শেষের তারিখ (ঐচ্ছিক):</span>
+                <input type="date" id="noteExpiry-${uid}" value="${u.note_expiry || ''}" onchange="saveUserNote('${uid}')" style="font-size:12.5px;padding:4px 6px;">
+              </div>
               ` : `
-              <div class="noteBoxDisplay">${u.notes && u.notes.trim() ? escapeHtmlForHl(u.notes) : '<span class="hint">কোনো নোট নেই</span>'}</div>
+              <div class="noteBoxDisplay">${noteDisplayHtml(u)}</div>
               `}
             </div>
             <div class="accSectionTitle" ${currentRole === 'admin' ? `style="cursor:pointer;" onclick="event.stopPropagation();openDocUploadForUser('${uid}')"` : ''}>
@@ -2247,8 +2252,22 @@ function deleteUser(uid){
 function saveUserNote(uid){
   const el = document.getElementById('note-' + uid);
   if(!el) return;
-  db.ref('users/' + uid + '/notes').set(el.value.trim())
+  const expiryEl = document.getElementById('noteExpiry-' + uid);
+  const updates = { notes: el.value.trim() };
+  if(expiryEl) updates.note_expiry = expiryEl.value || null;
+  db.ref('users/' + uid).update(updates)
     .catch(err => { toast('নোট সেভ করতে ব্যর্থ: ' + err.message); console.error('saveUserNote error:', err); });
+}
+function noteDisplayHtml(u){
+  const emptyMsg = '<span class="hint">পরবর্তী ধাপে কী করতে হবে লিখে রাখুন... (এডিট করতে ৩ বার ট্যাপ করুন)</span>';
+  const textHtml = u.notes && u.notes.trim() ? escapeHtmlForHl(u.notes) : emptyMsg;
+  if(!u.note_expiry) return textHtml;
+  const daysLeft = Math.floor((new Date(u.note_expiry + 'T00:00:00').getTime() - Date.now()) / (1000*60*60*24));
+  const isExpired = daysLeft < 0;
+  const color = isExpired ? 'var(--fail)' : (daysLeft <= 15 ? 'var(--fail)' : 'var(--warn)');
+  const statusText = isExpired ? `মেয়াদ শেষ, ${Math.abs(daysLeft)} দিন আগে` : `বাকি ${daysLeft} দিন`;
+  const badge = `<div style="margin-top:6px;"><span style="font-size:10.5px;font-weight:600;color:#fff;background:${color};padding:2px 8px;border-radius:20px;"><i class="fas fa-calendar-day"></i> মেয়াদ: ${new Date(u.note_expiry).toLocaleDateString('bn-BD')} · ${statusText}</span></div>`;
+  return textHtml + badge;
 }
 function autoGrowNoteTa(ta){
   if(!ta) return;
@@ -2271,9 +2290,11 @@ function noteBoxTapped(uid){
 function enterNoteEdit(uid){
   const disp = document.getElementById('noteDisplay-' + uid);
   const ta = document.getElementById('note-' + uid);
+  const expWrap = document.getElementById('noteExpiryWrap-' + uid);
   if(!disp || !ta) return;
   disp.style.display = 'none';
   ta.style.display = 'block';
+  if(expWrap) expWrap.style.display = 'flex';
   autoGrowNoteTa(ta);
   ta.focus();
   ta.selectionStart = ta.selectionEnd = ta.value.length;
@@ -2281,14 +2302,17 @@ function enterNoteEdit(uid){
 function saveNoteAndCollapse(uid){
   const ta = document.getElementById('note-' + uid);
   const disp = document.getElementById('noteDisplay-' + uid);
+  const expWrap = document.getElementById('noteExpiryWrap-' + uid);
   if(!ta) return;
   saveUserNote(uid);
   if(disp){
-    const val = ta.value.trim();
-    disp.innerHTML = val ? escapeHtmlForHl(val) : '<span class="hint">পরবর্তী ধাপে কী করতে হবে লিখে রাখুন... (এডিট করতে ৩ বার ট্যাপ করুন)</span>';
+    const u = (window._usersCache || {})[uid] || {};
+    const expiryEl = document.getElementById('noteExpiry-' + uid);
+    disp.innerHTML = noteDisplayHtml({ notes: ta.value.trim(), note_expiry: expiryEl ? expiryEl.value : u.note_expiry });
     disp.style.display = 'block';
   }
   ta.style.display = 'none';
+  if(expWrap) expWrap.style.display = 'none';
 }
 
 async function generateContractPdf(uid){
@@ -3923,6 +3947,40 @@ function handleUDocumentFileSelect(e, i){
   e.target.value = '';
 }
 
+/* আপলোড করা PDF-এর সাইজ কমানোর জন্য: pdf.js দিয়ে প্রতিটি পেজ ক্যানভাসে আঁকা হয়,
+   তারপর কমপ্রেসড JPEG হিসেবে jsPDF দিয়ে নতুন (ছোট সাইজের) PDF তৈরি করা হয়।
+   টেক্সট এখনো পড়ার মতো স্পষ্ট থাকে কিন্তু ফাইল সাইজ অনেক কমে যায়। */
+async function compressPdfDataUrl(file){
+  try{
+    if(typeof pdfjsLib === 'undefined' || typeof window.jspdf === 'undefined') return null;
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const { jsPDF } = window.jspdf;
+    const maxDim = 1500;
+    let outPdf = null;
+    for(let i = 1; i <= pdfDoc.numPages; i++){
+      const page = await pdfDoc.getPage(i);
+      const baseViewport = page.getViewport({ scale: 1 });
+      const longestSide = Math.max(baseViewport.width, baseViewport.height);
+      const scale = longestSide > maxDim ? maxDim / longestSide : 1;
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      const imgData = canvas.toDataURL('image/jpeg', 0.7);
+      const orientation = canvas.width > canvas.height ? 'l' : 'p';
+      if(!outPdf) outPdf = new jsPDF({ orientation, unit: 'pt', format: [canvas.width, canvas.height] });
+      else outPdf.addPage([canvas.width, canvas.height], orientation);
+      outPdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+    }
+    return outPdf ? outPdf.output('datauristring') : null;
+  }catch(err){
+    console.error('PDF কমপ্রেস ব্যর্থ:', err);
+    return null;
+  }
+}
+
 function processUDocumentFile(file, i){
   if(!file || !uDocuments[i]) return;
   if(!uDocuments[i].files) uDocuments[i].files = [];
@@ -3946,6 +4004,19 @@ function processUDocumentFile(file, i){
         renderUDocumentsRows();
       };
       img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else if(file.type === 'application/pdf'){
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const originalDataUrl = ev.target.result;
+      page.fileBase64 = originalDataUrl;
+      renderUDocumentsRows();
+      const compressed = await compressPdfDataUrl(file);
+      if(compressed && compressed.length < originalDataUrl.length){
+        page.fileBase64 = compressed;
+        renderUDocumentsRows();
+      }
     };
     reader.readAsDataURL(file);
   } else {
@@ -4143,6 +4214,19 @@ function processDuDocumentFile(file, i){
       img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
+  } else if(file.type === 'application/pdf'){
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const originalDataUrl = ev.target.result;
+      page.fileBase64 = originalDataUrl;
+      renderDuDocumentsRows();
+      const compressed = await compressPdfDataUrl(file);
+      if(compressed && compressed.length < originalDataUrl.length){
+        page.fileBase64 = compressed;
+        renderDuDocumentsRows();
+      }
+    };
+    reader.readAsDataURL(file);
   } else {
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -4337,13 +4421,15 @@ function loadLogs(){
     dashNotifs = logs; // dashboard একই cache রিইউজ করে, আলাদা listener লাগে না
     if(typeof renderDashboard === 'function') renderDashboard();
     const rows = Object.entries(logs)
-      .filter(([id, n]) => n.template_key === 'document_expiry') // শুধু এক্সপায়ারি ডেট নোটিফিকেশন দেখানো হবে
       .reverse().map(([id, n]) => {
       const statusClass = n.status === 'sent' ? 'badge-ok' : n.status === 'failed' ? 'badge-fail' : 'badge-pending';
       const meta = n.meta || {};
+      const detail = meta.label
+        ? (meta.label + (meta.expiry_date ? ' (' + meta.expiry_date + ')' : ''))
+        : (n.journey_id ? 'জার্নি: ' + n.journey_id : '-');
       return `<tr>
         <td data-label="সময়">${new Date(n.created_at).toLocaleString('bn-BD')}</td>
-        <td data-label="ডকুমেন্ট">${meta.label || '-'}${meta.expiry_date ? ' (' + meta.expiry_date + ')' : ''}</td>
+        <td data-label="বিবরণ">${detail}</td>
         <td data-label="চ্যানেল">${n.channel}</td>
         <td data-label="টেমপ্লেট">${n.template_key}</td>
         <td data-label="স্ট্যাটাস" class="${statusClass}">${n.status}${n.error_message ? ' — ' + n.error_message : ''}</td>
@@ -4585,6 +4671,15 @@ function getExpiringItems(users, thresholdDays){
         items.push({ uid, itemId: did, itemType: 'document', label: d.name || 'ডকুমেন্ট', dateStr: d.expiry, daysLeft });
       }
     });
+    if(u.note_expiry){
+      const dateVal = new Date(u.note_expiry + 'T00:00:00').getTime();
+      if(!isNaN(dateVal)){
+        const daysLeft = Math.floor((dateVal - now) / (1000*60*60*24));
+        if(daysLeft <= thresholdDays){
+          items.push({ uid, itemId: 'note', itemType: 'note', label: 'নোট', dateStr: u.note_expiry, daysLeft });
+        }
+      }
+    }
   });
   return items.sort((a,b) => a.daysLeft - b.daysLeft);
 }
