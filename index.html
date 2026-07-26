@@ -353,7 +353,7 @@
 <div id="app">
 <div class="shell">
   <div class="top-nav">
-    <div class="nav-brand"><i class="fas fa-plane-departure"></i> <span class="brand-text">Talent Overseas Pvt. Ltd</span></div>
+    <div class="nav-brand"><i class="fas fa-plane-departure"></i> <span class="brand-text">Md Somrat Mondol</span></div>
     <div class="nav-r">
       <img id="navAvatar" style="display:none;width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);" alt="">
       <span id="adminNameTag" style="color:#cfd6e0;font-size:12px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
@@ -1459,15 +1459,22 @@ function renderJourneys(){
             ${j ? `
             ${renderPaymentSection(jid, j)}
             ` : ''}
-            <div class="accSectionTitle" style="margin-top:0;"><i class="fas fa-note-sticky"></i>পরবর্তী ধাপ / নোট</div>
+            <div class="accSectionTitle" style="margin-top:0;display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:nowrap;">
+              <span style="white-space:nowrap;"><i class="fas fa-note-sticky"></i>পরবর্তী ধাপ / নোট</span>
+              ${currentRole === 'admin' ? `
+              <span id="noteExpiryBadge-${uid}" onclick="noteBoxTapped('${uid}')">${noteExpiryBadgeHtml(u)}</span>
+              <div id="noteExpiryWrap-${uid}" style="display:none;align-items:center;gap:4px;flex-shrink:0;">
+                <i class="fas fa-calendar-day hint" style="font-size:11px;"></i>
+                <input type="date" id="noteExpiry-${uid}" value="${u.note_expiry || ''}" onchange="saveUserNote('${uid}')" onblur="handleNoteFieldBlur('${uid}')" style="font-size:11px;padding:2px 4px;width:112px;">
+              </div>
+              ` : `
+              <span>${noteExpiryBadgeHtml(u)}</span>
+              `}
+            </div>
             <div class="accRow" style="flex-direction:column;align-items:stretch;gap:6px;">
               ${currentRole === 'admin' ? `
               <div id="noteDisplay-${uid}" class="noteBoxDisplay" onclick="noteBoxTapped('${uid}')" title="এডিট করতে ৩ বার ট্যাপ করুন">${noteDisplayHtml(u)}</div>
-              <textarea class="noteBox" id="note-${uid}" style="display:none;border:none;outline:none;box-shadow:none;resize:none;overflow:hidden;" oninput="autoGrowNoteTa(this)" onblur="saveNoteAndCollapse('${uid}')">${u.notes || ''}</textarea>
-              <div id="noteExpiryWrap-${uid}" style="display:none;align-items:center;gap:6px;">
-                <span class="hint" style="font-size:11.5px;"><i class="fas fa-calendar-day"></i> মেয়াদ শেষের তারিখ (ঐচ্ছিক):</span>
-                <input type="date" id="noteExpiry-${uid}" value="${u.note_expiry || ''}" onchange="saveUserNote('${uid}')" style="font-size:12.5px;padding:4px 6px;">
-              </div>
+              <textarea class="noteBox" id="note-${uid}" style="display:none;border:none;outline:none;box-shadow:none;resize:none;overflow:hidden;" oninput="autoGrowNoteTa(this)" onblur="handleNoteFieldBlur('${uid}')">${u.notes || ''}</textarea>
               ` : `
               <div class="noteBoxDisplay">${noteDisplayHtml(u)}</div>
               `}
@@ -1507,10 +1514,15 @@ function renderJourneys(){
       });
       if(focusedNote){
         const ta = document.getElementById(focusedNote.id);
-        const disp = document.getElementById('noteDisplay-' + focusedNote.id.slice(5));
+        const uidPart = focusedNote.id.slice(5);
+        const disp = document.getElementById('noteDisplay-' + uidPart);
+        const expWrap = document.getElementById('noteExpiryWrap-' + uidPart);
+        const badge = document.getElementById('noteExpiryBadge-' + uidPart);
         if(ta){
           if(ta.value !== focusedNote.value) ta.value = focusedNote.value;
           if(disp) disp.style.display = 'none';
+          if(expWrap) expWrap.style.display = 'flex';
+          if(badge) badge.style.display = 'none';
           ta.style.display = 'block';
           autoGrowNoteTa(ta);
           ta.focus();
@@ -2260,14 +2272,15 @@ function saveUserNote(uid){
 }
 function noteDisplayHtml(u){
   const emptyMsg = '<span class="hint">পরবর্তী ধাপে কী করতে হবে লিখে রাখুন... (এডিট করতে ৩ বার ট্যাপ করুন)</span>';
-  const textHtml = u.notes && u.notes.trim() ? escapeHtmlForHl(u.notes) : emptyMsg;
-  if(!u.note_expiry) return textHtml;
+  return u.notes && u.notes.trim() ? escapeHtmlForHl(u.notes) : emptyMsg;
+}
+function noteExpiryBadgeHtml(u){
+  if(!u.note_expiry) return '';
   const daysLeft = Math.floor((new Date(u.note_expiry + 'T00:00:00').getTime() - Date.now()) / (1000*60*60*24));
   const isExpired = daysLeft < 0;
   const color = isExpired ? 'var(--fail)' : (daysLeft <= 15 ? 'var(--fail)' : 'var(--warn)');
   const statusText = isExpired ? `মেয়াদ শেষ, ${Math.abs(daysLeft)} দিন আগে` : `বাকি ${daysLeft} দিন`;
-  const badge = `<div style="margin-top:6px;"><span style="font-size:10.5px;font-weight:600;color:#fff;background:${color};padding:2px 8px;border-radius:20px;"><i class="fas fa-calendar-day"></i> মেয়াদ: ${new Date(u.note_expiry).toLocaleDateString('bn-BD')} · ${statusText}</span></div>`;
-  return textHtml + badge;
+  return `<span style="font-size:10px;font-weight:600;color:#fff;background:${color};padding:2px 7px;border-radius:20px;white-space:nowrap;"><i class="fas fa-calendar-day"></i> ${new Date(u.note_expiry).toLocaleDateString('bn-BD')} · ${statusText}</span>`;
 }
 function autoGrowNoteTa(ta){
   if(!ta) return;
@@ -2291,25 +2304,42 @@ function enterNoteEdit(uid){
   const disp = document.getElementById('noteDisplay-' + uid);
   const ta = document.getElementById('note-' + uid);
   const expWrap = document.getElementById('noteExpiryWrap-' + uid);
+  const badge = document.getElementById('noteExpiryBadge-' + uid);
   if(!disp || !ta) return;
   disp.style.display = 'none';
   ta.style.display = 'block';
   if(expWrap) expWrap.style.display = 'flex';
+  if(badge) badge.style.display = 'none';
   autoGrowNoteTa(ta);
   ta.focus();
   ta.selectionStart = ta.selectionEnd = ta.value.length;
+}
+function handleNoteFieldBlur(uid){
+  setTimeout(() => {
+    const active = document.activeElement;
+    const ta = document.getElementById('note-' + uid);
+    const dateInput = document.getElementById('noteExpiry-' + uid);
+    if(active && (active === ta || active === dateInput)) return; // ফোকাস এখনো নোট বা তারিখ ফিল্ডেই আছে, কোলাপ্স করার দরকার নেই
+    saveNoteAndCollapse(uid);
+  }, 150);
 }
 function saveNoteAndCollapse(uid){
   const ta = document.getElementById('note-' + uid);
   const disp = document.getElementById('noteDisplay-' + uid);
   const expWrap = document.getElementById('noteExpiryWrap-' + uid);
+  const badge = document.getElementById('noteExpiryBadge-' + uid);
   if(!ta) return;
   saveUserNote(uid);
+  const expiryEl = document.getElementById('noteExpiry-' + uid);
+  const u = (window._usersCache || {})[uid] || {};
+  const updatedU = { notes: ta.value.trim(), note_expiry: expiryEl ? expiryEl.value : u.note_expiry };
   if(disp){
-    const u = (window._usersCache || {})[uid] || {};
-    const expiryEl = document.getElementById('noteExpiry-' + uid);
-    disp.innerHTML = noteDisplayHtml({ notes: ta.value.trim(), note_expiry: expiryEl ? expiryEl.value : u.note_expiry });
+    disp.innerHTML = noteDisplayHtml(updatedU);
     disp.style.display = 'block';
+  }
+  if(badge){
+    badge.innerHTML = noteExpiryBadgeHtml(updatedU);
+    badge.style.display = 'inline';
   }
   ta.style.display = 'none';
   if(expWrap) expWrap.style.display = 'none';
