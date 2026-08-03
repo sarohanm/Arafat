@@ -144,10 +144,10 @@
   .payProgWrap{margin:8px 0 12px;}
   .payProgOuter{height:8px;border-radius:6px;background:rgba(63,240,255,.1);overflow:hidden;}
   .payProgInner{height:100%;border-radius:6px;background:linear-gradient(90deg,#4ade80,#22c55e);transition:width .3s ease;box-shadow:0 0 8px rgba(74,222,128,.5);}
-  .payStatsRow{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:11px;margin:6px 0 2px;}
-  .payStatsRow .ps-item{display:flex;flex-direction:column;gap:1px;min-width:0;}
-  .payStatsRow .ps-item b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .payStatsRow .ps-item:last-child{margin-left:0 !important;text-align:right;}
+  .payStatsRow{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;font-size:11px;margin:6px 0 2px;text-align:center;}
+  .payStatsRow .ps-item{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;}
+  .payStatsRow .ps-item b{font-size:12px;white-space:nowrap;}
+  .payStatsRow .ps-item:last-child{margin-left:0 !important;}
   .searchWrap{position:relative;flex:1 1 100%;}
   .searchWrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:12px;}
   .searchWrap input{width:100%;padding:9px 12px 9px 32px !important;}
@@ -194,8 +194,10 @@
   .dc:active{transform:scale(.98);}
   .dc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,var(--cyan));box-shadow:0 0 8px var(--ac,var(--cyan));}
   .dc-ico{width:34px;height:34px;border-radius:10px;background:var(--ic,rgba(63,240,255,.1));display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ac,var(--cyan));margin-bottom:9px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);}
+  .dc-ico-tap{cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 0 0 1px rgba(255,255,255,.16);transition:transform .15s ease,filter .15s ease;}
+  .dc-ico-tap:active{transform:scale(.88);filter:brightness(1.3);}
   .dc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);margin-bottom:3px;}
-  .dc-val{font-size:19px;font-weight:800;color:var(--text);line-height:1.15;font-family:'Orbitron',sans-serif;}
+  .dc-val{font-size:19px;font-weight:800;color:var(--ac,var(--text));line-height:1.15;font-family:'Orbitron',sans-serif;}
   .dc-sub{font-size:10.5px;color:var(--text-dim);margin-top:3px;}
   .dc-head{display:flex;align-items:center;justify-content:space-between;gap:6px;}
   .dc-head .dc-ico{margin-bottom:0;flex-shrink:0;}
@@ -370,18 +372,20 @@
     <div class="panel active" id="panel-dashboard">
       <div class="topbar"><h1>ড্যাশবোর্ড</h1></div>
       <div class="dash-grid">
-        <div class="dc" style="--ac:#3ff0ff;--ic:rgba(63,240,255,.12)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-users"></i></div><div class="dc-label">মোট প্রার্থী</div><div class="dc-pl" id="dTotalUsers">০</div></div><div class="dc-val" id="plTotal">৳০</div><div class="dc-sub">সিস্টেমে নিবন্ধিত</div></div>
-        <div class="dc" style="--ac:#8a5cff;--ic:rgba(138,92,255,.12)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-suitcase-rolling"></i></div><div class="dc-label">চলমান জার্নি</div><div class="dc-pl" id="dActiveJourneys">০</div></div><div class="dc-val" id="plActive">৳০</div><div class="dc-sub">প্রসেসিং চলছে</div></div>
-        <div class="dc" style="--ac:#4ade80;--ic:rgba(74,222,128,.14)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-plane-departure"></i></div><div class="dc-label">এ মাসে রওনা</div><div class="dc-pl" id="dDepartedMonth">০</div></div><div class="dc-val" id="plDeparted">৳০</div><div class="dc-sub">সফলভাবে ডিপার্টেড</div></div>
-        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-triangle-exclamation"></i></div><div class="dc-label">মেডিকেল ফেইল</div><div class="dc-pl" id="dMedicalFailed">০</div></div><div class="dc-val" id="plMedical">৳০</div><div class="dc-sub">মোট</div></div>
-        <div class="dc" style="--ac:#ffb454;--ic:rgba(255,180,84,.18)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-file-lines"></i></div><div class="dc-label">ভিসা পেন্ডিং</div><div class="dc-pl" id="dVisaPending">০</div></div><div class="dc-val" id="plVisa">৳০</div><div class="dc-sub">আবেদন করা হয়েছে</div></div>
-        <div class="dc" style="--ac:#3d7cff;--ic:rgba(61,124,255,.14)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-plane"></i></div><div class="dc-label">আসন্ন ফ্লাইট</div><div class="dc-pl" id="dUpcomingFlights">০</div></div><div class="dc-val" id="plUpcoming">৳০</div><div class="dc-sub">পরবর্তী ৭ দিনে</div></div>
-        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-ico"><i class="fas fa-hourglass-half"></i></div><div class="dc-label">মেয়াদ শেষ/কাছাকাছি</div><div class="dc-val" id="dExpiring">০</div><div class="dc-sub">পাসপোর্ট, ভিসা ইত্যাদি</div></div>
-        <div class="dc" style="--ac:#4ade80;--ic:rgba(74,222,128,.14)"><div class="dc-ico"><i class="fas fa-circle-check"></i></div><div class="dc-label">নোটিফিকেশন সেন্ট</div><div class="dc-val" id="dNotifSent">০</div><div class="dc-sub">আজ</div></div>
+        <div class="dc" style="--ac:#4ade80;--ic:rgba(74,222,128,.14)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-piggy-bank"></i></div><div class="dc-label">মোট বিনিয়োগ</div><div class="dc-pl" id="dPartnerCount">০</div></div><div class="dc-val" id="plTotalInvestment">৳০</div></div>
+        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-file-invoice-dollar"></i></div><div class="dc-label">ভিসার মূল্য</div><div class="dc-pl" id="dVisaCount">০</div></div><div class="dc-val" id="plTotalVisaValue">৳০</div></div>
+        <div class="dc" style="--ac:#3ff0ff;--ic:rgba(63,240,255,.12)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-users"></i></div><div class="dc-label">মোট প্রার্থী</div><div class="dc-pl" id="dTotalUsers">০</div></div><div class="dc-val" id="plTotal">৳০</div></div>
+        <div class="dc" style="--ac:#8a5cff;--ic:rgba(138,92,255,.12)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-suitcase-rolling"></i></div><div class="dc-label">চলমান জার্নি</div><div class="dc-pl" id="dActiveJourneys">০</div></div><div class="dc-val" id="plActive">৳০</div></div>
+        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openExpiryAlertsModal()"><i class="fas fa-hourglass-half"></i></div><div class="dc-label">মেয়াদ শেষ</div></div><div class="dc-val" id="dExpiring">০</div></div>
+        <div class="dc" style="--ac:#3d7cff;--ic:rgba(61,124,255,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openUpcomingFlightsModal()"><i class="fas fa-plane"></i></div><div class="dc-label">আসন্ন ফ্লাইট</div><div class="dc-pl" id="dUpcomingFlights">০</div></div><div class="dc-val" id="plUpcoming">৳০</div></div>
+        <div class="dc" style="--ac:#4ade80;--ic:rgba(74,222,128,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openProfitList()"><i class="fas fa-sack-dollar"></i></div><div class="dc-label">মোট লাভ</div></div><div class="dc-val" id="dTotalProfit">৳০</div></div>
+        <div class="dc" style="--ac:#ff6b81;--ic:rgba(255,107,129,.18)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openLossList()"><i class="fas fa-triangle-exclamation"></i></div><div class="dc-label">মোট ক্ষতি</div><div class="dc-pl" id="dLossPartnerCount">০ জন</div></div><div class="dc-val" id="dTotalLoss" style="color:var(--fail);">৳০</div></div>
+        <div class="dc" style="--ac:#ffb454;--ic:rgba(255,180,84,.14)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-user-tie"></i></div><div class="dc-label">মোট এজেন্ট</div><div class="dc-pl" id="dAgentCount">০</div></div><div class="dc-val" id="dTotalReceived">৳০</div></div>
+        <div class="dc" style="--ac:#3ff0ff;--ic:rgba(63,240,255,.12)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openDepartedList()"><i class="fas fa-plane-departure"></i></div><div class="dc-label">প্রেরিত যাত্রী</div></div><div class="dc-val" id="dDepartedCount">০</div></div>
       </div>
 
       <div class="card">
-        <div class="card-hd"><i class="fas fa-chart-column"></i> স্টেজ অনুযায়ী প্রার্থী</div>
+        <div class="card-hd"><i class="fas fa-chart-column"></i> মাসিক ব্যবসার পরিস্থিতি</div>
         <div class="chart-wrap"><canvas id="stageChart"></canvas></div>
       </div>
 
@@ -502,6 +506,19 @@
           </div>
           <div style="margin-top:12px;"><button class="btn small" onclick="changeAdminPassword()">পরিবর্তন করুন</button></div>
           <div id="pcMsg" style="font-size:12px;margin-top:6px;"></div>
+        </div>
+      </div>
+
+      <div class="card settingsCard" style="--ac:#22c55e">
+        <div class="settingsHead" style="--ic:rgba(34,197,94,.16);--ac:#22c55e" onclick="toggleSettingsPanel('partnersPanel')">
+          <div class="sh-ico"><i class="fas fa-handshake"></i></div>
+          <h3 style="flex:1;">পার্টনার ইনভেস্টমেন্ট ও লাভ-লোকসান</h3>
+          <span id="addBtn-partnersPanel" class="addFieldBtn" title="নতুন পার্টনার যোগ করুন" onclick="event.stopPropagation(); openAddPartnerModal()" style="width:26px;height:26px;border-radius:50%;background:rgba(34,197,94,.16);color:#22c55e;display:none;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex-shrink:0;margin-left:8px;"><i class="fas fa-plus"></i></span>
+          <span id="chev-partnersPanel" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div id="partnersPanel" style="display:none;">
+          <div id="partnersSummary" style="margin:12px 0;"></div>
+          <div id="partnersList"></div>
         </div>
       </div>
 
@@ -628,6 +645,42 @@
       <div id="duDocumentsList"></div>
       <button type="button" class="btn small gold" style="width:auto;margin-top:2px;" onclick="addDuDocumentRow()"><i class="fas fa-plus"></i> ডকুমেন্ট যোগ করুন</button>
       <div style="margin-top:14px;"><button type="button" class="btn small" style="width:100%;" onclick="saveDuDocuments()">সংরক্ষণ করুন</button></div>
+    </div>
+  </div>
+
+  <!-- PROFIT / LOSS LIST MODAL -->
+  <div class="modalOverlay" id="profitLossListModal">
+    <div class="modalBox">
+      <button class="close-x" onclick="closeProfitLossListModal()"><i class="fas fa-xmark"></i></button>
+      <h3 style="margin-top:0;" id="plListTitle"><i class="fas fa-sack-dollar"></i> মোট লাভ</h3>
+      <div id="plListContent"></div>
+    </div>
+  </div>
+
+  <!-- DEPARTED PASSENGERS MODAL -->
+  <div class="modalOverlay" id="departedListModal">
+    <div class="modalBox">
+      <button class="close-x" onclick="closeDepartedList()"><i class="fas fa-xmark"></i></button>
+      <h3 style="margin-top:0;"><i class="fas fa-plane-departure"></i> প্রেরিত যাত্রী</h3>
+      <div id="departedListContent"></div>
+    </div>
+  </div>
+
+  <!-- EXPIRY ALERTS MODAL -->
+  <div class="modalOverlay" id="expiryAlertsModal">
+    <div class="modalBox">
+      <button class="close-x" onclick="closeExpiryAlertsModal()"><i class="fas fa-xmark"></i></button>
+      <h3 style="margin-top:0;"><i class="fas fa-hourglass-half"></i> মেয়াদ শেষ</h3>
+      <div id="expiryAlertsList"></div>
+    </div>
+  </div>
+
+  <!-- UPCOMING FLIGHTS MODAL -->
+  <div class="modalOverlay" id="upcomingFlightsModal">
+    <div class="modalBox">
+      <button class="close-x" onclick="closeUpcomingFlightsModal()"><i class="fas fa-xmark"></i></button>
+      <h3 style="margin-top:0;"><i class="fas fa-plane"></i> আসন্ন ফ্লাইট (সকল)</h3>
+      <div id="upcomingFlightsList"></div>
     </div>
   </div>
 
@@ -791,16 +844,42 @@
     </div>
   </div>
 
+  <!-- ADD/EDIT PARTNER MODAL -->
+  <div class="modalOverlay" id="addPartnerModal">
+    <div class="modalBox">
+      <button class="close-x" onclick="closeAddPartnerModal()"><i class="fas fa-xmark"></i></button>
+      <h3 style="margin-top:0;" id="partnerModalTitle">নতুন পার্টনার যোগ করুন</h3>
+      <div style="text-align:center;margin-bottom:12px;">
+        <div style="position:relative;width:84px;margin:0 auto;">
+          <div id="ptPhotoCircle" onclick="document.getElementById('ptPhoto').click()" style="width:84px;height:84px;border-radius:50%;background:var(--bg);border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;">
+            <i class="fas fa-camera" id="ptPhotoIcon" style="font-size:22px;color:#b8ada0;"></i>
+            <img id="ptPhotoPreview" style="display:none;width:100%;height:100%;object-fit:cover;">
+          </div>
+        </div>
+        <input type="file" id="ptPhoto" accept="image/*" onchange="handlePartnerPhotoSelect(event)" style="display:none;">
+      </div>
+      <div class="formGrid">
+        <input id="ptName" placeholder="পার্টনারের নাম">
+        <input id="ptPhone" type="tel" placeholder="ফোন নম্বর (ঐচ্ছিক)">
+        <input id="ptInvestment" type="number" placeholder="মোট বিনিয়োগ (৳)" oninput="autoCalcPartnerShare()">
+        <input id="ptShare" type="number" placeholder="মুনাফার শেয়ার (%) — স্বয়ংক্রিয়" readonly style="opacity:.75;">
+      </div>
+      <div id="ptMsg" style="font-size:12px;margin-top:6px;"></div>
+      <div style="margin-top:10px;"><button class="btn small" style="width:100%;" onclick="savePartner()">সেভ করুন</button></div>
+    </div>
+  </div>
+
   <!-- EDIT VISA TYPE MODAL -->
   <div class="modalOverlay" id="visaEditModal">
     <div class="modalBox">
       <button class="close-x" onclick="closeVisaEditModal()"><i class="fas fa-xmark"></i></button>
       <h3 style="margin-top:0;">ভিসা এডিট করুন</h3>
       <div class="formGrid">
-        <div class="flex" style="gap:8px;">
-          <input id="veName" placeholder="ভিসার ধরন" style="flex:1;">
-          <input id="veFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;">
-          <input id="veQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;">
+        <div class="flex" style="gap:8px;flex-wrap:wrap;">
+          <input id="veName" placeholder="ভিসার ধরন" style="flex:1;min-width:120px;">
+          <input id="veFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
+          <input id="veCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
+          <input id="veQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
         </div>
       </div>
       <div style="margin-top:10px;">
@@ -831,10 +910,11 @@
           <option value="">এই দেশের সকল ভিসার জন্য</option>
         </select>
         <input id="cfOptions" style="display:none;">
-        <div class="flex" id="cfVisaFeeQuotaRow" style="gap:8px;display:none;">
-          <input id="cfVisaName" placeholder="ভিসার ধরন (যেমন: ওয়ার্কার ভিসা)" style="flex:1;">
-          <input id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;">
-          <input id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;">
+        <div class="flex" id="cfVisaFeeQuotaRow" style="gap:8px;display:none;flex-wrap:wrap;">
+          <input id="cfVisaName" placeholder="ভিসার ধরন (যেমন: ওয়ার্কার ভিসা)" style="flex:1;min-width:120px;">
+          <input id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
+          <input id="cfVisaCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
+          <input id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
         </div>
         <div id="cfVisaDetailsWrap" style="display:none;">
           <input id="cfVisaTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
@@ -1301,6 +1381,7 @@ async function enterApp(){
   loadCountries();
   loadCustomFields();
   loadVisaMessages();
+  loadPartners();
 
   loadLogs();
   loadDashboard();
@@ -1362,7 +1443,11 @@ function renderJourneys(){
   const searchEl = document.getElementById('jSearch');
   const q = (searchEl ? searchEl.value : '').trim().toLowerCase();
   if(q !== _lastJourneyQuery){ journeyRenderLimit = 30; _lastJourneyQuery = q; }
-  let entries = Object.entries(users);
+  // ফ্লাইট সিলেক্ট হয়ে যে প্রার্থী রওনা (DEPARTED) হয়ে গেছেন, তিনি আর সক্রিয় জার্নি লিস্টে থাকবেন না
+  let entries = Object.entries(users).filter(([uid, u]) => {
+    const j = getJourneyForUser(uid);
+    return !j || j.current_stage !== 'DEPARTED';
+  });
   if(q){
     entries = entries.filter(([uid, u]) => {
       const hay = (getUserName(u) + ' ' + getUserPhone(u) + ' ' + getUserPassport(u)).toLowerCase();
@@ -1602,10 +1687,13 @@ async function saveVisaPromise(journeyId){
 /* ================= PAYMENT / INSTALLMENT TRACKING ================= */
 function renderPaymentSection(jid, j){
   const payments = j.payments || {};
+  const losses = j.losses || {};
   const totalFee = j.agency_fee || 0;
   const entries = Object.entries(payments).sort((a,b) => (a[1].date||0) - (b[1].date||0));
+  const lossEntries = Object.entries(losses).sort((a,b) => (a[1].date||0) - (b[1].date||0));
   const paid = entries.reduce((sum, [pid, p]) => sum + (p.amount || 0), 0);
-  const due = totalFee - paid;
+  const totalLoss = lossEntries.reduce((sum, [lid, l]) => sum + (l.amount || 0), 0);
+  const due = Math.round(totalFee - paid);
   const rowsHtml = entries.length
     ? entries.map(([pid, p]) => `
       <div class="fieldRow">
@@ -1617,7 +1705,23 @@ function renderPaymentSection(jid, j){
         ${currentRole === 'admin' ? `<button class="del" onclick="deletePayment('${jid}','${pid}')"><i class="fas fa-xmark"></i></button>` : ''}
       </div>`).join('')
     : '<p class="hint">এখনো কোনো কিস্তি যোগ করা হয়নি।</p>';
+  const lossRowsHtml = (currentRole === 'admin' && lossEntries.length)
+    ? `<div class="hint" style="margin:8px 0 2px;color:var(--fail);">এজেন্সির ক্ষতি</div>` + lossEntries.map(([lid, l]) => `
+      <div class="fieldRow">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;">
+          <span><i class="fas fa-triangle-exclamation" style="color:var(--fail);margin-right:4px;font-size:11px;"></i>৳${l.amount}</span>
+          ${l.date ? `<span class="fr-meta">${new Date(l.date).toLocaleDateString('bn-BD')}</span>` : ''}
+          ${l.note ? `<span class="fr-meta">· ${l.note}</span>` : ''}
+        </div>
+        <button class="del" onclick="deleteLoss('${jid}','${lid}')"><i class="fas fa-xmark"></i></button>
+      </div>`).join('')
+    : '';
   const pct = totalFee > 0 ? Math.min(100, Math.max(0, Math.round((paid/totalFee)*100))) : 0;
+  const isOverpaid = due < 0;
+  const dueLabel = isOverpaid ? 'অতিরিক্ত' : 'বাকি';
+  const dueDisplay = isOverpaid ? Math.abs(due) : Math.max(0, due);
+  const journeyCost = journeyVisaTypeCost(j) + (j.cost_medical||0) + (j.cost_visa||0) + (j.cost_flight||0);
+  const netAmount = totalFee - journeyCost - totalLoss;
   return `
     <div class="accRow">
       <div class="accLabel" style="display:flex;align-items:center;justify-content:space-between;">
@@ -1627,38 +1731,119 @@ function renderPaymentSection(jid, j){
       <div class="payProgWrap">
         <div class="payProgOuter"><div class="payProgInner" style="width:${pct}%;"></div></div>
         <div class="payStatsRow">
-          <div class="ps-item"><span class="hint" style="margin:0;">মোট ফি</span><b title="${fmtTkFull(totalFee)}">${fmtTk(totalFee)}</b></div>
-          <div class="ps-item"><span class="hint" style="margin:0;">পরিশোধিত</span><b style="color:var(--ok);" title="${fmtTkFull(paid)}">${fmtTk(paid)}</b></div>
-          <div class="ps-item"><span class="hint" style="margin:0;">বাকি</span><b style="color:${due > 0 ? 'var(--fail)' : 'var(--ok)'};" title="${fmtTkFull(due)}">${fmtTk(due)}</b></div>
+          <div class="ps-item"><span class="hint" style="margin:0;">মোট ফি</span><b title="${fmtTkFull(totalFee)}">${fmtTkCompact(totalFee)}</b></div>
+          <div class="ps-item"><span class="hint" style="margin:0;">পরিশোধিত</span><b style="color:var(--ok);" title="${fmtTkFull(paid)}">${fmtTkCompact(paid)}</b></div>
+          <div class="ps-item"><span class="hint" style="margin:0;">${dueLabel}</span><b style="color:${isOverpaid ? 'var(--ok)' : (due > 0 ? 'var(--fail)' : 'var(--ok)')};" title="${fmtTkFull(dueDisplay)}">${fmtTkCompact(dueDisplay)}</b></div>
+          <div class="ps-item"><span class="hint" style="margin:0;">${netAmount < 0 ? 'ক্ষতি' : 'লাভ'}</span><b style="color:${netAmount < 0 ? 'var(--fail)' : 'var(--ok)'};" title="${fmtTkFull(Math.abs(netAmount))}">${fmtTkCompact(Math.abs(netAmount))}</b></div>
           <div class="ps-item"><span class="hint" style="margin:0;">অগ্রগতি</span><b>${pct}%</b></div>
         </div>
       </div>
-      <div id="paymentList-${jid}">${rowsHtml}</div>
+      <div id="paymentList-${jid}">${rowsHtml}${lossRowsHtml}</div>
       ${currentRole === 'admin' ? `
       <div style="display:flex;gap:6px;margin-top:8px;align-items:stretch;">
         <input type="number" id="payAmt-${jid}" placeholder="পরিমাণ (৳)" style="flex:0 0 90px;min-width:0;">
-        <input type="text" id="payNote-${jid}" placeholder="নোট (ঐচ্ছিক)" style="flex:1;min-width:0;">
+        <input type="text" id="payNote-${jid}" placeholder="নোট (ঐচ্ছিক)" style="flex:1;min-width:0;" oninput="checkAgencyLossTrigger('${jid}')">
         <button class="btn small" style="width:44px;flex-shrink:0;padding:0;" onclick="addPayment('${jid}')" title="যোগ করুন"><i class="fas fa-check"></i></button>
+      </div>
+      <div id="payLossWrap-${jid}" style="display:none;margin-top:6px;gap:6px;flex-wrap:wrap;">
+        <div class="hint" style="margin:0;color:var(--fail);width:100%;"><i class="fas fa-triangle-exclamation"></i> উপরের পরিমাণটি ক্ষতি হিসেবে গণ্য হবে</div>
+        <input type="text" id="payLossNote-${jid}" placeholder="ক্ষতির বিবরণ (ঐচ্ছিক)" style="flex:1;min-width:120px;border-color:var(--fail);">
       </div>` : ''}
+      ${renderFlightCloseSection(jid, j, totalFee, due)}
     </div>`;
+}
+
+/* বকেয়া পুরোপুরি পরিশোধ হয়ে গেলে ফ্লাইটের তারিখ যোগ করার অপশন দেখানো হয়; তারিখ সেভ হলে ফাইলটি (জার্নি) ক্লোজ হয়ে যায় */
+function renderFlightCloseSection(jid, j, totalFee, due){
+  const isFullyPaid = totalFee > 0 && due <= 0;
+  if(!isFullyPaid) return '';
+  const isClosed = j.current_stage === 'DEPARTED';
+  if(currentRole !== 'admin'){
+    if(isClosed) return '';
+    return `<div class="hint" style="color:var(--ok);margin-top:8px;"><i class="fas fa-circle-check"></i> বকেয়া পরিশোধ সম্পন্ন — ফ্লাইটের তারিখ যোগ করার জন্য এডমিনের সাথে যোগাযোগ করুন</div>`;
+  }
+  const existingDate = j.flight_datetime ? new Date(j.flight_datetime).toISOString().slice(0,10) : '';
+  const noticeHtml = isClosed
+    ? `<i class="fas fa-plane-departure" style="margin-right:4px;"></i>ফাইলটি ক্লোজ হয়ে গেছে — প্রয়োজনে ফ্লাইটের তারিখ পরিবর্তন করুন`
+    : `<i class="fas fa-circle-check" style="margin-right:4px;"></i>বকেয়া পরিশোধ সম্পন্ন — ফ্লাইটের তারিখ দিন, এতে ফাইলটি ক্লোজ হয়ে যাবে`;
+  return `
+    <div style="margin-top:8px;border:1px solid var(--ok);border-radius:8px;padding:8px;">
+      <div class="hint" style="margin:0 0 6px;color:var(--ok);">${noticeHtml}</div>
+      <div style="display:flex;gap:6px;align-items:stretch;">
+        <input type="date" id="flightDateClose-${jid}" value="${existingDate}" style="flex:1;min-width:0;">
+        <button class="btn small" style="width:44px;flex-shrink:0;padding:0;" onclick="saveFlightDateAndClose('${jid}')" title="সেভ করুন"><i class="fas fa-check"></i></button>
+      </div>
+    </div>`;
+}
+
+async function saveFlightDateAndClose(journeyId){
+  if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন এই কাজ করতে পারবেন।'); return; }
+  const input = document.getElementById('flightDateClose-' + journeyId);
+  const val = input ? input.value : '';
+  if(!val){ toast('ফ্লাইটের তারিখ দিন'); return; }
+  if(!confirm('ফ্লাইটের তারিখ সেভ করে ফাইলটি ক্লোজ করতে চান?')) return;
+  const flight_datetime = new Date(val).getTime();
+  await db.ref('journeys/' + journeyId).update({ flight_datetime, current_stage: 'DEPARTED', updated_at: Date.now() });
+  await db.ref('status_logs').push({
+    journey_id: journeyId, stage: 'DEPARTED', changed_by: currentUser, created_at: Date.now()
+  });
+  toast('ফ্লাইটের তারিখ সেভ হয়েছে এবং ফাইল ক্লোজ হয়েছে');
+  showTab('dashboard');
+}
+
+const AGENCY_LOSS_TRIGGERS = ['ট্যালেন্ট ওভারসিজ', 'talent overseas', 'কোম্পানি', 'company', 'ক্ষতি', 'loss'];
+function matchesLossTrigger(text){
+  const t = text.trim().toLowerCase();
+  return AGENCY_LOSS_TRIGGERS.some(k => t.includes(k.toLowerCase()));
+}
+function checkAgencyLossTrigger(journeyId){
+  const noteInput = document.getElementById('payNote-' + journeyId);
+  const wrap = document.getElementById('payLossWrap-' + journeyId);
+  if(!noteInput || !wrap) return;
+  const matched = matchesLossTrigger(noteInput.value);
+  wrap.style.display = matched ? 'flex' : 'none';
+  if(!matched){
+    const lossNoteInput = document.getElementById('payLossNote-' + journeyId);
+    if(lossNoteInput) lossNoteInput.value = '';
+  }
 }
 
 async function addPayment(journeyId){
   if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন কিস্তি যোগ করতে পারবেন।'); return; }
   const amtInput = document.getElementById('payAmt-' + journeyId);
   const noteInput = document.getElementById('payNote-' + journeyId);
+  const lossNoteInput = document.getElementById('payLossNote-' + journeyId);
   const amount = parseFloat(amtInput.value);
-  if(!amount || amount <= 0){ toast('সঠিক পরিমাণ লিখুন'); return; }
   const note = noteInput.value.trim();
-  await db.ref('journeys/' + journeyId + '/payments').push({ amount, note, date: Date.now() });
+  const lossNote = lossNoteInput ? lossNoteInput.value.trim() : '';
+  const isLoss = matchesLossTrigger(note);
+
+  if(!amount || amount <= 0){
+    toast('সঠিক পরিমাণ লিখুন');
+    return;
+  }
+  if(isLoss){
+    // এজেন্সির কাজ করতে গিয়ে ব্যর্থ হয়ে যে ক্ষতি হয়েছে, তার হিসাব — এটা ক্লায়েন্টের পেমেন্ট না, তাই আলাদা নোডে রাখা হয়
+    await db.ref('journeys/' + journeyId + '/losses').push({ amount, note: lossNote || 'এজেন্সির কাজে ব্যর্থতাজনিত ক্ষতি', date: Date.now() });
+  } else {
+    await db.ref('journeys/' + journeyId + '/payments').push({ amount, note, date: Date.now() });
+  }
   amtInput.value = '';
   noteInput.value = '';
+  if(lossNoteInput) lossNoteInput.value = '';
+  checkAgencyLossTrigger(journeyId);
 }
 
 async function deletePayment(journeyId, paymentId){
   if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন কিস্তি ডিলিট করতে পারবেন।'); return; }
   if(!confirm('এই কিস্তিটা মুছে ফেলতে চান?')) return;
   await db.ref('journeys/' + journeyId + '/payments/' + paymentId).remove();
+}
+
+async function deleteLoss(journeyId, lossId){
+  if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন ক্ষতির হিসাব ডিলিট করতে পারবেন।'); return; }
+  if(!confirm('এই ক্ষতির হিসাবটা মুছে ফেলতে চান?')) return;
+  await db.ref('journeys/' + journeyId + '/losses/' + lossId).remove();
 }
 
 /* Writes a 'pending' notification and calls the configured webhook.
@@ -2362,6 +2547,9 @@ async function generateContractPdf(uid){
   const paidEntries = Object.values(payments).sort((a,b) => (a.date||0) - (b.date||0));
   const paid = paidEntries.reduce((sum, p) => sum + (p.amount || 0), 0);
   const due = fee - paid;
+  const isOverpaidContract = due < 0;
+  const dueLabelContract = isOverpaidContract ? 'অতিরিক্ত পরিশোধ' : 'বাকি';
+  const dueDisplayContract = isOverpaidContract ? Math.abs(due) : Math.max(0, due);
   const pct = fee > 0 ? Math.min(100, Math.max(0, Math.round((paid/fee)*100))) : 0;
   const today = new Date().toLocaleDateString('bn-BD');
   const contractNo = 'TO-' + String(uid).slice(-6).toUpperCase() + '-' + new Date().getFullYear();
@@ -2405,7 +2593,7 @@ async function generateContractPdf(uid){
     <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px;">
       <tr><td style="padding:5px 0;color:#8a93a3;width:170px;">মোট এজেন্সি ফি</td><td style="padding:5px 0;font-weight:700;">৳${fee}</td></tr>
       <tr><td style="padding:5px 0;color:#8a93a3;">পরিশোধিত</td><td style="padding:5px 0;color:#1a9e5c;font-weight:700;">৳${paid} (${pct}%)</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">বাকি</td><td style="padding:5px 0;color:${due > 0 ? '#dc3545' : '#1a9e5c'};font-weight:700;">৳${due}</td></tr>
+      <tr><td style="padding:5px 0;color:#8a93a3;">${dueLabelContract}</td><td style="padding:5px 0;color:${isOverpaidContract ? '#1a9e5c' : (due > 0 ? '#dc3545' : '#1a9e5c')};font-weight:700;">৳${dueDisplayContract.toLocaleString('bn-BD')}</td></tr>
     </table>
     <div style="height:8px;background:#f0ebe0;border-radius:4px;overflow:hidden;margin-bottom:14px;">
       <div style="height:100%;width:${pct}%;background:#1a9e5c;"></div>
@@ -2766,7 +2954,7 @@ function renderAgents(){
           <i class="fas fa-comment-dots"></i>
           ${agentUnread ? `<span style="position:absolute;top:-6px;right:-7px;background:var(--fail);color:#fff;font-size:9px;line-height:1;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;">${agentUnread}</span>` : ''}
         </button>`;
-    const contactIconsHtml = `<div style="display:flex;align-items:center;gap:9px;flex-shrink:0;margin-right:4px;">
+    const contactIconsHtml = `<div style="display:flex;align-items:center;gap:14px;flex-shrink:0;margin-right:8px;">
           ${messageIconHtml}
           ${a.phone ? `<button type="button" onclick="event.stopPropagation();callChoice('${a.phone}','${withCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;cursor:pointer;padding:0;"><i class="fas fa-phone"></i></button>` : ''}
         </div>`;
@@ -2782,7 +2970,7 @@ function renderAgents(){
         <div class="accTextWrap">
           <div class="accName" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <span>${a.name || '-'}</span>
-            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
               <span class="stagePill" style="font-size:9px;padding:2px 7px;${active ? 'background:rgba(26,158,92,.16);color:var(--ok);' : 'background:rgba(91,107,122,.14);color:#5b6b7a;'}">${active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}</span>
               ${contactIconsHtml}
             </div>
@@ -3455,6 +3643,18 @@ function renderCountrySelects(){
   renderCountryList();
 }
 
+function goToProfitLossSplit(){
+  showTab('settings');
+  const panel = document.getElementById('partnersPanel');
+  if(panel && panel.style.display === 'none'){
+    toggleSettingsPanel('partnersPanel');
+  }
+  setTimeout(() => {
+    const head = panel ? panel.previousElementSibling : null;
+    (head || panel || document.getElementById('panel-settings')).scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 50);
+}
+
 function toggleSettingsPanel(id){
   const el = document.getElementById(id);
   const chev = document.getElementById('chev-' + id);
@@ -3708,6 +3908,7 @@ function openVisaEditModal(vid){
   editingVisaId = vid;
   document.getElementById('veName').value = v.name || '';
   document.getElementById('veFee').value = v.fee || '';
+  document.getElementById('veCost').value = v.cost || '';
   document.getElementById('veQuota').value = v.quota || '';
   const detailsList = (v.details || []).slice();
   let title = '';
@@ -3734,11 +3935,12 @@ function saveVisaEdit(){
   const name = document.getElementById('veName').value.trim();
   if(!name){ toast('ভিসার নাম দিন'); return; }
   const fee = parseInt(document.getElementById('veFee').value) || 0;
+  const cost = parseInt(document.getElementById('veCost').value) || 0;
   const quota = parseInt(document.getElementById('veQuota').value) || 0;
   const title = document.getElementById('veTitle').value.trim();
   const rest = document.getElementById('veDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const details = title ? [title, ...rest] : rest;
-  db.ref('visa_types/' + editingVisaId).update({ name, fee, quota, details })
+  db.ref('visa_types/' + editingVisaId).update({ name, fee, cost, quota, details })
     .then(() => closeVisaEditModal())
     .catch(err => { toast('সেভ করতে ব্যর্থ: ' + err.message); console.error(err); });
 }
@@ -3754,7 +3956,7 @@ function renderVisaInfoList(){
   const groups = {};
   entries.forEach(([vid, v]) => {
     if(!groups[v.country]) groups[v.country] = [];
-    groups[v.country].push({ vid, name: v.name, fee: v.fee || 0, quota: v.quota || 0, details: v.details || [] });
+    groups[v.country].push({ vid, name: v.name, fee: v.fee || 0, cost: v.cost || 0, quota: v.quota || 0, details: v.details || [] });
   });
   const searchEl = document.getElementById('visaSearch');
   const q = (searchEl ? searchEl.value : '').trim().toLowerCase();
@@ -3826,7 +4028,8 @@ function sharePaymentStatus(jid){
     const paid = Object.values(payments).reduce((sum, p) => sum + (p.amount || 0), 0);
     const due = totalFee - paid;
     const pct = totalFee > 0 ? Math.min(100, Math.max(0, Math.round((paid/totalFee)*100))) : 0;
-    const text = `পেমেন্ট / কিস্তি\n\nমোট ফি: ৳${totalFee}\nপরিশোধিত: ৳${paid}\nবাকি: ৳${due}\nঅগ্রগতি: ${pct}%`;
+    const dueLine = due < 0 ? `অতিরিক্ত পরিশোধ: ৳${Math.abs(due).toLocaleString('bn-BD')}` : `বাকি: ৳${Math.max(0, due).toLocaleString('bn-BD')}`;
+    const text = `পেমেন্ট / কিস্তি\n\nমোট ফি: ৳${totalFee.toLocaleString('bn-BD')}\nপরিশোধিত: ৳${paid.toLocaleString('bn-BD')}\n${dueLine}\nঅগ্রগতি: ${pct}%`;
     shareVisaInfo(text);
   });
 }
@@ -4121,6 +4324,106 @@ function openAddUserModal(prefillCountry, prefillVisaId, prefillAgentId){
   document.getElementById('addUserModal').classList.add('active');
 }
 
+function openExpiryAlertsModal(){
+  const items = getExpiringItems(dashUsers, 0);
+  renderExpiryAlerts(items);
+  document.getElementById('expiryAlertsModal').classList.add('active');
+}
+
+function closeExpiryAlertsModal(){
+  document.getElementById('expiryAlertsModal').classList.remove('active');
+}
+
+function closeProfitLossListModal(){
+  document.getElementById('profitLossListModal').classList.remove('active');
+}
+
+function closeDepartedList(){
+  document.getElementById('departedListModal').classList.remove('active');
+}
+
+function openDepartedList(){
+  const journeys = Object.values(dashJourneys);
+  const rows = journeys.filter(j => j.current_stage === 'DEPARTED').map(j => {
+    const u = dashUsers[j.user_id] || {};
+    const flag = COUNTRY_FLAGS[u.country] || '🌍';
+    return { name: getUserName(u), country: u.country || '-', flag, flight_datetime: j.flight_datetime || 0 };
+  }).sort((a,b) => b.flight_datetime - a.flight_datetime);
+
+  const el = document.getElementById('departedListContent');
+  if(!rows.length){ el.innerHTML = '<div class="dash-empty">এখনো কোনো যাত্রী বিদেশ পাঠানো হয়নি</div>'; }
+  else{
+    el.innerHTML = rows.map(r => `<div class="dash-row">
+      <div>
+        <div class="dash-row-title">${r.name}</div>
+        <div class="dash-row-sub">${r.flag} ${r.country}</div>
+      </div>
+      <div class="flight-pill">${r.flight_datetime ? new Date(r.flight_datetime).toLocaleDateString('bn-BD') : '-'}</div>
+    </div>`).join('');
+  }
+  document.getElementById('departedListModal').classList.add('active');
+}
+
+function openProfitList(){
+  const journeys = Object.values(dashJourneys);
+  const rows = journeys.map(j => {
+    const u = dashUsers[j.user_id] || {};
+    return { name: getUserName(u), net: netOf(j).net };
+  }).sort((a,b) => b.net - a.net);
+
+  document.getElementById('plListTitle').innerHTML = '<i class="fas fa-sack-dollar"></i> মোট লাভ — প্রার্থী অনুযায়ী';
+  const el = document.getElementById('plListContent');
+  if(!rows.length){ el.innerHTML = '<div class="dash-empty">কোনো তথ্য নেই</div>'; }
+  else{
+    el.innerHTML = rows.map(r => {
+      const isProfit = r.net >= 0;
+      return `<div class="dash-row">
+        <div class="dash-row-title">${r.name}</div>
+        <div class="flight-pill" style="background:${isProfit ? 'var(--ok)' : 'var(--fail)'};color:#fff;">${isProfit ? '' : '-'}${fmtTk(Math.abs(r.net))}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('profitLossListModal').classList.add('active');
+}
+
+function openLossList(){
+  const journeys = Object.values(dashJourneys);
+  const rows = [];
+  journeys.forEach(j => {
+    const u = dashUsers[j.user_id] || {};
+    Object.values(j.losses || {}).forEach(l => {
+      rows.push({ name: getUserName(u), amount: l.amount || 0, note: l.note || '', date: l.date || 0 });
+    });
+  });
+  rows.sort((a,b) => b.date - a.date);
+
+  document.getElementById('plListTitle').innerHTML = '<i class="fas fa-triangle-exclamation"></i> মোট ক্ষতি — বিস্তারিত';
+  const el = document.getElementById('plListContent');
+  if(!rows.length){ el.innerHTML = '<div class="dash-empty">কোনো ক্ষতি রেকর্ড নেই</div>'; }
+  else{
+    el.innerHTML = rows.map(r => `<div class="dash-row">
+      <div>
+        <div class="dash-row-title">${r.name}${r.note ? ' · ' + r.note : ''}</div>
+        <div class="dash-row-sub">${r.date ? new Date(r.date).toLocaleDateString('bn-BD') : ''}</div>
+      </div>
+      <div class="flight-pill" style="background:var(--fail);color:#fff;">৳${r.amount.toLocaleString('bn-BD')}</div>
+    </div>`).join('');
+  }
+  document.getElementById('profitLossListModal').classList.add('active');
+}
+
+function openUpcomingFlightsModal(){
+  const journeys = Object.values(dashJourneys);
+  const now = Date.now();
+  const allUpcomingFlights = journeys.filter(j => j.flight_datetime && j.flight_datetime >= now);
+  renderUpcomingFlights(allUpcomingFlights);
+  document.getElementById('upcomingFlightsModal').classList.add('active');
+}
+
+function closeUpcomingFlightsModal(){
+  document.getElementById('upcomingFlightsModal').classList.remove('active');
+}
+
 let duDocuments = [];
 let duUserUid = null;
 
@@ -4390,14 +4693,16 @@ function addCustomField(){
   const name = document.getElementById('cfVisaName').value.trim();
   if(!name){ toast('ভিসার নাম দিন।'); return; }
   const fee = parseInt(document.getElementById('cfVisaFee').value) || 0;
+  const cost = parseInt(document.getElementById('cfVisaCost').value) || 0;
   const quota = parseInt(document.getElementById('cfVisaQuota').value) || 0;
   const title = document.getElementById('cfVisaTitle').value.trim();
   const rest = document.getElementById('cfVisaDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const details = title ? [title, ...rest] : rest;
   const key = db.ref('visa_types').push().key;
-  db.ref('visa_types/' + key).set({ country, name, fee, quota, details, created_at: Date.now() }).then(() => {
+  db.ref('visa_types/' + key).set({ country, name, fee, cost, quota, details, created_at: Date.now() }).then(() => {
     document.getElementById('cfVisaName').value = '';
     document.getElementById('cfVisaFee').value = '';
+    document.getElementById('cfVisaCost').value = '';
     document.getElementById('cfVisaQuota').value = '';
     document.getElementById('cfVisaTitle').value = '';
     document.getElementById('cfVisaDetails').value = '';
@@ -4561,38 +4866,94 @@ function renderDashboard(){
   // Core counts
   const totalUsers = Object.keys(dashUsers).length;
   const activeJourneys = journeys.filter(j => j.current_stage !== 'DEPARTED' && j.current_stage !== 'MEDICAL_FAILED').length;
-  const departedMonth = journeys.filter(j => j.current_stage === 'DEPARTED' && (j.updated_at||0) >= startOfMonth).length;
-  const medicalFailed = journeys.filter(j => j.current_stage === 'MEDICAL_FAILED').length;
-  const visaPending = journeys.filter(j => j.current_stage === 'VISA_APPLIED').length;
-  const upcomingFlights = journeys.filter(j => j.flight_datetime && j.flight_datetime >= now.getTime() && j.flight_datetime <= in7Days);
+  const upcomingFlights = journeys.filter(j => j.flight_datetime && j.flight_datetime >= now.getTime());
+
+  // পার্টনারদের মোট বিনিয়োগ
+  const partnerList = Object.values(partners);
+  const totalInvestment = partnerList.reduce((s, p) => s + (p.investment || 0), 0);
+  // এজেন্সিতে থাকা সকল ভিসা টাইপের কোটা (মোট ভিসা সংখ্যা) × মূল্য মিলিয়ে সর্বমোট মূল্য
+  const visaTypeList = Object.values(visaTypes);
+  const totalVisaQuota = visaTypeList.reduce((s, v) => s + (v.quota || 0), 0);
+  const totalVisaValue = visaTypeList.reduce((s, v) => s + (v.fee || 0) * (v.quota || 0), 0);
 
   document.getElementById('dTotalUsers').textContent = totalUsers;
   document.getElementById('dActiveJourneys').textContent = activeJourneys;
-  document.getElementById('dDepartedMonth').textContent = departedMonth;
-  document.getElementById('dMedicalFailed').textContent = medicalFailed;
-  document.getElementById('dVisaPending').textContent = visaPending;
+  document.getElementById('dPartnerCount').textContent = partnerList.length;
+  document.getElementById('plTotalInvestment').textContent = fmtTk(totalInvestment);
+  document.getElementById('dVisaCount').textContent = totalVisaQuota;
+  document.getElementById('plTotalVisaValue').textContent = fmtTk(totalVisaValue);
   document.getElementById('dUpcomingFlights').textContent = upcomingFlights.length;
 
-  const expiringItems = getExpiringItems(dashUsers, 45);
-  document.getElementById('dExpiring').textContent = expiringItems.length;
+  // ব্যবসার বর্তমান "এখনো না-সেটেল হওয়া" লাভ/ক্ষতি — প্রতিটি পার্টনারের কার্ডে যা দেখানো হয় তারই যোগফল।
+  // ড্যাশবোর্ডের "মোট লাভ" আর "মোট ক্ষতি" দুটো কার্ডই এই একই সংখ্যা থেকে বের হবে (একসাথে দুটোই নন-জিরো হতে
+  // পারবে না) — তাই সব পার্টনার ৳০ দেখালে ড্যাশবোর্ডের দুটো কার্ডই ৳০ দেখাবে
+  const totalAvailable = Object.keys(partners).reduce((s, id) => s + partnerAvailablePL(id), 0);
+  const partnersInLoss = Object.keys(partners).filter(id => Math.round(partnerAvailablePL(id)) < 0);
+
+  // মোট ক্ষতি (বর্তমান, না-সেটেল হওয়া অংশ)
+  const totalLoss = totalAvailable < 0 ? Math.abs(totalAvailable) : 0;
+  const dTotalLossEl = document.getElementById('dTotalLoss');
+  const dLossPerPartnerEl = document.getElementById('dLossPerPartner');
+  const dLossPartnerCountEl = document.getElementById('dLossPartnerCount');
+  if(dTotalLossEl){
+    dTotalLossEl.textContent = fmtTk(totalLoss);
+    dTotalLossEl.title = fmtTkFull(totalLoss);
+  }
+  if(dLossPartnerCountEl) dLossPartnerCountEl.textContent = partnersInLoss.length + ' জন';
+  if(dLossPerPartnerEl){
+    const perPartner = partnersInLoss.length ? totalLoss / partnersInLoss.length : 0;
+    dLossPerPartnerEl.textContent = 'সমান ভাগে: ' + fmtTk(perPartner);
+    dLossPerPartnerEl.title = fmtTkFull(perPartner);
+  }
+
+  const expiringItems = getExpiringItems(dashUsers, 0);
+  document.getElementById('dExpiring').textContent = expiringItems.length.toLocaleString('bn-BD');
   renderExpiryAlerts(expiringItems);
   checkExpiryNotifications(dashUsers);
 
-  // Notifications sent/failed today
+  // মোট এজেন্ট ও তাদের মাধ্যমে আসা প্রার্থীদের কাছ থেকে সর্বমোট প্রাপ্ত টাকা
+  const agentCount = Object.keys(agentsCache || {}).length;
+  const totalReceived = journeys.reduce((s, j) => s + Object.values(j.payments || {}).reduce((ps, p) => ps + (p.amount || 0), 0), 0);
+  const dAgentCountEl = document.getElementById('dAgentCount');
+  const dTotalReceivedEl = document.getElementById('dTotalReceived');
+  if(dAgentCountEl) dAgentCountEl.textContent = agentCount;
+  if(dTotalReceivedEl){
+    dTotalReceivedEl.textContent = fmtTk(totalReceived);
+    dTotalReceivedEl.title = fmtTkFull(totalReceived);
+  }
+
+  // মোট প্রেরিত (বিদেশ পাঠানো) যাত্রী সংখ্যা
+  const departedCount = journeys.filter(j => j.current_stage === 'DEPARTED').length;
+  const dDepartedCountEl = document.getElementById('dDepartedCount');
+  if(dDepartedCountEl) dDepartedCountEl.textContent = departedCount.toLocaleString('bn-BD');
+
+  // Notifications sent today (used elsewhere; no longer shown as its own card)
   const notifsToday = Object.values(dashNotifs).filter(n => (n.created_at||0) >= startOfToday);
-  document.getElementById('dNotifSent').textContent = notifsToday.filter(n => n.status === 'sent').length;
+
+  // ব্যবসার মোট লাভ/ক্ষতি — ড্যাশবোর্ডে এখানে "এখনো না-তোলা" লাভ দেখানো হয়, তাই পার্টনাররা যা ইতিমধ্যে
+  // উইথড্র করেছেন তা বাদ দেওয়া হচ্ছে (পার্টনার সেকশনের মোট লাভ/ক্ষতি বক্স কিন্তু সবসময় পুরো/গ্রস হিসাবই দেখায়, ওখানে উইথড্র বিয়োগ হয় না)
+  const totalProfitEl = document.getElementById('dTotalProfit');
+  if(totalProfitEl){
+    const totalProfit = totalAvailable > 0 ? totalAvailable : 0;
+    totalProfitEl.textContent = fmtTk(totalProfit);
+    totalProfitEl.style.color = '';
+    totalProfitEl.title = fmtTkFull(totalProfit);
+  }
 
   renderProfitLoss(journeys, { startOfMonth, in7Days: in7Days, now });
   renderStageChart(journeys);
   renderUpcomingFlights(upcomingFlights);
+  renderPartners();
   document.body.classList.remove('data-loading');
   renderCalendar();
 }
 
 function fmtTk(n){
-  // Abbreviated currency for tight UI spaces (dashboard cards, report summaries): লক্ষ/কোটি above 1 lakh.
+  // Abbreviated currency for tight UI spaces (dashboard cards, report summaries): লক্ষ/কোটি/হাজার কোটি/লাখ কোটি above 1 lakh.
   const rounded = Math.round(n);
   const abs = Math.abs(rounded);
+  if(abs >= 1e12) return '৳' + (abs/1e12).toLocaleString('bn-BD', {maximumFractionDigits:2}) + ' লাখ কোটি';
+  if(abs >= 1e10) return '৳' + (abs/1e10).toLocaleString('bn-BD', {maximumFractionDigits:2}) + ' হাজার কোটি';
   if(abs >= 1e7) return '৳' + (abs/1e7).toLocaleString('bn-BD', {maximumFractionDigits:2}) + ' কোটি';
   if(abs >= 1e5) return '৳' + (abs/1e5).toLocaleString('bn-BD', {maximumFractionDigits:2}) + ' লক্ষ';
   return '৳' + abs.toLocaleString('bn-BD');
@@ -4602,10 +4963,320 @@ function fmtTkFull(n){
   const rounded = Math.round(n);
   return '৳' + Math.abs(rounded).toLocaleString('bn-BD');
 }
+function fmtTkCompact(n){
+  // Extra-tight abbreviated currency (single-letter unit) for narrow multi-column stat rows,
+  // so the number and unit never wrap onto separate lines.
+  const rounded = Math.round(n);
+  const abs = Math.abs(rounded);
+  if(abs >= 1e12) return '৳' + (abs/1e12).toLocaleString('bn-BD', {maximumFractionDigits:1}) + 'লক';
+  if(abs >= 1e10) return '৳' + (abs/1e10).toLocaleString('bn-BD', {maximumFractionDigits:1}) + 'হক';
+  if(abs >= 1e7) return '৳' + (abs/1e7).toLocaleString('bn-BD', {maximumFractionDigits:1}) + 'ক';
+  if(abs >= 1e5) return '৳' + (abs/1e5).toLocaleString('bn-BD', {maximumFractionDigits:1}) + 'ল';
+  return '৳' + abs.toLocaleString('bn-BD');
+}
+/* ================= PARTNERS (ইনভেস্টমেন্ট ও লাভ-লোকসান) ================= */
+let partners = {};
+let editingPartnerId = null;
+let ptPhotoBase64 = null;
+
+function handlePartnerPhotoSelect(e){
+  const file = e.target.files[0];
+  const previewImg = document.getElementById('ptPhotoPreview');
+  const icon = document.getElementById('ptPhotoIcon');
+  if(!file){ return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 400;
+      let w = img.width, h = img.height;
+      if(w > maxDim || h > maxDim){
+        if(w >= h){ h = Math.round(h * maxDim / w); w = maxDim; }
+        else { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      ptPhotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+      previewImg.src = ptPhotoBase64;
+      previewImg.style.display = 'block';
+      icon.style.display = 'none';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function loadPartners(){
+  db.ref('partners').on('value', snap => {
+    partners = snap.val() || {};
+    renderPartners();
+    // ড্যাশবোর্ডের মোট লাভ/ক্ষতি কার্ডও partners ডেটার উপর নির্ভর করে (partnerAvailablePL এর মাধ্যমে) —
+    // তাই পার্টনার ডেটা বদলালে (ডিপোজিট/উইথড্র/সমন্বয়) ড্যাশবোর্ডও সাথে সাথে রিফ্রেশ করতে হবে,
+    // নাহলে সেটিংসে সংখ্যা ঠিক হলেও ড্যাশবোর্ডে পুরনো সংখ্যা রয়ে যাবে
+    if(typeof renderDashboard === 'function') renderDashboard();
+  });
+}
+
+function renderPartners(){
+  const listEl = document.getElementById('partnersList');
+  const summaryEl = document.getElementById('partnersSummary');
+  if(!listEl || !summaryEl) return;
+
+  const journeys = Object.values(dashJourneys);
+  const totalNet = journeys.reduce((s, j) => s + netOf(j).net, 0); // মোট ব্যবসার লাভ/ক্ষতি (পার্টনার-লেভেল available/settle হিসাবের জন্য, নিচে অপরিবর্তিত)
+  const entries = Object.entries(partners);
+  const totalInvestment = entries.reduce((s, [, p]) => s + (p.investment || 0), 0);
+  // প্রতিটি পার্টনারের share_percent আলাদাভাবে রাউন্ড করা থাকলেও যোগফলে বাইনারি ফ্লোটিং-পয়েন্ট আর্টিফ্যাক্ট
+  // (যেমন 100.00999999999999) আসতে পারে, তাই যোগফলকেও ২ দশমিকে রাউন্ড করে নেওয়া হচ্ছে
+  const totalShare = Math.round(entries.reduce((s, [, p]) => s + (p.share_percent || 0), 0) * 100) / 100;
+
+  // এভারগ্রিন/লাইফটাইম হিসাব — ব্যবসার শুরু থেকে এখন পর্যন্ত মোট গ্রস ফি, মোট (ভিসা+মেডিকেল+ফ্লাইট) খরচ,
+  // এবং আলাদাভাবে রেকর্ড করা রিয়েল লস। এই তিনটি সরাসরি জার্নি ডেটা থেকে হিসাব হয় — কোনো পার্টনারের
+  // উইথড্র/রিইনভেস্ট/বিনিয়োগ পরিবর্তনের সাথে এর কোনো সম্পর্ক নেই, তাই এই সংখ্যাগুলো কখনো কৃত্রিমভাবে
+  // প্লাস-মাইনাস হয় না — সবসময় ব্যবসার প্রকৃত, অপরিবর্তিত ইতিহাস দেখায়
+  let grossFee = 0, totalCost = 0, realLoss = 0;
+  journeys.forEach(j => {
+    const n = netOf(j);
+    grossFee += n.fee;
+    totalCost += n.rawCost;
+    realLoss += n.losses;
+  });
+
+  summaryEl.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;">
+      <div style="min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px 6px;text-align:center;">
+        <div class="hint" style="margin:0;font-size:9px;line-height:1.3;">মোট বিনিয়োগ</div>
+        <b style="font-size:15px;line-height:1.3;color:#fff;" title="${fmtTkFull(totalInvestment)}">${fmtTkCompact(totalInvestment)}</b>
+      </div>
+      <div style="min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px 6px;text-align:center;">
+        <div class="hint" style="margin:0;font-size:9px;line-height:1.3;">মোট লাভ</div>
+        <b style="font-size:15px;line-height:1.3;color:#4ade80;" title="${fmtTkFull(grossFee)}">${fmtTkCompact(grossFee)}</b>
+      </div>
+      <div style="min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px 6px;text-align:center;">
+        <div class="hint" style="margin:0;font-size:9px;line-height:1.3;">মোট ক্ষতি</div>
+        <b style="font-size:15px;line-height:1.3;color:#ff6b81;" title="${fmtTkFull(realLoss)}">${fmtTkCompact(realLoss)}</b>
+      </div>
+    </div>
+    ${totalShare > 100.05 ? `<div class="hint" style="color:var(--fail);">সতর্কতা: মোট শেয়ার ১০০% ছাড়িয়ে গেছে (বর্তমানে ${totalShare.toFixed(2)}%)</div>` : ''}
+  `;
+
+  if(entries.length === 0){
+    listEl.innerHTML = '<div class="hint" style="padding:10px 0;">এখনো কোনো পার্টনার যোগ করা হয়নি।</div>';
+    return;
+  }
+
+  listEl.innerHTML = entries.map(([id, p]) => {
+    const share = p.share_percent || 0;
+    // পার্টনার সর্বশেষ যেভাবে সেটেল করেছে তার পর থেকে ব্যবসায় যোগ হওয়া নতুন লাভ/ক্ষতিই তার বর্তমান শেয়ার % অনুযায়ী ভাগ করা হয়
+    const settledNet = p.settled_net || 0;
+    const available = (totalNet - settledNet) * (share / 100);
+    const isZero = Math.round(available) === 0;
+    const pColor = isZero ? 'var(--text-dim)' : (available > 0 ? '#8ff0b0' : '#ff9daa');
+    const phoneDigits = (p.phone || '').replace(/\D/g, '');
+    const phoneWithCC = phoneDigits ? (phoneDigits.startsWith('88') ? phoneDigits : ('88' + phoneDigits.replace(/^0/, ''))) : '';
+    const plLabel = isZero ? 'লাভ/ক্ষতি' : (available > 0 ? 'লাভ' : 'ক্ষতি');
+    const plClickFn = (available > 0) ? `partnerWithdraw('${id}')` : `partnerDeposit('${id}')`;
+    return `
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:7px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+            <div style="width:30px;height:30px;border-radius:50%;flex-shrink:0;overflow:hidden;background:var(--gold);display:flex;align-items:center;justify-content:center;color:#1a1a1a;font-weight:700;font-size:13px;">${p.photoBase64 ? `<img src="${p.photoBase64}" style="width:100%;height:100%;object-fit:cover;">` : (p.name || '?').charAt(0).toUpperCase()}</div>
+            <div style="min-width:0;">
+              <b>${escapeHtmlForHl(p.name || '-')}</b>
+              ${p.phone ? `<span class="hint" style="margin-left:6px;">${escapeHtmlForHl(p.phone)}</span> <button type="button" onclick="callChoice('${p.phone}','${phoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;vertical-align:middle;padding:0;"><i class="fas fa-phone"></i></button>` : ''}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button class="btn small" style="padding:4px 8px;" onclick="openAddPartnerModal('${id}')"><i class="fas fa-pen"></i></button>
+            <button class="btn small danger" style="padding:4px 8px;" onclick="deletePartner('${id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <div onclick="partnerAdjustInvestment('${id}')" style="flex:1;min-width:0;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:3px 6px;text-align:center;cursor:pointer;">
+            <div class="hint" style="font-size:10px;line-height:1.2;margin:0;">বিনিয়োগ</div>
+            <b style="font-size:13px;line-height:1.2;" title="${fmtTkFull(p.investment || 0)}">${fmtTk(p.investment || 0)}</b>
+          </div>
+          <div style="flex:1;min-width:0;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:3px 6px;text-align:center;">
+            <div class="hint" style="font-size:10px;line-height:1.2;margin:0;">শেয়ার</div>
+            <b style="font-size:13px;line-height:1.2;">${share}%</b>
+          </div>
+          <div onclick="${plClickFn}" style="flex:1;min-width:0;background:var(--glass);border:1px solid var(--border);border-radius:7px;padding:3px 6px;text-align:center;cursor:pointer;">
+            <div class="hint" style="font-size:10px;line-height:1.2;margin:0;">${plLabel}</div>
+            <b style="color:${pColor};font-size:13px;line-height:1.2;" title="${fmtTkFull(Math.abs(available))}">${fmtTk(Math.abs(available))}</b>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function autoCalcPartnerShare(){
+  const investment = parseFloat(document.getElementById('ptInvestment').value) || 0;
+  // এডিট করার সময় নিজের পুরনো বিনিয়োগ বাদ দিয়ে বাকি সব পার্টনারের মোট বিনিয়োগ বের করা হয়
+  const othersTotal = Object.entries(partners)
+    .filter(([id]) => id !== editingPartnerId)
+    .reduce((s, [, p]) => s + (p.investment || 0), 0);
+  const grandTotal = othersTotal + investment;
+  const share = grandTotal > 0 ? (investment / grandTotal * 100) : 0;
+  document.getElementById('ptShare').value = Math.round(share * 100) / 100;
+}
+function openAddPartnerModal(partnerId){
+  editingPartnerId = partnerId || null;
+  const p = partnerId ? (partners[partnerId] || {}) : {};
+  document.getElementById('partnerModalTitle').textContent = partnerId ? 'পার্টনার এডিট করুন' : 'নতুন পার্টনার যোগ করুন';
+  document.getElementById('ptName').value = p.name || '';
+  document.getElementById('ptPhone').value = p.phone || '';
+  document.getElementById('ptInvestment').value = p.investment || '';
+  document.getElementById('ptShare').value = p.share_percent || '';
+  document.getElementById('ptMsg').textContent = '';
+  ptPhotoBase64 = p.photoBase64 || null;
+  const previewImg = document.getElementById('ptPhotoPreview');
+  const icon = document.getElementById('ptPhotoIcon');
+  if(ptPhotoBase64){ previewImg.src = ptPhotoBase64; previewImg.style.display = 'block'; icon.style.display = 'none'; }
+  else { previewImg.style.display = 'none'; icon.style.display = 'block'; }
+  document.getElementById('addPartnerModal').classList.add('active');
+}
+function closeAddPartnerModal(){
+  document.getElementById('addPartnerModal').classList.remove('active');
+  editingPartnerId = null;
+  ptPhotoBase64 = null;
+  document.getElementById('ptPhoto').value = '';
+}
+async function recalcAllPartnerShares(currentId, currentData){
+  // সব পার্টনারের বিনিয়োগ অনুপাত অনুযায়ী শেয়ার % পুনরায় হিসাব করা হয় — যার বিনিয়োগ বেশি তার শেয়ারও বেশি হবে
+  const combined = { ...partners };
+  if(currentId) combined[currentId] = currentData;
+  const total = Object.values(combined).reduce((s, p) => s + (p.investment || 0), 0);
+  const updates = {};
+  Object.entries(combined).forEach(([id, p]) => {
+    const share = total > 0 ? (p.investment || 0) / total * 100 : 0;
+    updates[id + '/share_percent'] = Math.round(share * 100) / 100;
+  });
+  await db.ref('partners').update(updates);
+}
+async function savePartner(){
+  const msg = document.getElementById('ptMsg');
+  const name = document.getElementById('ptName').value.trim();
+  const phone = document.getElementById('ptPhone').value.trim();
+  const investment = parseFloat(document.getElementById('ptInvestment').value) || 0;
+  msg.style.color = 'var(--fail)';
+  if(!name){ msg.textContent = 'পার্টনারের নাম দিন।'; return; }
+  const data = { name, phone, investment };
+  if(ptPhotoBase64) data.photoBase64 = ptPhotoBase64;
+  try{
+    let newId = editingPartnerId;
+    if(editingPartnerId){
+      await db.ref('partners/' + editingPartnerId).update(data);
+    } else {
+      const ref = await db.ref('partners').push(data);
+      newId = ref.key;
+    }
+    await recalcAllPartnerShares(newId, data);
+    closeAddPartnerModal();
+    toast('পার্টনার সেভ হয়েছে');
+  }catch(err){
+    msg.textContent = 'সেভ করতে ব্যর্থ: ' + err.message;
+  }
+}
+async function deletePartner(id){
+  if(!confirm('নিশ্চিত এই পার্টনারকে মুছবেন?')) return;
+  try{
+    await db.ref('partners/' + id).remove();
+    const remaining = { ...partners };
+    delete remaining[id];
+    partners = remaining;
+    await recalcAllPartnerShares(null, null);
+  }catch(err){
+    toast('ডিলিট করতে ব্যর্থ: ' + err.message);
+    console.error('deletePartner error:', err);
+  }
+}
+
+// একজন পার্টনারের এখনো সেটেল না হওয়া (উইথড্র/বিনিয়োগে সমন্বয় না হওয়া) লাভ/ক্ষতির পরিমাণ বের করা হয়।
+// সর্বশেষ সেটেলমেন্টের পর ব্যবসায় যত নতুন লাভ/ক্ষতি যোগ হয়েছে, তার বর্তমান শেয়ার % অনুযায়ী অংশ এটি —
+// এভাবে হিসাব রাখলে পরে বিনিয়োগ/শেয়ার % পরিবর্তন হলেও পুরনো হিসাব ভুলভাবে প্রভাবিত হয় না।
+function partnerAvailablePL(id){
+  const p = partners[id];
+  if(!p) return 0;
+  const journeys = Object.values(dashJourneys);
+  const totalNet = journeys.reduce((s, j) => s + netOf(j).net, 0);
+  const settledNet = p.settled_net || 0;
+  return (totalNet - settledNet) * ((p.share_percent || 0) / 100);
+}
+function currentTotalNet(){
+  const journeys = Object.values(dashJourneys);
+  return journeys.reduce((s, j) => s + netOf(j).net, 0);
+}
+async function partnerWithdraw(id){
+  const p = partners[id]; if(!p) return;
+  const available = partnerAvailablePL(id);
+  if(available < 1){ toast('উইথড্র করার মতো কোনো লাভ নেই।'); return; }
+  if(!confirm(`${escapeHtmlForHl(p.name || '')}-এর জন্য ${fmtTkFull(available)} উইথড্র করবেন? এটি বিনিয়োগে যোগ হবে না, শুধু হিসাব থেকে সেটেল হবে।`)) return;
+  try{
+    const data = { settled_net: currentTotalNet() };
+    await db.ref('partners/' + id).update(data);
+    await db.ref('partners/' + id + '/withdrawals').push({ amount: available, type: 'withdraw', date: Date.now() });
+    toast('উইথড্র সম্পন্ন হয়েছে');
+  }catch(err){
+    toast('উইথড্র করতে ব্যর্থ: ' + err.message);
+    console.error('partnerWithdraw error:', err);
+  }
+}
+async function partnerAdjustInvestment(id){
+  const p = partners[id]; if(!p) return;
+  const available = partnerAvailablePL(id);
+  if(Math.abs(available) < 1){ toast('সমন্বয় করার মতো কিছু নেই।'); return; }
+  const isProfit = available > 0;
+  const confirmMsg = isProfit
+    ? `${escapeHtmlForHl(p.name || '')}-এর ${fmtTkFull(available)} লাভ সরাসরি বিনিয়োগে যোগ করবেন?`
+    : `${escapeHtmlForHl(p.name || '')}-এর ${fmtTkFull(Math.abs(available))} ক্ষতি বিনিয়োগ থেকে কমাবেন?`;
+  if(!confirm(confirmMsg)) return;
+  try{
+    const newInvestment = Math.max(0, (p.investment || 0) + available);
+    const data = { investment: newInvestment, settled_net: currentTotalNet() };
+    await db.ref('partners/' + id).update(data);
+    await db.ref('partners/' + id + '/withdrawals').push({ amount: available, type: 'reinvest', date: Date.now() });
+    await recalcAllPartnerShares(id, { ...p, ...data });
+    toast('বিনিয়োগ সমন্বয় হয়েছে');
+  }catch(err){
+    toast('সমন্বয় করতে ব্যর্থ: ' + err.message);
+    console.error('partnerAdjustInvestment error:', err);
+  }
+}
+// ক্ষতি হলে ডান পাশের ঘরে ক্লিক করলে এই ফাংশন চলে — সরাসরি বিনিয়োগ থেকে ক্ষতি কমিয়ে দেওয়ার বদলে,
+// পার্টনার ক্ষতির সমপরিমাণ টাকা ডিপোজিট করছেন কিনা তা কনফার্ম করা হয়; কনফার্ম করলে সেই ডিপোজিট
+// বিনিয়োগে যোগ হয় এবং ক্ষতিটা সেটেল হয়ে যায় (partnerWithdraw যেভাবে লাভ সেটেল করে, সেই একইভাবে)
+async function partnerDeposit(id){
+  const p = partners[id]; if(!p) return;
+  const available = partnerAvailablePL(id);
+  if(available >= 0){ toast('বর্তমানে কোনো ক্ষতি নেই, ডিপোজিটের প্রয়োজন নেই।'); return; }
+  const lossAmount = Math.abs(available);
+  if(!confirm(`${escapeHtmlForHl(p.name || '')} কি ${fmtTkFull(lossAmount)} ক্ষতি মেটাতে এই পরিমাণ ডিপোজিট করছেন? এটি তার বিনিয়োগে যোগ হবে।`)) return;
+  try{
+    const newInvestment = (p.investment || 0) + lossAmount;
+    const data = { investment: newInvestment, settled_net: currentTotalNet() };
+    await db.ref('partners/' + id).update(data);
+    await db.ref('partners/' + id + '/withdrawals').push({ amount: -lossAmount, type: 'deposit', date: Date.now() });
+    await recalcAllPartnerShares(id, { ...p, ...data });
+    toast('ডিপোজিট সম্পন্ন হয়েছে');
+  }catch(err){
+    toast('ডিপোজিট করতে ব্যর্থ: ' + err.message);
+    console.error('partnerDeposit error:', err);
+  }
+}
+
+// একটা জার্নির প্রার্থীর ভিসার ধরন অনুযায়ী "চেনা দাম" (ভিসা কিনার মূল্য) বের করা হয় —
+// এটা agency_fee থেকে বাদ না দিলে পুরো ফি-টাই ভুলভাবে লাভ হিসেবে দেখাবে
+function journeyVisaTypeCost(j){
+  const u = (window._usersCache || {})[j.user_id] || {};
+  return (u.visa_type_id && visaTypes[u.visa_type_id] && visaTypes[u.visa_type_id].cost) || 0;
+}
 function netOf(j){
   const fee = j.agency_fee || 0;
-  const cost = (j.cost_medical||0) + (j.cost_visa||0) + (j.cost_flight||0);
-  return { net: fee - cost, cost, fee };
+  const rawCost = journeyVisaTypeCost(j) + (j.cost_medical||0) + (j.cost_visa||0) + (j.cost_flight||0);
+  const losses = Object.values(j.losses || {}).reduce((s, l) => s + (l.amount || 0), 0);
+  return { net: fee - rawCost - losses, cost: rawCost + losses, rawCost, fee, losses };
 }
 
 /* kind: 'net' (▲profit / ▼loss / neutral at zero)
@@ -4614,15 +5285,16 @@ function netOf(j){
 function applyBadge(id, amount, kind){
   const el = document.getElementById(id);
   if(!el) return;
-  let cls = 'dc-pl', arrow = '';
+  el.className = 'dc-val';
+  let color = '';
   if(kind === 'net'){
-    if(amount > 0){ cls += ' profit'; arrow = '▲'; }
-    else if(amount < 0){ cls += ' loss'; arrow = '▼'; amount = Math.abs(amount); }
+    if(amount > 0){ color = '#8ff0b0'; }
+    else if(amount < 0){ color = '#ff9daa'; amount = Math.abs(amount); }
   } else if(kind === 'lossOnly' && amount > 0){
-    cls += ' loss'; arrow = '▼';
+    color = '#ff9daa';
   }
-  el.className = cls;
-  el.textContent = (arrow ? arrow + ' ' : '') + fmtTk(amount);
+  el.style.color = color;
+  el.textContent = fmtTk(amount);
   el.title = fmtTkFull(amount);
 }
 
@@ -4631,42 +5303,68 @@ function renderProfitLoss(journeys, ctx){
   const sumNet = list => list.reduce((s, j) => s + netOf(j).net, 0);
   const sumCost = list => list.reduce((s, j) => s + netOf(j).cost, 0);
 
-  const departedThisMonth = journeys.filter(j => j.current_stage === 'DEPARTED' && (j.updated_at||0) >= ctx.startOfMonth);
-  const medicalFailedList = journeys.filter(j => j.current_stage === 'MEDICAL_FAILED');
-  const visaPendingList = journeys.filter(j => j.current_stage === 'VISA_APPLIED');
-  const upcomingList = journeys.filter(j => j.flight_datetime && j.flight_datetime >= ctx.now.getTime() && j.flight_datetime <= ctx.in7Days);
+  const upcomingList = journeys.filter(j => j.flight_datetime && j.flight_datetime >= ctx.now.getTime());
 
   applyBadge('plTotal', sumNet(journeys), 'net');                 // মোট প্রার্থী: সব মিলিয়ে নিট
   applyBadge('plActive', sumNet(journeys.filter(isActive)), 'net'); // চলমান জার্নি: প্রত্যাশিত লাভ
-  applyBadge('plDeparted', sumNet(departedThisMonth), 'net');      // এ মাসে রওনা: বাস্তবায়িত লাভ
-  applyBadge('plMedical', sumCost(medicalFailedList), 'lossOnly'); // মেডিকেল ফেইল: খরচ = ক্ষতি
-  applyBadge('plVisa', sumCost(visaPendingList), 'neutral');       // ভিসা পেন্ডিং: এখনো আটকে থাকা খরচ
-  applyBadge('plUpcoming', sumNet(upcomingList), 'net');           // আসন্ন ফ্লাইট: প্রত্যাশিত লাভ
+
+  // আসন্ন ফ্লাইট: প্রত্যাশিত লাভের বদলে সবচেয়ে কাছের ফ্লাইটের তারিখ দেখানো হয়
+  const upcomingValEl = document.getElementById('plUpcoming');
+  if(upcomingValEl){
+    if(upcomingList.length){
+      const nearest = upcomingList.slice().sort((a,b) => a.flight_datetime - b.flight_datetime)[0];
+      upcomingValEl.className = 'dc-pl';
+      upcomingValEl.textContent = new Date(nearest.flight_datetime).toLocaleDateString('bn-BD', { day:'numeric', month:'short' });
+      upcomingValEl.title = new Date(nearest.flight_datetime).toLocaleString('bn-BD');
+    } else {
+      upcomingValEl.className = 'dc-pl';
+      upcomingValEl.textContent = '-';
+      upcomingValEl.title = '';
+    }
+  }
 }
 
 function renderStageChart(journeys){
-  const stageCounts = {};
-  Object.keys(STAGE_LABEL).forEach(s => stageCounts[s] = 0);
-  journeys.forEach(j => { if(stageCounts[j.current_stage] !== undefined) stageCounts[j.current_stage]++; });
-
-  const labels = Object.keys(stageCounts).map(s => STAGE_LABEL[s]);
-  const data = Object.values(stageCounts);
+  // চলতি বছরের জানুয়ারি থেকে ডিসেম্বর — সবগুলো মাস দেখানো হচ্ছে, শুধু বর্তমান স্টেজ গণনার বদলে সার্বিক ব্যবসার পরিস্থিতি বোঝার জন্য
+  const shortMonths = ['জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্ট','অক্টো','নভে','ডিসে'];
+  const now = new Date();
+  const buckets = [];
+  for(let m = 0; m <= 11; m++){
+    buckets.push({ year: now.getFullYear(), month: m, label: shortMonths[m], revenue: 0, cost: 0, net: 0 });
+  }
+  journeys.forEach(j => {
+    const ts = j.updated_at || j.created_at;
+    if(!ts) return;
+    const d = new Date(ts);
+    const b = buckets.find(x => x.year === d.getFullYear() && x.month === d.getMonth());
+    if(!b) return;
+    const { net, cost, fee } = netOf(j);
+    b.revenue += fee;
+    b.cost += cost;
+    b.net += net;
+  });
 
   const ctx = document.getElementById('stageChart');
   if(!ctx || typeof Chart === 'undefined') return;
   if(stageChartInstance) stageChartInstance.destroy();
   stageChartInstance = new Chart(ctx, {
-    type: 'bar',
     data: {
-      labels,
-      datasets: [{ data, backgroundColor: '#3d7cff', borderRadius: 4, maxBarThickness: 22 }]
+      labels: buckets.map(b => b.label),
+      datasets: [
+        { type: 'bar', label: 'আয়', data: buckets.map(b => b.revenue), backgroundColor: '#3d7cff', borderRadius: 4, maxBarThickness: 18, order: 2 },
+        { type: 'bar', label: 'খরচ', data: buckets.map(b => b.cost), backgroundColor: '#ff9daa', borderRadius: 4, maxBarThickness: 18, order: 2 },
+        { type: 'line', label: 'নিট লাভ/ক্ষতি', data: buckets.map(b => b.net), borderColor: '#4ade80', backgroundColor: '#4ade80', tension: 0.3, order: 1, pointRadius: 3 }
+      ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { font: { size: 9 }, boxWidth: 10, color: '#b8c2cf' } },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtTkFull(ctx.parsed.y)}` } }
+      },
       scales: {
         x: { ticks: { font: { size: 9 } }, grid: { display: false } },
-        y: { beginAtZero: true, ticks: { precision: 0, font: { size: 9 } } }
+        y: { ticks: { precision: 0, font: { size: 9 }, callback: v => fmtTkCompact(v) } }
       }
     }
   });
@@ -4717,7 +5415,7 @@ function getExpiringItems(users, thresholdDays){
 function renderExpiryAlerts(items){
   const el = document.getElementById('expiryAlertsList');
   if(!el) return;
-  if(!items.length){ el.innerHTML = '<div class="dash-empty">আগামী ৪৫ দিনে কোনো মেয়াদ শেষ হচ্ছে না</div>'; return; }
+  if(!items.length){ el.innerHTML = '<div class="dash-empty">আজ কোনো মেয়াদ শেষ হচ্ছে না</div>'; return; }
   el.innerHTML = items.map(it => {
     const u = dashUsers[it.uid] || {};
     const isExpired = it.daysLeft < 0;
@@ -4736,7 +5434,7 @@ function renderExpiryAlerts(items){
 function renderUpcomingFlights(flights){
   const el = document.getElementById('upcomingFlightsList');
   if(!el) return;
-  if(!flights.length){ el.innerHTML = '<div class="dash-empty">আগামী ৭ দিনে কোনো ফ্লাইট নেই</div>'; return; }
+  if(!flights.length){ el.innerHTML = '<div class="dash-empty">কোনো আসন্ন ফ্লাইট নেই</div>'; return; }
   const sorted = flights.slice().sort((a,b) => a.flight_datetime - b.flight_datetime);
   el.innerHTML = sorted.map(j => {
     const u = dashUsers[j.user_id] || {};
