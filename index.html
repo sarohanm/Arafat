@@ -372,8 +372,8 @@
     <div class="panel active" id="panel-dashboard">
       <div class="topbar"><h1>ড্যাশবোর্ড</h1></div>
       <div class="dash-grid">
-        <div class="dc" style="--ac:#4ade80;--ic:rgba(74,222,128,.14)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-piggy-bank"></i></div><div class="dc-label">মোট বিনিয়োগ</div><div class="dc-pl" id="dPartnerCount">০</div></div><div class="dc-val" id="plTotalInvestment">৳০</div></div>
-        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-file-invoice-dollar"></i></div><div class="dc-label">ভিসার মূল্য</div><div class="dc-pl" id="dVisaCount">০</div></div><div class="dc-val" id="plTotalVisaValue">৳০</div></div>
+        <div class="dc" style="--ac:#4ade80;--ic:rgba(74,222,128,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openFieldInvestmentModal()"><i class="fas fa-piggy-bank"></i></div><div class="dc-label">মোট বিনিয়োগ</div><div class="dc-pl" id="dPartnerCount">০</div></div><div class="dc-val" id="plTotalInvestment">৳০</div></div>
+        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openVisaQuotaModal()"><i class="fas fa-file-invoice-dollar"></i></div><div class="dc-label">ভিসার মূল্য</div><div class="dc-pl" id="dVisaCount">০</div></div><div class="dc-val" id="plTotalVisaValue">৳০</div></div>
         <div class="dc" style="--ac:#3ff0ff;--ic:rgba(63,240,255,.12)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-users"></i></div><div class="dc-label">মোট প্রার্থী</div><div class="dc-pl" id="dTotalUsers">০</div></div><div class="dc-val" id="plTotal">৳০</div></div>
         <div class="dc" style="--ac:#8a5cff;--ic:rgba(138,92,255,.12)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-suitcase-rolling"></i></div><div class="dc-label">চলমান জার্নি</div><div class="dc-pl" id="dActiveJourneys">০</div></div><div class="dc-val" id="plActive">৳০</div></div>
         <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openExpiryAlertsModal()"><i class="fas fa-hourglass-half"></i></div><div class="dc-label">মেয়াদ শেষ</div></div><div class="dc-val" id="dExpiring">০</div></div>
@@ -1959,9 +1959,13 @@ function addUser(){
       }
       const journeyRef = db.ref('journeys').push();
       const defaultAgencyFee = (visa_type_id && visaTypes[visa_type_id] && visaTypes[visa_type_id].fee) || 0;
+      // বিক্রির সময়কার ভিসার "cost" এখানেই স্ন্যাপশট নিয়ে জার্নিতে সেভ করে রাখা হচ্ছে,
+      // যাতে পরে কেউ ভিসার cost এডিট/ডিলিট করলে আগের বিক্রি করা জার্নির লাভ-ক্ষতি হিসাব পাল্টে না যায়
+      const visaCostSnapshot = (visa_type_id && visaTypes[visa_type_id] && visaTypes[visa_type_id].cost) || 0;
       const journeyData = {
         user_id: userRef.key, current_stage: 'DOC_COLLECTED', updated_at: Date.now(),
-        agency_fee: defaultAgencyFee, cost_medical: 0, cost_visa: 0, cost_flight: 0
+        agency_fee: defaultAgencyFee, cost_medical: 0, cost_visa: 0, cost_flight: 0,
+        visa_type_cost: visaCostSnapshot
       };
       if(!isNaN(vpDays) && vpDays > 0 && vpStart){
         journeyData.visa_promised_days = vpDays;
@@ -3937,6 +3941,11 @@ function saveVisaEdit(){
   const fee = parseInt(document.getElementById('veFee').value) || 0;
   const cost = parseInt(document.getElementById('veCost').value) || 0;
   const quota = parseInt(document.getElementById('veQuota').value) || 0;
+  const check = visaReserveCheck(quota, cost, editingVisaId);
+  if(!check.ok){
+    toast(`মোট বিনিয়োগের বাইরে যাচ্ছে! রিজার্ভে আছে ${fmtTk(check.reserve)}, কিন্তু এই ভিসায় লাগবে ${fmtTk(check.newSpend)}।`);
+    return;
+  }
   const title = document.getElementById('veTitle').value.trim();
   const rest = document.getElementById('veDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const details = title ? [title, ...rest] : rest;
@@ -3972,11 +3981,13 @@ function renderVisaInfoList(){
   }
 
   container.innerHTML = countryNames.map(country => {
-    const countryUserIds = userEntries.filter(([uid, u]) => u.country === country).map(([uid]) => uid);
-    const active = journeyList.filter(j => countryUserIds.includes(j.user_id) && j.current_stage !== 'DEPARTED' && j.current_stage !== 'MEDICAL_FAILED').length;
-    const departed = journeyList.filter(j => countryUserIds.includes(j.user_id) && j.current_stage === 'DEPARTED').length;
     const flag = COUNTRY_FLAGS[country] || '🌍';
     return groups[country].map(v => {
+      // দেশ ধরে নয়, ভিসার ধরন (v.vid) ধরে আলাদাভাবে গোনা হচ্ছে — নাহলে একই দেশে একাধিক
+      // ভিসার ধরন থাকলে সবগুলো কার্ডেই একই (এবং ভুল/বেশি) সংখ্যা দেখাত
+      const visaUserIds = userEntries.filter(([uid, u]) => u.country === country && u.visa_type_id === v.vid).map(([uid]) => uid);
+      const active = journeyList.filter(j => visaUserIds.includes(j.user_id) && j.current_stage !== 'DEPARTED' && j.current_stage !== 'MEDICAL_FAILED').length;
+      const departed = journeyList.filter(j => visaUserIds.includes(j.user_id) && j.current_stage === 'DEPARTED').length;
       const shareText = `${flag} ${country}\nভিসার ধরন: ${v.name}${v.fee ? ` (৳${v.fee.toLocaleString('bn-BD')})` : ''}\nমোট ভিসা: ${v.quota}\nচলমান প্রসেসিং: ${active}`;
       return `
       <div class="visaCard">
@@ -4342,6 +4353,115 @@ function closeDepartedList(){
   document.getElementById('departedListModal').classList.remove('active');
 }
 
+// পিগি-ব্যাংক আইকনে ক্লিক করলে দেখায় কোন দেশ/কোম্পানির কতগুলো ভিসা কত টাকা দিয়ে কেনা হয়েছে
+// (visa_types এর quota × cost — কোটা কেনার সময় একবারেই এই টাকা মাঠে চলে যায়, প্রার্থী বিক্রি হোক বা না হোক),
+// আর মোট বিনিয়োগ থেকে সেই টাকা বাদ দিলে হাতে (রিজার্ভে) কত আছে তা দেখায়।
+function openFieldInvestmentModal(){
+  const entries = Object.entries(visaTypes).map(([vid, v]) => {
+    const quota = v.quota || 0;
+    const cost = v.cost || 0;
+    return { vid, name: v.name || '-', country: v.country || '-', quota, cost, spent: quota * cost };
+  }).filter(r => r.spent > 0).sort((a,b) => b.spent - a.spent);
+
+  const fieldTotal = entries.reduce((s, r) => s + r.spent, 0);
+  const totalInvestment = Object.values(partners).reduce((s, p) => s + (p.investment || 0), 0);
+  const reserve = totalInvestment - fieldTotal;
+  const percent = totalInvestment > 0 ? Math.min((fieldTotal / totalInvestment) * 100, 999) : 0;
+
+  document.getElementById('plListTitle').innerHTML = '<i class="fas fa-piggy-bank"></i> মাঠে থাকা বিনিয়োগ';
+  const el = document.getElementById('plListContent');
+  const summaryHtml = `
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
+        <span class="hint" style="margin:0;">ভিসা কেনায় খরচ (${entries.length}টি ভিসার ধরন)</span>
+        <b style="font-size:15px;color:#4ade80;" title="${fmtTkFull(fieldTotal)}">${fmtTk(fieldTotal)}</b>
+      </div>
+      <div style="height:6px;border-radius:4px;background:var(--glass);overflow:hidden;">
+        <div style="height:100%;width:${Math.min(percent,100)}%;background:#4ade80;"></div>
+      </div>
+      <div class="hint" style="margin:6px 0 0;text-align:right;">মোট বিনিয়োগের ${percent.toLocaleString('bn-BD', {maximumFractionDigits:1})}%</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+      <span class="hint" style="margin:0;">রিজার্ভে আছে</span>
+      <b style="font-size:15px;color:${reserve < 0 ? 'var(--fail)' : '#8ff6ff'};" title="${fmtTkFull(Math.abs(reserve))}">${reserve < 0 ? '-' : ''}${fmtTk(Math.abs(reserve))}</b>
+    </div>
+  `;
+
+  const rowsHtml = !entries.length
+    ? '<div class="dash-empty">এখনো কোনো ভিসা কেনা হয়নি</div>'
+    : entries.map(r => {
+        const flag = COUNTRY_FLAGS[r.country] || '🌍';
+        return `<div class="dash-row">
+        <div>
+          <div class="dash-row-title">${flag} ${r.country} · ${r.name}</div>
+          <div class="dash-row-sub">${r.quota.toLocaleString('bn-BD')}টি × ${fmtTk(r.cost)}</div>
+        </div>
+        <div class="flight-pill">${fmtTk(r.spent)}</div>
+      </div>`;
+      }).join('');
+
+  el.innerHTML = summaryHtml + rowsHtml;
+  document.getElementById('profitLossListModal').classList.add('active');
+}
+
+// "ভিসার মূল্য" কার্ডের আইকনে ক্লিক করলে দেখায় কোন দেশ/কোম্পানির ভিসায় এখনো কত কোটা (সংখ্যা) অবশিষ্ট আছে
+// এবং সেই অবশিষ্ট কোটার মোট বিক্রয়মূল্য কত — বিক্রি হয়ে যাওয়া (কোনো প্রার্থীর visa_type_id হিসেবে যুক্ত) সংখ্যা কোটা থেকে বাদ দিয়ে।
+function openVisaQuotaModal(){
+  const soldCountByVisaType = {};
+  Object.values(dashUsers).forEach(u => {
+    if(u.visa_type_id) soldCountByVisaType[u.visa_type_id] = (soldCountByVisaType[u.visa_type_id] || 0) + 1;
+  });
+
+  const entries = Object.entries(visaTypes).map(([vid, v]) => {
+    const remaining = Math.max((v.quota || 0) - (soldCountByVisaType[vid] || 0), 0);
+    return { vid, name: v.name || '-', country: v.country || '-', fee: v.fee || 0, remaining, value: remaining * (v.fee || 0) };
+  }).filter(r => r.remaining > 0).sort((a,b) => b.value - a.value);
+
+  const totalQuota = entries.reduce((s, r) => s + r.remaining, 0);
+  const totalValue = entries.reduce((s, r) => s + r.value, 0);
+
+  document.getElementById('plListTitle').innerHTML = '<i class="fas fa-file-invoice-dollar"></i> অবশিষ্ট ভিসার মূল্য';
+  const el = document.getElementById('plListContent');
+  const summaryHtml = `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+      <span class="hint" style="margin:0;">মোট অবশিষ্ট ভিসা (${entries.length}টি ধরন)</span>
+      <b style="font-size:15px;color:#ff5d73;" title="${fmtTkFull(totalValue)}">${totalQuota.toLocaleString('bn-BD')}টি · ${fmtTk(totalValue)}</b>
+    </div>
+  `;
+
+  const rowsHtml = !entries.length
+    ? '<div class="dash-empty">এই মুহূর্তে কোনো ভিসা কোটা অবশিষ্ট নেই</div>'
+    : entries.map(r => {
+        const flag = COUNTRY_FLAGS[r.country] || '🌍';
+        return `<div class="dash-row">
+        <div>
+          <div class="dash-row-title">${flag} ${r.country} · ${r.name}</div>
+          <div class="dash-row-sub">${r.remaining.toLocaleString('bn-BD')}টি × ${fmtTk(r.fee)}</div>
+        </div>
+        <div class="flight-pill">${fmtTk(r.value)}</div>
+      </div>`;
+      }).join('');
+
+  el.innerHTML = summaryHtml + rowsHtml;
+  document.getElementById('profitLossListModal').classList.add('active');
+}
+
+// একটা ভিসার ধরনের কোটা (quota) × কিনার মূল্য (cost) যোগ/এডিট করার আগে চেক করা হয় যে এটা মোট
+// বিনিয়োগের (partners এর investment যোগফল) বাইরে চলে যাচ্ছে কিনা — অন্য সব ভিসায় ইতিমধ্যে যে টাকা
+// আটকে আছে তার সাথে এই নতুন/আপডেট হওয়া ভিসার টাকা যোগ করে মোট বিনিয়োগের সাথে তুলনা করা হয়।
+// excludeVid দিলে (এডিট করার সময়) সেই ভিসাটাকে "অন্য সব ভিসা"র হিসাব থেকে বাদ দেওয়া হয়, যাতে নিজের
+// পুরনো টাকা দু'বার গণনা না হয়।
+function visaReserveCheck(newQuota, newCost, excludeVid){
+  const totalInvestment = Object.values(partners).reduce((s, p) => s + (p.investment || 0), 0);
+  const spentOthers = Object.entries(visaTypes).reduce((s, [vid, v]) => {
+    if(vid === excludeVid) return s;
+    return s + (v.quota || 0) * (v.cost || 0);
+  }, 0);
+  const reserve = totalInvestment - spentOthers;
+  const newSpend = (newQuota || 0) * (newCost || 0);
+  return { ok: newSpend <= reserve + 0.01, reserve, newSpend };
+}
+
 function openDepartedList(){
   const journeys = Object.values(dashJourneys);
   const rows = journeys.filter(j => j.current_stage === 'DEPARTED').map(j => {
@@ -4695,6 +4815,11 @@ function addCustomField(){
   const fee = parseInt(document.getElementById('cfVisaFee').value) || 0;
   const cost = parseInt(document.getElementById('cfVisaCost').value) || 0;
   const quota = parseInt(document.getElementById('cfVisaQuota').value) || 0;
+  const check = visaReserveCheck(quota, cost, null);
+  if(!check.ok){
+    toast(`মোট বিনিয়োগের বাইরে যাচ্ছে! রিজার্ভে আছে ${fmtTk(check.reserve)}, কিন্তু এই ভিসায় লাগবে ${fmtTk(check.newSpend)}।`);
+    return;
+  }
   const title = document.getElementById('cfVisaTitle').value.trim();
   const rest = document.getElementById('cfVisaDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const details = title ? [title, ...rest] : rest;
@@ -4864,7 +4989,9 @@ function renderDashboard(){
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
   // Core counts
-  const totalUsers = Object.keys(dashUsers).length;
+  // "মোট প্রার্থী" = ওয়েটিং লিস্টে যত প্রার্থী পেন্ডিং আছে (এজেন্ট থেকে আসা কিন্তু এখনো প্রসেস হয়নি)
+  const pendingVisaMessages = Object.values(visaMessagesCache).filter(m => (m.status || 'pending') === 'pending');
+  const totalUsers = pendingVisaMessages.length;
   const activeJourneys = journeys.filter(j => j.current_stage !== 'DEPARTED' && j.current_stage !== 'MEDICAL_FAILED').length;
   const upcomingFlights = journeys.filter(j => j.flight_datetime && j.flight_datetime >= now.getTime());
 
@@ -4872,9 +4999,20 @@ function renderDashboard(){
   const partnerList = Object.values(partners);
   const totalInvestment = partnerList.reduce((s, p) => s + (p.investment || 0), 0);
   // এজেন্সিতে থাকা সকল ভিসা টাইপের কোটা (মোট ভিসা সংখ্যা) × মূল্য মিলিয়ে সর্বমোট মূল্য
-  const visaTypeList = Object.values(visaTypes);
-  const totalVisaQuota = visaTypeList.reduce((s, v) => s + (v.quota || 0), 0);
-  const totalVisaValue = visaTypeList.reduce((s, v) => s + (v.fee || 0) * (v.quota || 0), 0);
+  // — যেসব ভিসা ইতিমধ্যে বিক্রি হয়ে গেছে (কোনো প্রার্থীর visa_type_id হিসেবে যুক্ত) সেগুলো কোটা থেকে বাদ যাবে
+  const soldCountByVisaType = {};
+  Object.values(dashUsers).forEach(u => {
+    if(u.visa_type_id) soldCountByVisaType[u.visa_type_id] = (soldCountByVisaType[u.visa_type_id] || 0) + 1;
+  });
+  const visaTypeEntries = Object.entries(visaTypes);
+  const totalVisaQuota = visaTypeEntries.reduce((s, [vid, v]) => {
+    const remaining = Math.max((v.quota || 0) - (soldCountByVisaType[vid] || 0), 0);
+    return s + remaining;
+  }, 0);
+  const totalVisaValue = visaTypeEntries.reduce((s, [vid, v]) => {
+    const remaining = Math.max((v.quota || 0) - (soldCountByVisaType[vid] || 0), 0);
+    return s + (v.fee || 0) * remaining;
+  }, 0);
 
   document.getElementById('dTotalUsers').textContent = totalUsers;
   document.getElementById('dActiveJourneys').textContent = activeJourneys;
@@ -4911,9 +5049,13 @@ function renderDashboard(){
   renderExpiryAlerts(expiringItems);
   checkExpiryNotifications(dashUsers);
 
-  // মোট এজেন্ট ও তাদের মাধ্যমে আসা প্রার্থীদের কাছ থেকে সর্বমোট প্রাপ্ত টাকা
+  // মোট এজেন্ট ও তাদের মাধ্যমে আসা প্রার্থীদের কাছ থেকে এজেন্টের কাছে যত টাকা এখনো বাকি (মোট ভিসার দাম - এখন পর্যন্ত পরিশোধিত)
   const agentCount = Object.keys(agentsCache || {}).length;
-  const totalReceived = journeys.reduce((s, j) => s + Object.values(j.payments || {}).reduce((ps, p) => ps + (p.amount || 0), 0), 0);
+  const agentUserIdSet = new Set(Object.entries(dashUsers).filter(([uid, u]) => u.agent_id).map(([uid]) => uid));
+  const agentJourneysAll = journeys.filter(j => agentUserIdSet.has(j.user_id));
+  const agentTotalFeeAll = agentJourneysAll.reduce((s, j) => s + (j.agency_fee || 0), 0);
+  const agentPaidAll = agentJourneysAll.reduce((s, j) => s + Object.values(j.payments || {}).reduce((ps, p) => ps + (p.amount || 0), 0), 0);
+  const totalReceived = Math.max(agentTotalFeeAll - agentPaidAll, 0);
   const dAgentCountEl = document.getElementById('dAgentCount');
   const dTotalReceivedEl = document.getElementById('dTotalReceived');
   if(dAgentCountEl) dAgentCountEl.textContent = agentCount;
@@ -4940,7 +5082,7 @@ function renderDashboard(){
     totalProfitEl.title = fmtTkFull(totalProfit);
   }
 
-  renderProfitLoss(journeys, { startOfMonth, in7Days: in7Days, now });
+  renderProfitLoss(journeys, { startOfMonth, in7Days: in7Days, now, dashUsers, pendingVisaMessages });
   renderStageChart(journeys);
   renderUpcomingFlights(upcomingFlights);
   renderPartners();
@@ -5269,6 +5411,10 @@ async function partnerDeposit(id){
 // একটা জার্নির প্রার্থীর ভিসার ধরন অনুযায়ী "চেনা দাম" (ভিসা কিনার মূল্য) বের করা হয় —
 // এটা agency_fee থেকে বাদ না দিলে পুরো ফি-টাই ভুলভাবে লাভ হিসেবে দেখাবে
 function journeyVisaTypeCost(j){
+  // জার্নিতে বিক্রির সময়কার cost স্ন্যাপশট (visa_type_cost) সেভ করা থাকলে সেটাই ব্যবহার হবে,
+  // যাতে পরে ভিসার cost এডিট/ডিলিট করলেও এই জার্নির লাভ-ক্ষতি হিসাব না পাল্টায়।
+  // পুরনো জার্নি (এই ফিচার আসার আগে তৈরি, তাই visa_type_cost নেই) হলে আগের মতো লাইভ লুকআপ ফলব্যাক হিসেবে থাকবে।
+  if(j.visa_type_cost !== undefined && j.visa_type_cost !== null) return j.visa_type_cost;
   const u = (window._usersCache || {})[j.user_id] || {};
   return (u.visa_type_id && visaTypes[u.visa_type_id] && visaTypes[u.visa_type_id].cost) || 0;
 }
@@ -5305,8 +5451,15 @@ function renderProfitLoss(journeys, ctx){
 
   const upcomingList = journeys.filter(j => j.flight_datetime && j.flight_datetime >= ctx.now.getTime());
 
-  applyBadge('plTotal', sumNet(journeys), 'net');                 // মোট প্রার্থী: সব মিলিয়ে নিট
-  applyBadge('plActive', sumNet(journeys.filter(isActive)), 'net'); // চলমান জার্নি: প্রত্যাশিত লাভ
+  // মোট প্রার্থী: ওয়েটিং লিস্টের পেন্ডিং প্রার্থীদের ভিসা-মূল্য যোগফল (এখনো বিক্রি/পেমেন্ট হয়নি, তাই সম্ভাব্য মূল্য)
+  const pendingTotal = (ctx.pendingVisaMessages || []).reduce((s, m) => {
+    const v = m.visaId ? visaTypes[m.visaId] : null;
+    return s + (v && v.fee ? v.fee : 0);
+  }, 0);
+  applyBadge('plTotal', pendingTotal, 'net');
+  // চলমান জার্নি: প্রত্যাশিত লাভের বদলে মোট ভিসার দাম (agency_fee, অর্থাৎ প্রার্থীকে চার্জ করা ভিসা মূল্য) যোগফল
+  const activeVisaValue = journeys.filter(isActive).reduce((s, j) => s + (j.agency_fee || 0), 0);
+  applyBadge('plActive', activeVisaValue, 'neutral');
 
   // আসন্ন ফ্লাইট: প্রত্যাশিত লাভের বদলে সবচেয়ে কাছের ফ্লাইটের তারিখ দেখানো হয়
   const upcomingValEl = document.getElementById('plUpcoming');
