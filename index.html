@@ -188,6 +188,18 @@
   .card{padding:14px;}
   table{min-width:520px;}
 
+  /* ===== Date field with in-box placeholder label ===== */
+  .dateFieldWrap{position:relative;flex:1;min-width:120px;}
+  .dateFieldWrap input[type="date"]{width:100%;box-sizing:border-box;color-scheme:dark;}
+  .dateFieldWrap .dateFieldLabel{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-dim);font-size:12.5px;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 34px);transition:opacity .12s ease;}
+  .dateFieldWrap input[type="date"]:not(.has-value):not(:focus)::-webkit-datetime-edit-fields-wrapper,
+  .dateFieldWrap input[type="date"]:not(.has-value):not(:focus)::-webkit-datetime-edit-text,
+  .dateFieldWrap input[type="date"]:not(.has-value):not(:focus)::-webkit-datetime-edit-month-field,
+  .dateFieldWrap input[type="date"]:not(.has-value):not(:focus)::-webkit-datetime-edit-day-field,
+  .dateFieldWrap input[type="date"]:not(.has-value):not(:focus)::-webkit-datetime-edit-year-field{color:transparent;}
+  .dateFieldWrap input[type="date"].has-value ~ .dateFieldLabel,
+  .dateFieldWrap input[type="date"]:focus ~ .dateFieldLabel{opacity:0;}
+
   /* ===== Dashboard ===== */
   .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
   .dc{background:var(--glass);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-radius:14px;padding:14px 13px;position:relative;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.3);border:1px solid var(--border);transition:transform .15s ease,box-shadow .15s ease;}
@@ -285,23 +297,64 @@
   .cal-day .dot{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--gold);}
   .cal-day.selected .dot{background:#fff;}
 
-  /* ===== Toast notifications ===== */
-  #toastHost{position:fixed;left:0;right:0;bottom:70px;z-index:900;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 14px;max-width:480px;margin:0 auto;}
-  .toast{pointer-events:auto;max-width:100%;background:rgba(10,20,38,.85);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);border:1px solid var(--border);border-radius:11px;padding:10px 16px;font-size:13px;color:var(--text);box-shadow:0 8px 26px rgba(0,0,0,.4);display:flex;align-items:center;gap:9px;animation:toastIn .25s cubic-bezier(.2,.9,.3,1.3);}
-  .toast i{font-size:13px;flex-shrink:0;}
-  .toast.t-success{border-color:rgba(74,222,128,.4);}
-  .toast.t-success i{color:var(--ok);}
-  .toast.t-error{border-color:rgba(255,93,115,.4);}
-  .toast.t-error i{color:var(--fail);}
-  .toast.t-info{border-color:rgba(63,240,255,.35);}
-  .toast.t-info i{color:var(--cyan);}
-  .toast.leaving{animation:toastOut .2s ease forwards;}
-  @keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
-  @keyframes toastOut{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(8px);}}
+  /* ===== Toast notifications — clean elevated card style ===== */
+  #toastHost{position:fixed;left:0;right:0;top:62px;z-index:950;display:flex;flex-direction:column-reverse;align-items:center;gap:10px;pointer-events:none;padding:0 14px;max-width:480px;width:100%;box-sizing:border-box;margin:0 auto;}
+  .toast{position:relative;overflow:hidden;pointer-events:auto;width:100%;max-width:100%;box-sizing:border-box;background:linear-gradient(155deg,rgba(20,32,54,.98),rgba(10,18,33,.98));backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:13px 16px 15px;font-size:13.5px;font-weight:600;color:var(--text);line-height:1.4;box-shadow:0 14px 34px -6px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.02),0 0 26px -8px var(--tc,transparent);display:flex;align-items:center;gap:12px;animation:toastSlideIn .38s cubic-bezier(.22,1,.36,1);}
+  .toast-icowrap{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb, var(--tc,#3ff0ff) 16%, transparent);animation:toastIcoIn .4s cubic-bezier(.34,1.4,.64,1) .06s both;}
+  .toast i{font-size:14px;flex-shrink:0;color:var(--tc,#3ff0ff);}
+  .toast-text{flex:1;min-width:0;}
+  .toast.t-success{--tc:#4ade80;}
+  .toast.t-error{--tc:#ff5d73;}
+  .toast.t-info{--tc:#3ff0ff;}
+  .toast::after{content:'';position:absolute;left:0;bottom:0;height:2.5px;width:100%;background:var(--tc,#3ff0ff);opacity:.55;transform-origin:left;animation:toastCountdown 3.8s linear forwards;}
+  .toast.leaving{animation:toastSlideOut .22s ease forwards;}
+  @keyframes toastSlideIn{
+    0%{opacity:0;transform:translateY(-18px) scale(.94);}
+    100%{opacity:1;transform:translateY(0) scale(1);}
+  }
+  @keyframes toastIcoIn{
+    0%{transform:scale(0);}
+    70%{transform:scale(1.15);}
+    100%{transform:scale(1);}
+  }
+  @keyframes toastCountdown{
+    0%{transform:scaleX(1);}
+    100%{transform:scaleX(0);}
+  }
+  @keyframes toastSlideOut{
+    0%{opacity:1;transform:translateY(0) scale(1);}
+    100%{opacity:0;transform:translateY(-10px) scale(.95);}
+  }
 
-  /* ===== Offline banner ===== */
-  #offlineBanner{display:none;position:sticky;top:52px;z-index:190;background:rgba(255,180,84,.14);border-bottom:1px solid rgba(255,180,84,.35);color:var(--gold);font-size:12px;font-weight:600;text-align:center;padding:7px 10px;align-items:center;justify-content:center;gap:7px;}
-  #offlineBanner.show{display:flex;}
+  /* ===== Offline / connection status banner — sci-fi HUD style ===== */
+  #offlineBanner{
+    display:none;position:sticky;top:52px;z-index:190;
+    align-items:center;justify-content:center;gap:9px;
+    padding:8px 14px;margin:0;
+    font-family:'Courier New',ui-monospace,monospace;font-size:11.5px;font-weight:700;
+    letter-spacing:.09em;text-transform:uppercase;
+    color:var(--hc,#ffb454);
+    background:
+      repeating-linear-gradient(180deg, rgba(255,255,255,.025) 0px, rgba(255,255,255,.025) 1px, transparent 1px, transparent 3px),
+      linear-gradient(90deg, rgba(6,10,18,.97), rgba(10,16,28,.97) 50%, rgba(6,10,18,.97));
+    border-top:1px solid var(--hc,#ffb454);
+    border-bottom:1px solid rgba(255,180,84,.35);
+    box-shadow:0 0 16px -2px var(--hc,rgba(255,180,84,.5)) inset, 0 2px 18px -4px var(--hc,rgba(255,180,84,.45));
+    overflow:hidden;
+  }
+  #offlineBanner.show{display:flex;animation:hudSlideIn .35s cubic-bezier(.2,.9,.25,1.2);}
+  #offlineBanner::before{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.09), transparent);
+    width:40%;animation:hudSweep 2.6s linear infinite;
+  }
+  #offlineBanner .hud-dot{width:7px;height:7px;border-radius:50%;background:var(--hc,#ffb454);box-shadow:0 0 8px 1px var(--hc,#ffb454);flex-shrink:0;animation:hudBlink 1.1s ease-in-out infinite;}
+  #offlineBanner i{font-size:12.5px;flex-shrink:0;}
+  #offlineBanner.hud-online{--hc:#4ade80;color:#8ffcb0;}
+  #offlineBanner.hud-offline{--hc:#ff5d73;color:#ffb4bf;}
+  @keyframes hudSlideIn{from{transform:translateY(-100%);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  @keyframes hudSweep{0%{transform:translateX(-150%);}100%{transform:translateX(350%);}}
+  @keyframes hudBlink{0%,100%{opacity:1;}50%{opacity:.25;}}
 
   /* ===== Skeleton loaders ===== */
   .skel-shimmer{position:relative;color:transparent !important;background:linear-gradient(90deg, rgba(63,240,255,.07) 25%, rgba(63,240,255,.18) 37%, rgba(63,240,255,.07) 63%);background-size:400% 100%;animation:skelShimmer 1.4s ease infinite;border-radius:6px;}
@@ -358,13 +411,12 @@
     <div class="nav-brand"><i class="fas fa-plane-departure"></i> <span class="brand-text">Md Somrat Mondol</span></div>
     <div class="nav-r">
       <img id="navAvatar" style="display:none;width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);" alt="">
-      <span id="adminNameTag" style="color:#cfd6e0;font-size:12px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-      <span class="roleTag" id="roleTag">Admin</span>
+      <span class="roleTag" id="roleTag">Online</span>
       <button class="logout-btn" onclick="logout()" title="লগআউট"><i class="fas fa-right-from-bracket"></i></button>
     </div>
   </div>
 
-  <div id="offlineBanner"><i class="fas fa-cloud-slash"></i><span id="offlineBannerText">অফলাইন — সর্বশেষ সিঙ্ক হওয়া তথ্য দেখানো হচ্ছে</span></div>
+  <div id="offlineBanner"><span class="hud-dot"></span><i class="fas fa-cloud-slash"></i><span id="offlineBannerText">অফলাইন — সর্বশেষ সিঙ্ক হওয়া তথ্য দেখানো হচ্ছে</span></div>
 
   <div class="main">
 
@@ -373,10 +425,10 @@
       <div class="topbar"><h1>ড্যাশবোর্ড</h1></div>
       <div class="dash-grid">
         <div class="dc" style="--ac:#4ade80;--ic:rgba(74,222,128,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openFieldInvestmentModal()"><i class="fas fa-piggy-bank"></i></div><div class="dc-label">মোট বিনিয়োগ</div><div class="dc-pl" id="dPartnerCount">০</div></div><div class="dc-val" id="plTotalInvestment">৳০</div></div>
-        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openVisaQuotaModal()"><i class="fas fa-file-invoice-dollar"></i></div><div class="dc-label">ভিসার মূল্য</div><div class="dc-pl" id="dVisaCount">০</div></div><div class="dc-val" id="plTotalVisaValue">৳০</div></div>
-        <div class="dc" style="--ac:#3ff0ff;--ic:rgba(63,240,255,.12)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-users"></i></div><div class="dc-label">মোট প্রার্থী</div><div class="dc-pl" id="dTotalUsers">০</div></div><div class="dc-val" id="plTotal">৳০</div></div>
-        <div class="dc" style="--ac:#8a5cff;--ic:rgba(138,92,255,.12)"><div class="dc-head"><div class="dc-ico"><i class="fas fa-suitcase-rolling"></i></div><div class="dc-label">চলমান জার্নি</div><div class="dc-pl" id="dActiveJourneys">০</div></div><div class="dc-val" id="plActive">৳০</div></div>
-        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openExpiryAlertsModal()"><i class="fas fa-hourglass-half"></i></div><div class="dc-label">মেয়াদ শেষ</div></div><div class="dc-val" id="dExpiring">০</div></div>
+        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openVisaQuotaModal()"><i class="fas fa-file-invoice-dollar"></i></div><div class="dc-label">ভিসা</div><div class="dc-pl" id="dVisaCount">০</div></div><div class="dc-val" id="plTotalVisaValue">৳০</div></div>
+        <div class="dc" style="--ac:#3ff0ff;--ic:rgba(63,240,255,.12)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openPendingCandidatesModal()"><i class="fas fa-users"></i></div><div class="dc-label">মোট প্রার্থী</div><div class="dc-pl" id="dTotalUsers">০</div></div><div class="dc-val" id="plTotal">৳০</div></div>
+        <div class="dc" style="--ac:#8a5cff;--ic:rgba(138,92,255,.12)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openActiveJourneysModal()"><i class="fas fa-suitcase-rolling"></i></div><div class="dc-label">চলমান জার্নি</div><div class="dc-pl" id="dActiveJourneys">০</div></div><div class="dc-val" id="plActive">৳০</div></div>
+        <div class="dc" style="--ac:#ff5d73;--ic:rgba(255,93,115,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openExpiryAlertsModal()"><i class="fas fa-hourglass-half"></i></div><div class="dc-label">মেয়াদ শেষ</div><div class="dc-pl" id="dExpiring">০</div></div></div>
         <div class="dc" style="--ac:#3d7cff;--ic:rgba(61,124,255,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openUpcomingFlightsModal()"><i class="fas fa-plane"></i></div><div class="dc-label">আসন্ন ফ্লাইট</div><div class="dc-pl" id="dUpcomingFlights">০</div></div><div class="dc-val" id="plUpcoming">৳০</div></div>
         <div class="dc" style="--ac:#4ade80;--ic:rgba(74,222,128,.14)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openProfitList()"><i class="fas fa-sack-dollar"></i></div><div class="dc-label">মোট লাভ</div></div><div class="dc-val" id="dTotalProfit">৳০</div></div>
         <div class="dc" style="--ac:#ff6b81;--ic:rgba(255,107,129,.18)"><div class="dc-head"><div class="dc-ico dc-ico-tap" onclick="openLossList()"><i class="fas fa-triangle-exclamation"></i></div><div class="dc-label">মোট ক্ষতি</div><div class="dc-pl" id="dLossPartnerCount">০ জন</div></div><div class="dc-val" id="dTotalLoss" style="color:var(--fail);">৳০</div></div>
@@ -452,6 +504,19 @@
     <!-- SETTINGS TAB -->
     <div class="panel admin-only" id="panel-settings">
       <div class="topbar"><h1>সেটিংস</h1></div>
+      <div class="card settingsCard" style="--ac:#22c55e">
+        <div class="settingsHead" style="--ic:rgba(34,197,94,.16);--ac:#22c55e" onclick="toggleSettingsPanel('partnersPanel')">
+          <div class="sh-ico"><i class="fas fa-handshake"></i></div>
+          <h3 style="flex:1;">পার্টনার হিসাব</h3>
+          <span id="addBtn-partnersPanel" class="addFieldBtn" title="নতুন পার্টনার যোগ করুন" onclick="event.stopPropagation(); openAddPartnerModal()" style="width:26px;height:26px;border-radius:50%;background:rgba(34,197,94,.16);color:#22c55e;display:none;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex-shrink:0;margin-left:8px;"><i class="fas fa-plus"></i></span>
+          <span id="chev-partnersPanel" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div id="partnersPanel" style="display:none;">
+          <div id="partnersSummary" style="margin:12px 0;"></div>
+          <div id="partnersList"></div>
+        </div>
+      </div>
+
       <div class="card settingsCard" style="--ac:#8a5cff">
         <div class="settingsHead" style="--ic:rgba(138,92,255,.14);--ac:#8a5cff" onclick="toggleSettingsPanel('settingsCountryPanel')">
           <div class="sh-ico"><i class="fas fa-passport"></i></div>
@@ -478,6 +543,23 @@
           <div id="agentRowsSettings"></div>
         </div>
       </div>
+
+      <div class="card settingsCard" style="--ac:#ffb454">
+        <div class="settingsHead" style="--ic:rgba(255,180,84,.16);--ac:#ffb454" onclick="toggleSettingsPanel('reportsExportPanel')">
+          <div class="sh-ico"><i class="fas fa-download"></i></div>
+          <h3 style="flex:1;">রিপোর্ট এক্সপোর্ট</h3>
+          <span id="chev-reportsExportPanel" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div id="reportsExportPanel" style="display:none;">
+          <p class="hint" style="margin-top:12px;">CSV ফাইল হিসেবে ডাউনলোড হবে, Excel/Google Sheets-এ সরাসরি খোলা যাবে।</p>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+            <button class="btn small success" style="width:100%;" onclick="exportProfitLossReport()"><i class="fas fa-sack-dollar"></i> প্রফিট-লস রিপোর্ট (মাস অনুযায়ী)</button>
+            <button class="btn small info" style="width:100%;" onclick="exportCustomerListReport()"><i class="fas fa-users"></i> কাস্টমার লিস্ট</button>
+            <button class="btn small gold" style="width:100%;" onclick="exportPaymentsReport()"><i class="fas fa-receipt"></i> পেমেন্ট/কিস্তি রিপোর্ট</button>
+          </div>
+        </div>
+      </div>
+
       <div class="card settingsCard" style="--ac:#ff5d73">
         <div class="settingsHead" style="--ic:rgba(255,93,115,.14);--ac:#ff5d73" onclick="toggleSettingsPanel('securityPanel')">
           <div class="sh-ico"><i class="fas fa-lock"></i></div>
@@ -506,35 +588,6 @@
           </div>
           <div style="margin-top:12px;"><button class="btn small" onclick="changeAdminPassword()">পরিবর্তন করুন</button></div>
           <div id="pcMsg" style="font-size:12px;margin-top:6px;"></div>
-        </div>
-      </div>
-
-      <div class="card settingsCard" style="--ac:#22c55e">
-        <div class="settingsHead" style="--ic:rgba(34,197,94,.16);--ac:#22c55e" onclick="toggleSettingsPanel('partnersPanel')">
-          <div class="sh-ico"><i class="fas fa-handshake"></i></div>
-          <h3 style="flex:1;">পার্টনার ইনভেস্টমেন্ট ও লাভ-লোকসান</h3>
-          <span id="addBtn-partnersPanel" class="addFieldBtn" title="নতুন পার্টনার যোগ করুন" onclick="event.stopPropagation(); openAddPartnerModal()" style="width:26px;height:26px;border-radius:50%;background:rgba(34,197,94,.16);color:#22c55e;display:none;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex-shrink:0;margin-left:8px;"><i class="fas fa-plus"></i></span>
-          <span id="chev-partnersPanel" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
-        </div>
-        <div id="partnersPanel" style="display:none;">
-          <div id="partnersSummary" style="margin:12px 0;"></div>
-          <div id="partnersList"></div>
-        </div>
-      </div>
-
-      <div class="card settingsCard" style="--ac:#ffb454">
-        <div class="settingsHead" style="--ic:rgba(255,180,84,.16);--ac:#ffb454" onclick="toggleSettingsPanel('reportsExportPanel')">
-          <div class="sh-ico"><i class="fas fa-download"></i></div>
-          <h3 style="flex:1;">রিপোর্ট এক্সপোর্ট</h3>
-          <span id="chev-reportsExportPanel" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
-        </div>
-        <div id="reportsExportPanel" style="display:none;">
-          <p class="hint" style="margin-top:12px;">CSV ফাইল হিসেবে ডাউনলোড হবে, Excel/Google Sheets-এ সরাসরি খোলা যাবে।</p>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-            <button class="btn small success" style="width:100%;" onclick="exportProfitLossReport()"><i class="fas fa-sack-dollar"></i> প্রফিট-লস রিপোর্ট (মাস অনুযায়ী)</button>
-            <button class="btn small info" style="width:100%;" onclick="exportCustomerListReport()"><i class="fas fa-users"></i> কাস্টমার লিস্ট</button>
-            <button class="btn small gold" style="width:100%;" onclick="exportPaymentsReport()"><i class="fas fa-receipt"></i> পেমেন্ট/কিস্তি রিপোর্ট</button>
-          </div>
         </div>
       </div>
     </div>
@@ -881,6 +934,16 @@
           <input id="veCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
           <input id="veQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
         </div>
+        <div class="flex" style="gap:8px;flex-wrap:wrap;">
+          <div class="dateFieldWrap">
+            <input id="veIssueDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
+            <span class="dateFieldLabel">ভিসা ইস্যুর তারিখ (ঐচ্ছিক)</span>
+          </div>
+          <div class="dateFieldWrap">
+            <input id="veExpiryDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
+            <span class="dateFieldLabel">মেয়াদ উত্তীর্ণের তারিখ (ঐচ্ছিক)</span>
+          </div>
+        </div>
       </div>
       <div style="margin-top:10px;">
         <input id="veTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
@@ -902,10 +965,13 @@
         <select id="cfType" style="display:none;">
           <option value="visa">ভিসা ব্যবস্থাপনা</option>
         </select>
-        <select id="cfCountry" onchange="handleCfCountryChange(this)">
-          <option value="">দেশ নির্বাচন করুন</option>
-          <option value="__manage__">দেশ যোগ/মুছুন  ➕➖</option>
-        </select>
+        <div class="flex" style="gap:8px;">
+          <select id="cfCountry" onchange="handleCfCountryChange(this)" style="flex:1;min-width:0;">
+            <option value="">দেশ নির্বাচন করুন</option>
+            <option value="__manage__">দেশ যোগ/মুছুন  ➕➖</option>
+          </select>
+          <input id="cfAgencyName" placeholder="অন্য এজেন্সির নাম (ঐচ্ছিক)" title="পূরণ করলে এই ভিসার খরচ নিজের রিজার্ভ থেকে বাদ যাবে না — অন্য এজেন্সির মাধ্যমে সংগ্রহ করা ভিসা হিসেবে গণ্য হবে" style="flex:1;min-width:0;">
+        </div>
         <select id="cfVisaSelect" style="display:none;">
           <option value="">এই দেশের সকল ভিসার জন্য</option>
         </select>
@@ -915,6 +981,16 @@
           <input id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
           <input id="cfVisaCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
           <input id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
+        </div>
+        <div class="flex" id="cfVisaDateRow" style="gap:8px;display:none;flex-wrap:wrap;">
+          <div class="dateFieldWrap">
+            <input id="cfVisaIssueDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
+            <span class="dateFieldLabel">ভিসা ইস্যুর তারিখ (ঐচ্ছিক)</span>
+          </div>
+          <div class="dateFieldWrap">
+            <input id="cfVisaExpiryDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
+            <span class="dateFieldLabel">মেয়াদ উত্তীর্ণের তারিখ (ঐচ্ছিক)</span>
+          </div>
         </div>
         <div id="cfVisaDetailsWrap" style="display:none;">
           <input id="cfVisaTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
@@ -968,13 +1044,13 @@ function toast(msg, type){
   const icon = type === 'error' ? 'fa-circle-exclamation' : type === 'success' ? 'fa-circle-check' : 'fa-circle-info';
   const el = document.createElement('div');
   el.className = 'toast t-' + type;
-  el.innerHTML = `<i class="fas ${icon}"></i><span></span>`;
-  el.querySelector('span').textContent = msg;
+  el.innerHTML = `<span class="toast-icowrap"><i class="fas ${icon}"></i></span><span class="toast-text"></span>`;
+  el.querySelector('.toast-text').textContent = msg;
   host.appendChild(el);
   setTimeout(() => {
     el.classList.add('leaving');
-    setTimeout(() => el.remove(), 220);
-  }, 3200);
+    setTimeout(() => el.remove(), 230);
+  }, 3800);
 }
 
 /* ================= OFFLINE / CONNECTION STATUS =================
@@ -985,17 +1061,49 @@ function toast(msg, type){
    snapshot so a cold app-open while offline still shows something instead of a
    blank screen. */
 let _wasOffline = false;
+let _isConnected = true;
+let _reconnectHideTimer = null;
 db.ref('.info/connected').on('value', snap => {
   const connected = snap.val() === true;
+  _isConnected = connected;
   const banner = document.getElementById('offlineBanner');
-  if(banner) banner.classList.toggle('show', !connected);
+  const bannerText = document.getElementById('offlineBannerText');
+  const bannerIcon = banner ? banner.querySelector('i') : null;
+  updateRoleTagStatus();
   if(!connected){
+    if(_reconnectHideTimer){ clearTimeout(_reconnectHideTimer); _reconnectHideTimer = null; }
+    if(banner){
+      banner.classList.remove('hud-online');
+      banner.classList.add('show', 'hud-offline');
+      if(bannerIcon) bannerIcon.className = 'fas fa-cloud-slash';
+      if(bannerText) bannerText.textContent = 'অফলাইন — সর্বশেষ সিঙ্ক হওয়া তথ্য দেখানো হচ্ছে';
+    }
     _wasOffline = true;
   } else if(_wasOffline){
     _wasOffline = false;
+    if(banner) banner.classList.remove('show', 'hud-offline', 'hud-online');
     toast('পুনরায় সংযুক্ত হয়েছে — তথ্য সিঙ্ক হচ্ছে', 'success');
+  } else if(banner){
+    banner.classList.remove('show');
   }
 });
+
+/* roleTag ব্যাজে এখন Admin/Agent এর বদলে ইন্টারনেট সংযোগের অবস্থা (অনলাইন/অফলাইন) দেখানো হয় */
+function updateRoleTagStatus(){
+  const tag = document.getElementById('roleTag');
+  if(!tag) return;
+  if(_isConnected){
+    tag.textContent = 'Online';
+    tag.style.color = 'var(--ok)';
+    tag.style.background = 'rgba(74,222,128,.14)';
+    tag.style.borderColor = 'rgba(74,222,128,.35)';
+  } else {
+    tag.textContent = 'Offline';
+    tag.style.color = 'var(--fail)';
+    tag.style.background = 'rgba(255,90,90,.14)';
+    tag.style.borderColor = 'rgba(255,90,90,.35)';
+  }
+}
 
 function cacheWrite(key, data){
   try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){ /* storage full/unavailable — ignore, live data still works */ }
@@ -1357,17 +1465,12 @@ async function enterApp(){
   currentUser = pendingUid;
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
-  document.getElementById('roleTag').textContent = currentRole === 'admin' ? 'Admin' : 'Agent';
+  updateRoleTagStatus();
   const navAvatarEl = document.getElementById('navAvatar');
   db.ref('admins/' + pendingUid + '/photoBase64').once('value').then(s => {
     if(s.exists()){ navAvatarEl.src = s.val(); navAvatarEl.style.display = 'inline-block'; }
     else { navAvatarEl.style.display = 'none'; }
   }).catch(() => { navAvatarEl.style.display = 'none'; });
-  db.ref('admins/' + pendingUid + '/name').once('value').then(s => {
-    const nm = s.exists() ? s.val() : '';
-    const roleTxt = document.getElementById('roleTag').textContent;
-    document.getElementById('adminNameTag').textContent = (nm && nm !== roleTxt) ? nm : '';
-  }).catch(() => {});
   if(currentRole !== 'admin'){
     document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
   }
@@ -1526,14 +1629,19 @@ function renderJourneys(){
               </button>
             </div>
             <div class="accTextWrap">
-              <div class="accName">${getUserName(u)}${uPhoneVal && uPhoneVal !== '-' ? ` <span style="font-weight:400;color:#5b6b7a;font-size:12.5px;">· ${uPhoneVal}</span> <button type="button" onclick="event.stopPropagation();callChoice('${uPhoneVal}','${uPhoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;vertical-align:middle;padding:0;"><i class="fas fa-phone"></i></button>` : ''}</div>
+              <div class="accName">${getUserName(u)}${uPhoneVal && uPhoneVal !== '-' ? ` <button type="button" onclick="event.stopPropagation();callChoice('${uPhoneVal}','${uPhoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;vertical-align:middle;padding:0;"><i class="fas fa-phone"></i></button>` : ''}</div>
               ${u.agent_id ? (() => {
                 const agentPhoneDigits = (agentPhone || '').replace(/[^0-9]/g, '');
                 const agentPhoneWithCC = agentPhoneDigits ? (agentPhoneDigits.startsWith('88') ? agentPhoneDigits : ('88' + agentPhoneDigits.replace(/^0/, ''))) : '';
                 return `<div class="accSub" style="color:var(--gold);font-weight:600;display:flex;align-items:center;gap:5px;flex-wrap:wrap;"><span><i class="fas fa-user-tie" style="margin-right:4px;"></i>${agentName}${agentPhone ? ' · ' + agentPhone : ''}</span>${agentPhone ? `<button type="button" onclick="event.stopPropagation();callChoice('${agentPhone}','${agentPhoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;padding:0;"><i class="fas fa-phone"></i></button>` : ''}</div>`;
               })() : ''}
               <div class="accSub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <span>${flag} ${u.country || '-'}${u.visa_type_id && visaTypes[u.visa_type_id] ? ' · ' + visaTypes[u.visa_type_id].name : ''}</span>
+                <span>${flag} ${u.country || '-'}${(() => {
+                  const vt = u.visa_type_id && visaTypes[u.visa_type_id] ? visaTypes[u.visa_type_id] : null;
+                  if(!vt) return '';
+                  const visaTitle = (vt.details && vt.details.length && vt.details[0].search(COLON_RE) === -1) ? vt.details[0] : '';
+                  return (visaTitle ? ' · ' + visaTitle : '') + (vt.name ? ' · ' + vt.name : '');
+                })()}</span>
                 <span>${j ? visaPromiseCompactHtml(j) : ''}</span>
               </div>
             </div>
@@ -1762,15 +1870,18 @@ function renderFlightCloseSection(jid, j, totalFee, due){
     if(isClosed) return '';
     return `<div class="hint" style="color:var(--ok);margin-top:8px;"><i class="fas fa-circle-check"></i> বকেয়া পরিশোধ সম্পন্ন — ফ্লাইটের তারিখ যোগ করার জন্য এডমিনের সাথে যোগাযোগ করুন</div>`;
   }
-  const existingDate = j.flight_datetime ? new Date(j.flight_datetime).toISOString().slice(0,10) : '';
+  const existingDT = j.flight_datetime ? new Date(j.flight_datetime) : null;
+  const existingDate = existingDT ? existingDT.toISOString().slice(0,10) : '';
+  const existingTime = existingDT ? existingDT.toTimeString().slice(0,5) : '';
   const noticeHtml = isClosed
     ? `<i class="fas fa-plane-departure" style="margin-right:4px;"></i>ফাইলটি ক্লোজ হয়ে গেছে — প্রয়োজনে ফ্লাইটের তারিখ পরিবর্তন করুন`
-    : `<i class="fas fa-circle-check" style="margin-right:4px;"></i>বকেয়া পরিশোধ সম্পন্ন — ফ্লাইটের তারিখ দিন, এতে ফাইলটি ক্লোজ হয়ে যাবে`;
+    : `<i class="fas fa-circle-check" style="margin-right:4px;"></i>বকেয়া পরিশোধ সম্পন্ন — ফ্লাইটের তারিখ ও সময় দিন, এতে ফাইলটি ক্লোজ হয়ে যাবে`;
   return `
     <div style="margin-top:8px;border:1px solid var(--ok);border-radius:8px;padding:8px;">
       <div class="hint" style="margin:0 0 6px;color:var(--ok);">${noticeHtml}</div>
       <div style="display:flex;gap:6px;align-items:stretch;">
         <input type="date" id="flightDateClose-${jid}" value="${existingDate}" style="flex:1;min-width:0;">
+        <input type="time" id="flightTimeClose-${jid}" value="${existingTime}" style="flex:0 0 110px;min-width:0;">
         <button class="btn small" style="width:44px;flex-shrink:0;padding:0;" onclick="saveFlightDateAndClose('${jid}')" title="সেভ করুন"><i class="fas fa-check"></i></button>
       </div>
     </div>`;
@@ -1778,11 +1889,13 @@ function renderFlightCloseSection(jid, j, totalFee, due){
 
 async function saveFlightDateAndClose(journeyId){
   if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন এই কাজ করতে পারবেন।'); return; }
-  const input = document.getElementById('flightDateClose-' + journeyId);
-  const val = input ? input.value : '';
-  if(!val){ toast('ফ্লাইটের তারিখ দিন'); return; }
-  if(!confirm('ফ্লাইটের তারিখ সেভ করে ফাইলটি ক্লোজ করতে চান?')) return;
-  const flight_datetime = new Date(val).getTime();
+  const dateInput = document.getElementById('flightDateClose-' + journeyId);
+  const timeInput = document.getElementById('flightTimeClose-' + journeyId);
+  const dateVal = dateInput ? dateInput.value : '';
+  const timeVal = timeInput ? timeInput.value : '';
+  if(!dateVal){ toast('ফ্লাইটের তারিখ দিন'); return; }
+  if(!confirm('ফ্লাইটের তারিখ ও সময় সেভ করে ফাইলটি ক্লোজ করতে চান?')) return;
+  const flight_datetime = new Date(dateVal + 'T' + (timeVal || '00:00')).getTime();
   await db.ref('journeys/' + journeyId).update({ flight_datetime, current_stage: 'DEPARTED', updated_at: Date.now() });
   await db.ref('status_logs').push({
     journey_id: journeyId, stage: 'DEPARTED', changed_by: currentUser, created_at: Date.now()
@@ -2443,7 +2556,14 @@ function hpDist(pts){
 function deleteUser(uid){
   if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন এই তথ্য ডিলিট করতে পারবেন।'); return; }
   if(!confirm('নিশ্চিত মুছবেন?')) return;
-  db.ref('users/' + uid).remove()
+  // এই প্রার্থীর user_id দিয়ে তৈরি journeys নোড(গুলো)ও একসাথে মুছে ফেলা হচ্ছে —
+  // নাহলে journeys/{journeyId} রেকর্ড ডাটাবেজে রয়ে যায় এবং "চলমান জার্নি" কার্ডের
+  // অ্যামাউন্টে সেই টাকা গণনা হতেই থাকে, প্রার্থী ডিলিট হয়ে যাওয়ার পরও।
+  const updates = { ['users/' + uid]: null };
+  Object.entries(journeysCache || {}).forEach(([jid, j]) => {
+    if(j && j.user_id === uid) updates['journeys/' + jid] = null;
+  });
+  db.ref().update(updates)
     .catch(err => {
       toast('ডিলিট করতে ব্যর্থ: ' + err.message);
       console.error('deleteUser error:', err);
@@ -3914,6 +4034,10 @@ function openVisaEditModal(vid){
   document.getElementById('veFee').value = v.fee || '';
   document.getElementById('veCost').value = v.cost || '';
   document.getElementById('veQuota').value = v.quota || '';
+  document.getElementById('veIssueDate').value = v.issue_date || '';
+  document.getElementById('veIssueDate').classList.toggle('has-value', !!v.issue_date);
+  document.getElementById('veExpiryDate').value = v.expiry_date || '';
+  document.getElementById('veExpiryDate').classList.toggle('has-value', !!v.expiry_date);
   const detailsList = (v.details || []).slice();
   let title = '';
   if(detailsList.length && detailsList[0].search(COLON_RE) === -1){
@@ -3931,6 +4055,10 @@ function openVisaEditModal(vid){
 function closeVisaEditModal(){
   document.getElementById('visaEditModal').classList.remove('active');
   document.getElementById('veTitle').value = '';
+  document.getElementById('veIssueDate').value = '';
+  document.getElementById('veIssueDate').classList.remove('has-value');
+  document.getElementById('veExpiryDate').value = '';
+  document.getElementById('veExpiryDate').classList.remove('has-value');
   editingVisaId = null;
 }
 
@@ -3941,15 +4069,20 @@ function saveVisaEdit(){
   const fee = parseInt(document.getElementById('veFee').value) || 0;
   const cost = parseInt(document.getElementById('veCost').value) || 0;
   const quota = parseInt(document.getElementById('veQuota').value) || 0;
-  const check = visaReserveCheck(quota, cost, editingVisaId);
-  if(!check.ok){
-    toast(`মোট বিনিয়োগের বাইরে যাচ্ছে! রিজার্ভে আছে ${fmtTk(check.reserve)}, কিন্তু এই ভিসায় লাগবে ${fmtTk(check.newSpend)}।`);
-    return;
+  const isAgencyVisa = !!(visaTypes[editingVisaId] && visaTypes[editingVisaId].agency_name);
+  if(!isAgencyVisa){
+    const check = visaReserveCheck(quota, cost, editingVisaId);
+    if(!check.ok){
+      toast(`মোট বিনিয়োগের বাইরে যাচ্ছে! রিজার্ভে আছে ${fmtTk(check.reserve)}, কিন্তু এই ভিসায় লাগবে ${fmtTk(check.newSpend)}।`);
+      return;
+    }
   }
   const title = document.getElementById('veTitle').value.trim();
   const rest = document.getElementById('veDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const details = title ? [title, ...rest] : rest;
-  db.ref('visa_types/' + editingVisaId).update({ name, fee, cost, quota, details })
+  const issueDate = document.getElementById('veIssueDate').value;
+  const expiryDate = document.getElementById('veExpiryDate').value;
+  db.ref('visa_types/' + editingVisaId).update({ name, fee, cost, quota, details, issue_date: issueDate || null, expiry_date: expiryDate || null })
     .then(() => closeVisaEditModal())
     .catch(err => { toast('সেভ করতে ব্যর্থ: ' + err.message); console.error(err); });
 }
@@ -4356,14 +4489,34 @@ function closeDepartedList(){
 // পিগি-ব্যাংক আইকনে ক্লিক করলে দেখায় কোন দেশ/কোম্পানির কতগুলো ভিসা কত টাকা দিয়ে কেনা হয়েছে
 // (visa_types এর quota × cost — কোটা কেনার সময় একবারেই এই টাকা মাঠে চলে যায়, প্রার্থী বিক্রি হোক বা না হোক),
 // আর মোট বিনিয়োগ থেকে সেই টাকা বাদ দিলে হাতে (রিজার্ভে) কত আছে তা দেখায়।
+// একটা রো-টাইটেলের লেখা (দেশ · নাম · কোটা×দাম) বড় হয়ে গেলে যাতে পরের লাইনে না চলে যায়,
+// তার বদলে ফন্ট সাইজ কমিয়ে এক লাইনেই রাখার জন্য এই হেল্পার ফাংশন ব্যবহার হয়।
+function fitRowFont(len){
+  if(len > 42) return { title: 10, sub: 9 };
+  if(len > 34) return { title: 11, sub: 9.5 };
+  if(len > 26) return { title: 12, sub: 10.5 };
+  return { title: 12.5, sub: 11 };
+}
+
 function openFieldInvestmentModal(){
   const entries = Object.entries(visaTypes).map(([vid, v]) => {
     const quota = v.quota || 0;
     const cost = v.cost || 0;
-    return { vid, name: v.name || '-', country: v.country || '-', quota, cost, spent: quota * cost };
+    const soldJourneys = Object.values(dashJourneys).filter(j => {
+      const u = dashUsers[j.user_id];
+      return u && u.visa_type_id === vid;
+    });
+    const soldCount = soldJourneys.length;
+    const soldReturn = soldJourneys.reduce((s, j) => s + journeyVisaTypeCost(j), 0);
+    const soldNet = soldJourneys.reduce((s, j) => s + netOf(j).net, 0);
+    return { vid, name: v.name || '-', country: v.country || '-', quota, cost, spent: quota * cost, soldJourneys, soldCount, soldReturn, soldNet, agencyName: v.agency_name || '', title: (v.details && v.details.length && v.details[0].search(COLON_RE) === -1) ? v.details[0] : '', issueDate: v.issue_date || '', expiryDate: v.expiry_date || '' };
   }).filter(r => r.spent > 0).sort((a,b) => b.spent - a.spent);
 
-  const fieldTotal = entries.reduce((s, r) => s + r.spent, 0);
+  // অন্য এজেন্সির মাধ্যমে সংগ্রহ করা ভিসা নিজের রিজার্ভ থেকে খরচ হয়নি, তাই মাঠে-থাকা/রিজার্ভ হিসাবে বাদ যায়
+  const ownEntries = entries.filter(r => !r.agencyName);
+  const boughtTotal = ownEntries.reduce((s, r) => s + r.spent, 0);
+  const totalReturned = ownEntries.reduce((s, r) => s + r.soldReturn, 0);
+  const fieldTotal = Math.max(boughtTotal - totalReturned, 0); // এখনো মাঠে (অবিক্রীত কোটায়) আটকে থাকা টাকা
   const totalInvestment = Object.values(partners).reduce((s, p) => s + (p.investment || 0), 0);
   const reserve = totalInvestment - fieldTotal;
   const percent = totalInvestment > 0 ? Math.min((fieldTotal / totalInvestment) * 100, 999) : 0;
@@ -4373,7 +4526,7 @@ function openFieldInvestmentModal(){
   const summaryHtml = `
     <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
-        <span class="hint" style="margin:0;">ভিসা কেনায় খরচ (${entries.length}টি ভিসার ধরন)</span>
+        <span class="hint" style="margin:0;">মাঠে আটকে আছে (${ownEntries.length}টি ভিসার ধরন)</span>
         <b style="font-size:15px;color:#4ade80;" title="${fmtTkFull(fieldTotal)}">${fmtTk(fieldTotal)}</b>
       </div>
       <div style="height:6px;border-radius:4px;background:var(--glass);overflow:hidden;">
@@ -4391,13 +4544,40 @@ function openFieldInvestmentModal(){
     ? '<div class="dash-empty">এখনো কোনো ভিসা কেনা হয়নি</div>'
     : entries.map(r => {
         const flag = COUNTRY_FLAGS[r.country] || '🌍';
-        return `<div class="dash-row">
-        <div>
-          <div class="dash-row-title">${flag} ${r.country} · ${r.name}</div>
-          <div class="dash-row-sub">${r.quota.toLocaleString('bn-BD')}টি × ${fmtTk(r.cost)}</div>
+        const { soldCount, soldReturn, soldNet } = r;
+        const remainingCount = Math.max(r.quota - soldCount, 0);
+        const remainingValue = remainingCount * r.cost;
+        const netColor = soldNet > 0 ? 'var(--ok)' : (soldNet < 0 ? 'var(--fail)' : 'var(--text-dim)');
+        const netSign = soldNet > 0 ? '+' : (soldNet < 0 ? '-' : '');
+        const netLabel = soldCount ? (soldNet > 0 ? 'লাভ' : (soldNet < 0 ? 'ক্ষতি' : 'লাভ/ক্ষতি')) : 'লাভ/ক্ষতি';
+        const netValue = soldCount ? netSign + fmtTk(Math.abs(soldNet)) : 'বিক্রি হয়নি';
+        const hasDivider = !!(r.title || r.issueDate || r.expiryDate);
+        const rowLineText = `${r.country} · ${r.name} · ${r.quota.toLocaleString('bn-BD')}টি × ${fmtTk(r.cost)}`;
+        const rowFz = fitRowFont(rowLineText.length);
+        return `<div class="dash-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="min-width:0;">
+          <div class="dash-row-title" style="white-space:nowrap;overflow:hidden;font-size:${rowFz.title}px;">${flag} ${r.country} <span style="font-size:${rowFz.sub}px;font-weight:500;color:var(--text-dim);">· ${r.name} · ${r.quota.toLocaleString('bn-BD')}টি × ${fmtTk(r.cost)}</span></div>
+          ${r.agencyName ? `<div class="dash-row-sub" style="margin-top:1px;"><span style="color:#ffb454;">🤝 এজেন্সি: ${r.agencyName}</span></div>` : ''}
         </div>
-        <div class="flight-pill">${fmtTk(r.spent)}</div>
-      </div>`;
+        <div class="flight-pill" title="${r.agencyName ? 'মোট খরচ — রিজার্ভ থেকে বাদ যায়নি' : 'মোট খরচ'}" style="flex-shrink:0;${r.agencyName ? 'color:#ffb454;' : ''}">${fmtTk(r.spent)}</div>
+      </div>
+      ${hasDivider ? `<div style="display:flex;align-items:center;gap:8px;">
+        ${r.issueDate ? `<span style="color:#4ade80;font-weight:700;font-size:10.5px;white-space:nowrap;" title="ইস্যুর তারিখ">${new Date(r.issueDate).toLocaleDateString('bn-BD')}</span>` : ''}
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        ${r.title ? `<span style="color:#8ff6ff;font-weight:600;font-size:12px;white-space:nowrap;">${r.title}</span>` : ''}
+        <div style="flex:1;height:1px;background:var(--border);"></div>
+        ${r.expiryDate ? `<span style="color:#ff5d73;font-weight:700;font-size:10.5px;white-space:nowrap;" title="মেয়াদ উত্তীর্ণের তারিখ">${new Date(r.expiryDate).toLocaleDateString('bn-BD')}</span>` : ''}
+      </div>` : ''}
+      <div style="display:flex;justify-content:center;gap:16px;font-size:11px;color:var(--text-dim);${hasDivider ? '' : 'border-top:1px solid var(--border);padding-top:6px;'}white-space:nowrap;">
+        <div>বিক্রি (${soldCount.toLocaleString('bn-BD')}টি): <b style="color:var(--text);">${fmtTk(r.cost * soldCount)}</b></div>
+        <div>বাকি (${remainingCount.toLocaleString('bn-BD')}টি): <b style="color:var(--text);">${fmtTk(remainingValue)}</b></div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:16px;font-size:11px;color:var(--text-dim);white-space:nowrap;">
+        <div>রিটার্ন: <b style="color:#8ff6ff;">${fmtTk(soldReturn)}</b></div>
+        <div>${netLabel}: <b style="color:${netColor};">${netValue}</b></div>
+      </div>
+    </div>`;
       }).join('');
 
   el.innerHTML = summaryHtml + rowsHtml;
@@ -4405,7 +4585,8 @@ function openFieldInvestmentModal(){
 }
 
 // "ভিসার মূল্য" কার্ডের আইকনে ক্লিক করলে দেখায় কোন দেশ/কোম্পানির ভিসায় এখনো কত কোটা (সংখ্যা) অবশিষ্ট আছে
-// এবং সেই অবশিষ্ট কোটার মোট বিক্রয়মূল্য কত — বিক্রি হয়ে যাওয়া (কোনো প্রার্থীর visa_type_id হিসেবে যুক্ত) সংখ্যা কোটা থেকে বাদ দিয়ে।
+// এবং সেই অবশিষ্ট কোটা কিনতে (লাভ ছাড়া, শুধু কেনার মূল্যে) মোট কত টাকা লেগেছিল/লাগবে —
+// বিক্রি হয়ে যাওয়া (কোনো প্রার্থীর visa_type_id হিসেবে যুক্ত) সংখ্যা কোটা থেকে বাদ দিয়ে।
 function openVisaQuotaModal(){
   const soldCountByVisaType = {};
   Object.values(dashUsers).forEach(u => {
@@ -4414,7 +4595,7 @@ function openVisaQuotaModal(){
 
   const entries = Object.entries(visaTypes).map(([vid, v]) => {
     const remaining = Math.max((v.quota || 0) - (soldCountByVisaType[vid] || 0), 0);
-    return { vid, name: v.name || '-', country: v.country || '-', fee: v.fee || 0, remaining, value: remaining * (v.fee || 0) };
+    return { vid, name: v.name || '-', country: v.country || '-', cost: v.cost || 0, remaining, value: remaining * (v.cost || 0) };
   }).filter(r => r.remaining > 0).sort((a,b) => b.value - a.value);
 
   const totalQuota = entries.reduce((s, r) => s + r.remaining, 0);
@@ -4423,9 +4604,9 @@ function openVisaQuotaModal(){
   document.getElementById('plListTitle').innerHTML = '<i class="fas fa-file-invoice-dollar"></i> অবশিষ্ট ভিসার মূল্য';
   const el = document.getElementById('plListContent');
   const summaryHtml = `
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
-      <span class="hint" style="margin:0;">মোট অবশিষ্ট ভিসা (${entries.length}টি ধরন)</span>
-      <b style="font-size:15px;color:#ff5d73;" title="${fmtTkFull(totalValue)}">${totalQuota.toLocaleString('bn-BD')}টি · ${fmtTk(totalValue)}</b>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+      <span class="hint" style="margin:0;white-space:nowrap;">মোট অবশিষ্ট ভিসা (${entries.length}টি ধরন)</span>
+      <b style="font-size:${(totalQuota.toLocaleString('bn-BD') + 'টি · ' + fmtTk(totalValue)).length > 16 ? 12 : 14}px;color:#ff5d73;white-space:nowrap;flex-shrink:0;" title="${fmtTkFull(totalValue)}">${totalQuota.toLocaleString('bn-BD')}টি · ${fmtTk(totalValue)}</b>
     </div>
   `;
 
@@ -4433,10 +4614,11 @@ function openVisaQuotaModal(){
     ? '<div class="dash-empty">এই মুহূর্তে কোনো ভিসা কোটা অবশিষ্ট নেই</div>'
     : entries.map(r => {
         const flag = COUNTRY_FLAGS[r.country] || '🌍';
+        const rowLineText = `${r.country} · ${r.name} · ${r.remaining.toLocaleString('bn-BD')}টি × ${fmtTk(r.cost)}`;
+        const rowFz = fitRowFont(rowLineText.length);
         return `<div class="dash-row">
-        <div>
-          <div class="dash-row-title">${flag} ${r.country} · ${r.name}</div>
-          <div class="dash-row-sub">${r.remaining.toLocaleString('bn-BD')}টি × ${fmtTk(r.fee)}</div>
+        <div style="min-width:0;">
+          <div class="dash-row-title" style="white-space:nowrap;overflow:hidden;font-size:${rowFz.title}px;">${flag} ${r.country} <span style="font-size:${rowFz.sub}px;font-weight:500;color:var(--text-dim);">· ${r.name} · ${r.remaining.toLocaleString('bn-BD')}টি × ${fmtTk(r.cost)}</span></div>
         </div>
         <div class="flight-pill">${fmtTk(r.value)}</div>
       </div>`;
@@ -4455,6 +4637,7 @@ function visaReserveCheck(newQuota, newCost, excludeVid){
   const totalInvestment = Object.values(partners).reduce((s, p) => s + (p.investment || 0), 0);
   const spentOthers = Object.entries(visaTypes).reduce((s, [vid, v]) => {
     if(vid === excludeVid) return s;
+    if(v.agency_name) return s; // অন্য এজেন্সির ভিসা — নিজের রিজার্ভ থেকে খরচ হয়নি
     return s + (v.quota || 0) * (v.cost || 0);
   }, 0);
   const reserve = totalInvestment - spentOthers;
@@ -4467,40 +4650,89 @@ function openDepartedList(){
   const rows = journeys.filter(j => j.current_stage === 'DEPARTED').map(j => {
     const u = dashUsers[j.user_id] || {};
     const flag = COUNTRY_FLAGS[u.country] || '🌍';
-    return { name: getUserName(u), country: u.country || '-', flag, flight_datetime: j.flight_datetime || 0 };
+    const vt = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id] : null;
+    const visaName = vt ? vt.name : '';
+    const visaTitle = (vt && vt.details && vt.details.length && vt.details[0].search(COLON_RE) === -1) ? vt.details[0] : '';
+    const n = netOf(j);
+    // প্রসেসিং সময়: প্রার্থী যুক্ত হওয়ার সময় (user.created_at) থেকে বিদেশ যাওয়া নিশ্চিত হওয়ার সময় (journey.updated_at) পর্যন্ত।
+    const processingDays = (u.created_at && j.updated_at) ? Math.max(Math.round((j.updated_at - u.created_at) / 86400000), 0) : null;
+    // বিদেশে কতদিন ধরে আছে: ফ্লাইটের তারিখ থেকে আজ পর্যন্ত। ফ্লাইট এখনো না হয়ে থাকলে (ভবিষ্যতের তারিখ) দেখানো হয় না।
+    const abroadDays = j.flight_datetime && j.flight_datetime <= Date.now() ? Math.round((Date.now() - j.flight_datetime) / 86400000) : null;
+    return {
+      name: getUserName(u), country: u.country || '-', flag, phone: u.phone || '',
+      visaName, visaTitle, fee: n.fee, net: n.net,
+      flight_datetime: j.flight_datetime || 0, processingDays, abroadDays
+    };
   }).sort((a,b) => b.flight_datetime - a.flight_datetime);
 
   const el = document.getElementById('departedListContent');
   if(!rows.length){ el.innerHTML = '<div class="dash-empty">এখনো কোনো যাত্রী বিদেশ পাঠানো হয়নি</div>'; }
   else{
-    el.innerHTML = rows.map(r => `<div class="dash-row">
-      <div>
-        <div class="dash-row-title">${r.name}</div>
-        <div class="dash-row-sub">${r.flag} ${r.country}</div>
+    el.innerHTML = rows.map(r => {
+      const netColor = r.net > 0 ? 'var(--ok)' : (r.net < 0 ? 'var(--fail)' : 'var(--text-dim)');
+      const netLabel = r.net > 0 ? 'লাভ' : (r.net < 0 ? 'ক্ষতি' : 'লাভ/ক্ষতি');
+      return `<div class="dash-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <div class="dash-row-title">${r.name}${r.phone ? ` <button type="button" onclick="callChoice('${r.phone}','${r.phone.replace(/\D/g,'')}')" style="width:auto;height:auto;background:none;border:none;color:var(--ok);display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;padding:0;margin-left:6px;vertical-align:middle;"><i class="fas fa-phone"></i></button>` : ''}</div>
+          <div class="dash-row-sub">${r.flag} ${r.country}${r.visaTitle ? ' · ' + r.visaTitle : ''}${r.visaName ? ' · ' + r.visaName : ''}</div>
+        </div>
+        <div class="flight-pill" style="flex-shrink:0;">${r.flight_datetime ? new Date(r.flight_datetime).toLocaleDateString('bn-BD') : '-'}</div>
       </div>
-      <div class="flight-pill">${r.flight_datetime ? new Date(r.flight_datetime).toLocaleDateString('bn-BD') : '-'}</div>
-    </div>`).join('');
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--text-dim);border-top:1px solid var(--border);padding-top:6px;white-space:nowrap;">
+        <div>ফি: <b style="color:var(--text);">${fmtTk(r.fee)}</b></div>
+        <div>${netLabel}: <b style="color:${netColor};">${fmtTk(Math.abs(r.net))}</b></div>
+        ${r.processingDays !== null ? `<div>প্রসেসিং: <b style="color:var(--text);">${r.processingDays.toLocaleString('bn-BD')} দিন</b></div>` : ''}
+        ${r.abroadDays !== null ? `<div>বিদেশে: <b style="color:var(--text);">${r.abroadDays.toLocaleString('bn-BD')} দিন</b></div>` : ''}
+      </div>
+    </div>`;
+    }).join('');
   }
   document.getElementById('departedListModal').classList.add('active');
 }
 
 function openProfitList(){
-  const journeys = Object.values(dashJourneys);
+  // শুধু সম্পন্ন (DEPARTED) জার্নিই এখানে দেখানো হয় — যেহেতু কার্ডের সংখ্যাটা এখন "রিয়েল" (realized) লাভ,
+  // চলমান জার্নির প্রত্যাশিত লাভ এই লিস্টে দেখানো হয় না।
+  const journeys = Object.values(dashJourneys).filter(j => j.current_stage === 'DEPARTED');
   const rows = journeys.map(j => {
     const u = dashUsers[j.user_id] || {};
-    return { name: getUserName(u), net: netOf(j).net };
+    const flag = COUNTRY_FLAGS[u.country] || '🌍';
+    const vt = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id] : null;
+    const visaName = vt ? vt.name : '';
+    const visaTitle = (vt && vt.details && vt.details.length && vt.details[0].search(COLON_RE) === -1) ? vt.details[0] : '';
+    const n = netOf(j);
+    const processingDays = (u.created_at && j.updated_at) ? Math.max(Math.round((j.updated_at - u.created_at) / 86400000), 0) : null;
+    const abroadDays = j.flight_datetime && j.flight_datetime <= Date.now() ? Math.round((Date.now() - j.flight_datetime) / 86400000) : null;
+    return {
+      name: getUserName(u), country: u.country || '-', flag, phone: u.phone || '',
+      visaName, visaTitle, fee: n.fee, net: n.net,
+      flight_datetime: j.flight_datetime || 0, processingDays, abroadDays
+    };
   }).sort((a,b) => b.net - a.net);
 
-  document.getElementById('plListTitle').innerHTML = '<i class="fas fa-sack-dollar"></i> মোট লাভ — প্রার্থী অনুযায়ী';
+  document.getElementById('plListTitle').innerHTML = '<i class="fas fa-sack-dollar"></i> মোট লাভ — প্রার্থী অনুযায়ী (সম্পন্ন)';
   const el = document.getElementById('plListContent');
   if(!rows.length){ el.innerHTML = '<div class="dash-empty">কোনো তথ্য নেই</div>'; }
   else{
     el.innerHTML = rows.map(r => {
-      const isProfit = r.net >= 0;
-      return `<div class="dash-row">
-        <div class="dash-row-title">${r.name}</div>
-        <div class="flight-pill" style="background:${isProfit ? 'var(--ok)' : 'var(--fail)'};color:#fff;">${isProfit ? '' : '-'}${fmtTk(Math.abs(r.net))}</div>
-      </div>`;
+      const netColor = r.net > 0 ? 'var(--ok)' : (r.net < 0 ? 'var(--fail)' : 'var(--text-dim)');
+      const netLabel = r.net > 0 ? 'লাভ' : (r.net < 0 ? 'ক্ষতি' : 'লাভ/ক্ষতি');
+      return `<div class="dash-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <div class="dash-row-title">${r.name}${r.phone ? ` <button type="button" onclick="callChoice('${r.phone}','${r.phone.replace(/\D/g,'')}')" style="width:auto;height:auto;background:none;border:none;color:var(--ok);display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;padding:0;margin-left:6px;vertical-align:middle;"><i class="fas fa-phone"></i></button>` : ''}</div>
+          <div class="dash-row-sub">${r.flag} ${r.country}${r.visaTitle ? ' · ' + r.visaTitle : ''}${r.visaName ? ' · ' + r.visaName : ''}</div>
+        </div>
+        <div class="flight-pill" style="flex-shrink:0;background:${r.net >= 0 ? 'var(--ok)' : 'var(--fail)'};color:#fff;">${fmtTk(Math.abs(r.net))}</div>
+      </div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--text-dim);border-top:1px solid var(--border);padding-top:6px;white-space:nowrap;">
+        <div>ফি: <b style="color:var(--text);">${fmtTk(r.fee)}</b></div>
+        <div>${netLabel}: <b style="color:${netColor};">${fmtTk(Math.abs(r.net))}</b></div>
+        ${r.processingDays !== null ? `<div>প্রসেসিং: <b style="color:var(--text);">${r.processingDays.toLocaleString('bn-BD')} দিন</b></div>` : ''}
+        ${r.abroadDays !== null ? `<div>বিদেশে: <b style="color:var(--text);">${r.abroadDays.toLocaleString('bn-BD')} দিন</b></div>` : ''}
+      </div>
+    </div>`;
     }).join('');
   }
   document.getElementById('profitLossListModal').classList.add('active');
@@ -4511,8 +4743,15 @@ function openLossList(){
   const rows = [];
   journeys.forEach(j => {
     const u = dashUsers[j.user_id] || {};
+    const flag = COUNTRY_FLAGS[u.country] || '🌍';
+    const vt = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id] : null;
+    const visaName = vt ? vt.name : '';
+    const visaTitle = (vt && vt.details && vt.details.length && vt.details[0].search(COLON_RE) === -1) ? vt.details[0] : '';
     Object.values(j.losses || {}).forEach(l => {
-      rows.push({ name: getUserName(u), amount: l.amount || 0, note: l.note || '', date: l.date || 0 });
+      rows.push({
+        name: getUserName(u), country: u.country || '-', flag, phone: u.phone || '',
+        visaName, visaTitle, amount: l.amount || 0, note: l.note || '', date: l.date || 0
+      });
     });
   });
   rows.sort((a,b) => b.date - a.date);
@@ -4521,12 +4760,18 @@ function openLossList(){
   const el = document.getElementById('plListContent');
   if(!rows.length){ el.innerHTML = '<div class="dash-empty">কোনো ক্ষতি রেকর্ড নেই</div>'; }
   else{
-    el.innerHTML = rows.map(r => `<div class="dash-row">
-      <div>
-        <div class="dash-row-title">${r.name}${r.note ? ' · ' + r.note : ''}</div>
-        <div class="dash-row-sub">${r.date ? new Date(r.date).toLocaleDateString('bn-BD') : ''}</div>
+    el.innerHTML = rows.map(r => `<div class="dash-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <div class="dash-row-title">${r.name}${r.phone ? ` <button type="button" onclick="callChoice('${r.phone}','${r.phone.replace(/\D/g,'')}')" style="width:auto;height:auto;background:none;border:none;color:var(--ok);display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;padding:0;margin-left:6px;vertical-align:middle;"><i class="fas fa-phone"></i></button>` : ''}</div>
+          <div class="dash-row-sub">${r.flag} ${r.country}${r.visaTitle ? ' · ' + r.visaTitle : ''}${r.visaName ? ' · ' + r.visaName : ''}</div>
+        </div>
+        <div class="flight-pill" style="flex-shrink:0;background:var(--fail);color:#fff;">৳${r.amount.toLocaleString('bn-BD')}</div>
       </div>
-      <div class="flight-pill" style="background:var(--fail);color:#fff;">৳${r.amount.toLocaleString('bn-BD')}</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--text-dim);border-top:1px solid var(--border);padding-top:6px;white-space:nowrap;overflow:hidden;">
+        ${r.note ? `<div style="overflow:hidden;text-overflow:ellipsis;">কারণ: <b style="color:var(--text);">${r.note}</b></div>` : ''}
+        ${r.date ? `<div style="flex-shrink:0;">তারিখ: <b style="color:var(--text);">${new Date(r.date).toLocaleDateString('bn-BD')}</b></div>` : ''}
+      </div>
     </div>`).join('');
   }
   document.getElementById('profitLossListModal').classList.add('active');
@@ -4542,6 +4787,102 @@ function openUpcomingFlightsModal(){
 
 function closeUpcomingFlightsModal(){
   document.getElementById('upcomingFlightsModal').classList.remove('active');
+}
+
+function openPendingCandidatesModal(){
+  const pending = Object.entries(visaMessagesCache).filter(([id, m]) => (m.status || 'pending') === 'pending');
+  const totalValue = pending.reduce((s, [id, m]) => {
+    const v = m.visaId ? visaTypes[m.visaId] : null;
+    return s + (v && v.fee ? v.fee : 0);
+  }, 0);
+
+  document.getElementById('plListTitle').innerHTML = '<i class="fas fa-users"></i> মোট প্রার্থী (ওয়েটিং লিস্ট)';
+  const el = document.getElementById('plListContent');
+  const statChip = (label, valueHtml, color) => `<div style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;min-width:0;">
+      <div class="hint" style="margin:0 0 2px;font-size:10.5px;">${label}</div>
+      <b style="font-size:14px;color:${color};">${valueHtml}</b>
+    </div>`;
+  const summaryHtml = `
+    <div style="display:flex;gap:8px;margin-bottom:6px;">
+      ${statChip('প্রার্থী', pending.length.toLocaleString('bn-BD'), 'var(--text)')}
+      ${statChip('সম্ভাব্য মূল্য', fmtTk(totalValue), '#8ff6ff')}
+    </div>
+  `;
+
+  const rowsHtml = !pending.length
+    ? '<div class="dash-empty">ওয়েটিং লিস্টে এখন কোনো প্রার্থী নেই</div>'
+    : pending.slice().sort((a,b) => (b[1].created_at||0) - (a[1].created_at||0)).map(([id, m]) => {
+        const flag = COUNTRY_FLAGS[m.country] || '🌍';
+        const v = m.visaId ? visaTypes[m.visaId] : null;
+        const fee = v && v.fee ? v.fee : 0;
+        return `<div style="background:var(--bg2,var(--bg));border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div>
+            <div class="dash-row-title">${flag} ${m.country || '-'}${m.visaName ? ' · ' + m.visaName : ''}</div>
+            <div class="dash-row-sub">এজেন্ট: ${m.agentName || 'অজানা'}</div>
+          </div>
+          ${fee ? `<div class="flight-pill" style="flex-shrink:0;">${fmtTk(fee)}</div>` : ''}
+        </div>
+      </div>`;
+      }).join('');
+
+  el.innerHTML = summaryHtml + rowsHtml;
+  document.getElementById('profitLossListModal').classList.add('active');
+}
+
+function openActiveJourneysModal(){
+  const journeys = Object.values(dashJourneys).filter(j => j.current_stage !== 'DEPARTED' && j.current_stage !== 'MEDICAL_FAILED');
+  const totalFee = journeys.reduce((s, j) => s + (j.agency_fee || 0), 0);
+  const totalPaid = journeys.reduce((s, j) => s + Object.values(j.payments || {}).reduce((ps, p) => ps + (p.amount || 0), 0), 0);
+  const totalDue = Math.max(totalFee - totalPaid, 0);
+
+  document.getElementById('plListTitle').innerHTML = '<i class="fas fa-suitcase-rolling"></i> চলমান জার্নি';
+  const el = document.getElementById('plListContent');
+  const statChip = (label, valueHtml, color) => `<div style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;min-width:0;">
+      <div class="hint" style="margin:0 0 2px;font-size:10.5px;">${label}</div>
+      <b style="font-size:14px;color:${color};">${valueHtml}</b>
+    </div>`;
+  const summaryHtml = `
+    <div style="display:flex;gap:8px;margin-bottom:6px;">
+      ${statChip('যাত্রী', journeys.length.toLocaleString('bn-BD'), 'var(--text)')}
+      ${statChip('নির্ধারিত মূল্য', fmtTk(totalFee), '#8ff6ff')}
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:6px;">
+      ${statChip('পেইড হয়েছে', fmtTk(totalPaid), 'var(--ok)')}
+      ${statChip('বাকি আছে', fmtTk(totalDue), totalDue > 0 ? 'var(--fail)' : 'var(--text-dim)')}
+    </div>
+  `;
+
+  const rowsHtml = !journeys.length
+    ? '<div class="dash-empty">এখন কোনো জার্নি চলমান নেই</div>'
+    : journeys.slice().sort((a,b) => (b.updated_at||0) - (a.updated_at||0)).map(j => {
+        const u = dashUsers[j.user_id] || {};
+        const flag = COUNTRY_FLAGS[u.country] || '🌍';
+        const vt = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id] : null;
+        const visaName = vt ? vt.name : '';
+        const visaTitle = (vt && vt.details && vt.details.length && vt.details[0].search(COLON_RE) === -1) ? vt.details[0] : '';
+        const fee = j.agency_fee || 0;
+        const paid = Object.values(j.payments || {}).reduce((s, p) => s + (p.amount || 0), 0);
+        const due = Math.max(fee - paid, 0);
+        const stageLabel = STAGE_LABEL[j.current_stage] || j.current_stage || '-';
+        return `<div style="background:var(--bg2,var(--bg));border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div>
+            <div class="dash-row-title">${getUserName(u)}${u.phone ? ` <button type="button" onclick="callChoice('${u.phone}','${u.phone.replace(/\D/g,'')}')" style="width:auto;height:auto;background:none;border:none;color:var(--ok);display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;padding:0;margin-left:6px;vertical-align:middle;"><i class="fas fa-phone"></i></button>` : ''}</div>
+            <div class="dash-row-sub">${flag} ${u.country || '-'}${visaTitle ? ' · ' + visaTitle : ''}${visaName ? ' · ' + visaName : ''}</div>
+          </div>
+          <div class="flight-pill" style="flex-shrink:0;">${stageLabel}</div>
+        </div>
+        <div style="border-top:1px solid var(--border);margin-top:9px;padding-top:7px;display:flex;gap:10px;">
+          <div style="flex:1;min-width:0;display:flex;align-items:baseline;gap:5px;"><span class="hint" style="margin:0;font-size:10px;">মূল্য</span><b style="font-size:11.5px;color:#8ff6ff;white-space:nowrap;">${fmtTk(fee)}</b></div>
+          <div style="flex:1;min-width:0;display:flex;align-items:baseline;gap:5px;"><span class="hint" style="margin:0;font-size:10px;">পেইড</span><b style="font-size:11.5px;color:var(--ok);white-space:nowrap;">${fmtTk(paid)}</b></div>
+          <div style="flex:1;min-width:0;display:flex;align-items:baseline;gap:5px;"><span class="hint" style="margin:0;font-size:10px;">বাকি</span><b style="font-size:11.5px;color:${due > 0 ? 'var(--fail)' : 'var(--text-dim)'};white-space:nowrap;">${fmtTk(due)}</b></div>
+        </div>
+      </div>`;
+      }).join('');
+
+  el.innerHTML = summaryHtml + rowsHtml;
+  document.getElementById('profitLossListModal').classList.add('active');
 }
 
 let duDocuments = [];
@@ -4796,6 +5137,7 @@ function handleUserPhotoSelect(e){
 
 function toggleCfOptions(){
   document.getElementById('cfVisaFeeQuotaRow').style.display = 'flex';
+  document.getElementById('cfVisaDateRow').style.display = 'flex';
   document.getElementById('cfVisaDetailsWrap').style.display = '';
   document.getElementById('cfVisaAddBtn').style.display = '';
 }
@@ -4815,16 +5157,25 @@ function addCustomField(){
   const fee = parseInt(document.getElementById('cfVisaFee').value) || 0;
   const cost = parseInt(document.getElementById('cfVisaCost').value) || 0;
   const quota = parseInt(document.getElementById('cfVisaQuota').value) || 0;
-  const check = visaReserveCheck(quota, cost, null);
-  if(!check.ok){
-    toast(`মোট বিনিয়োগের বাইরে যাচ্ছে! রিজার্ভে আছে ${fmtTk(check.reserve)}, কিন্তু এই ভিসায় লাগবে ${fmtTk(check.newSpend)}।`);
-    return;
+  const agencyName = document.getElementById('cfAgencyName').value.trim();
+  if(!agencyName){
+    const check = visaReserveCheck(quota, cost, null);
+    if(!check.ok){
+      toast(`মোট বিনিয়োগের বাইরে যাচ্ছে! রিজার্ভে আছে ${fmtTk(check.reserve)}, কিন্তু এই ভিসায় লাগবে ${fmtTk(check.newSpend)}।`);
+      return;
+    }
   }
   const title = document.getElementById('cfVisaTitle').value.trim();
   const rest = document.getElementById('cfVisaDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const details = title ? [title, ...rest] : rest;
+  const issueDate = document.getElementById('cfVisaIssueDate').value;
+  const expiryDate = document.getElementById('cfVisaExpiryDate').value;
   const key = db.ref('visa_types').push().key;
-  db.ref('visa_types/' + key).set({ country, name, fee, cost, quota, details, created_at: Date.now() }).then(() => {
+  const payload = { country, name, fee, cost, quota, details, created_at: Date.now() };
+  if(agencyName) payload.agency_name = agencyName;
+  if(issueDate) payload.issue_date = issueDate;
+  if(expiryDate) payload.expiry_date = expiryDate;
+  db.ref('visa_types/' + key).set(payload).then(() => {
     document.getElementById('cfVisaName').value = '';
     document.getElementById('cfVisaFee').value = '';
     document.getElementById('cfVisaCost').value = '';
@@ -4833,6 +5184,11 @@ function addCustomField(){
     document.getElementById('cfVisaDetails').value = '';
     document.getElementById('cfVisaDetails').style.height = 'auto';
     syncDetailsHighlight('cfVisaDetails', 'cfVisaDetailsHl');
+    document.getElementById('cfAgencyName').value = '';
+    document.getElementById('cfVisaIssueDate').value = '';
+    document.getElementById('cfVisaIssueDate').classList.remove('has-value');
+    document.getElementById('cfVisaExpiryDate').value = '';
+    document.getElementById('cfVisaExpiryDate').classList.remove('has-value');
     document.getElementById('cfCountry').value = '';
     toggleCfOptions();
   }).catch(err => { toast('ভিসা যোগ করতে ব্যর্থ: ' + err.message); console.error(err); });
@@ -4903,61 +5259,7 @@ async function retryNotification(id){
   const nSnap = await db.ref('notifications/' + id).once('value');
   const n = nSnap.val();
   if(!n) return;
-  if(n.template_key === 'document_expiry'){
-    const meta = n.meta || {};
-    await queueExpiryNotification(meta.uid, meta.label, meta.expiry_date);
-  } else {
-    await queueNotification(n.journey_id, n.template_key.toUpperCase());
-  }
-}
-/* ডকুমেন্ট/পাসপোর্ট মেয়াদ শেষ হওয়ার নোটিফিকেশন (স্টেজ-ভিত্তিক নোটিফিকেশন সিস্টেমের বদলে,
-   শুধুমাত্র এক্সপায়ারি ডেট সংক্রান্ত নোটিফিকেশনই পাঠানো ও লগে দেখানো হবে) */
-const EXPIRY_NOTIFY_THRESHOLD_DAYS = 7;
-let _expiryCheckInFlight = false;
-async function checkExpiryNotifications(users){
-  if(_expiryCheckInFlight) return;
-  _expiryCheckInFlight = true;
-  try{
-    const items = getExpiringItems(users, EXPIRY_NOTIFY_THRESHOLD_DAYS);
-    for(const it of items){
-      const key = it.uid + '_' + it.itemId;
-      const trackRef = db.ref('notified_expiry/' + key);
-      const snap = await trackRef.once('value');
-      if(snap.val() === it.dateStr) continue; // এই তারিখের জন্য আগেই নোটিফাই করা হয়েছে
-      await queueExpiryNotification(it.uid, it.label, it.dateStr);
-      await trackRef.set(it.dateStr);
-    }
-  } finally {
-    _expiryCheckInFlight = false;
-  }
-}
-
-async function queueExpiryNotification(uid, label, dateStr){
-  const journey = getJourneyForUser(uid);
-  const journeyId = journey ? journey.id : uid;
-  const notifRef = db.ref('notifications').push();
-  await notifRef.set({
-    journey_id: journeyId, channel: 'whatsapp', template_key: 'document_expiry',
-    status: 'pending', created_at: Date.now(), meta: { uid, label, expiry_date: dateStr }
-  });
-
-  const settingsSnap = await db.ref('settings').once('value');
-  const settings = settingsSnap.val() || {};
-  if(!settings.waWebhook){
-    await notifRef.update({ status: 'failed', error_message: 'কোনো webhook কনফিগার করা হয়নি (Settings ট্যাব দেখুন)' });
-    return;
-  }
-  try{
-    const resp = await fetch(settings.waWebhook, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ journey_id: journeyId, template_key: 'document_expiry', user_id: uid, label, expiry_date: dateStr })
-    });
-    if(!resp.ok) throw new Error('HTTP ' + resp.status);
-    await notifRef.update({ status: 'sent', sent_at: Date.now() });
-  }catch(e){
-    await notifRef.update({ status: 'failed', error_message: e.message });
-  }
+  await queueNotification(n.journey_id, n.template_key.toUpperCase());
 }
 
 
@@ -5011,7 +5313,7 @@ function renderDashboard(){
   }, 0);
   const totalVisaValue = visaTypeEntries.reduce((s, [vid, v]) => {
     const remaining = Math.max((v.quota || 0) - (soldCountByVisaType[vid] || 0), 0);
-    return s + (v.fee || 0) * remaining;
+    return s + (v.cost || 0) * remaining;
   }, 0);
 
   document.getElementById('dTotalUsers').textContent = totalUsers;
@@ -5026,10 +5328,15 @@ function renderDashboard(){
   // ড্যাশবোর্ডের "মোট লাভ" আর "মোট ক্ষতি" দুটো কার্ডই এই একই সংখ্যা থেকে বের হবে (একসাথে দুটোই নন-জিরো হতে
   // পারবে না) — তাই সব পার্টনার ৳০ দেখালে ড্যাশবোর্ডের দুটো কার্ডই ৳০ দেখাবে
   const totalAvailable = Object.keys(partners).reduce((s, id) => s + partnerAvailablePL(id), 0);
-  const partnersInLoss = Object.keys(partners).filter(id => Math.round(partnerAvailablePL(id)) < 0);
 
-  // মোট ক্ষতি (বর্তমান, না-সেটেল হওয়া অংশ)
-  const totalLoss = totalAvailable < 0 ? Math.abs(totalAvailable) : 0;
+  // মোট ক্ষতি: ব্যবসার নিট (netted) হিসাবের বদলে, প্রকৃতপক্ষে যেসব প্রার্থীর ভিসা বিক্রি করে
+  // ক্ষতি (j.losses) রেকর্ড হয়েছে, তাদের ক্ষতির টাকার সরাসরি যোগফল — যাতে "কয়জন" আর "কত টাকা"
+  // একই তথ্যের প্রতিফলন হয় (অন্য জার্নির লাভ দিয়ে এখানে সমন্বয়/নেট করা হবে না)
+  const journeysWithLossList = Object.values(dashJourneys).filter(j =>
+    Object.values(j.losses || {}).reduce((s, l) => s + (l.amount || 0), 0) > 0
+  );
+  const totalLoss = journeysWithLossList.reduce((s, j) =>
+    s + Object.values(j.losses || {}).reduce((ss, l) => ss + (l.amount || 0), 0), 0);
   const dTotalLossEl = document.getElementById('dTotalLoss');
   const dLossPerPartnerEl = document.getElementById('dLossPerPartner');
   const dLossPartnerCountEl = document.getElementById('dLossPartnerCount');
@@ -5037,9 +5344,11 @@ function renderDashboard(){
     dTotalLossEl.textContent = fmtTk(totalLoss);
     dTotalLossEl.title = fmtTkFull(totalLoss);
   }
-  if(dLossPartnerCountEl) dLossPartnerCountEl.textContent = partnersInLoss.length + ' জন';
+  // "জন" সংখ্যাটা এখানে পার্টনারের বদলে ভিসা বিক্রি করে লস হওয়া প্রার্থীর সংখ্যা দেখাবে
+  if(dLossPartnerCountEl) dLossPartnerCountEl.textContent = journeysWithLossList.length + ' জন';
+  const partnersInLossForSplit = Object.keys(partners).filter(id => Math.round(partnerAvailablePL(id)) < 0);
   if(dLossPerPartnerEl){
-    const perPartner = partnersInLoss.length ? totalLoss / partnersInLoss.length : 0;
+    const perPartner = partnersInLossForSplit.length ? totalLoss / partnersInLossForSplit.length : 0;
     dLossPerPartnerEl.textContent = 'সমান ভাগে: ' + fmtTk(perPartner);
     dLossPerPartnerEl.title = fmtTkFull(perPartner);
   }
@@ -5047,7 +5356,8 @@ function renderDashboard(){
   const expiringItems = getExpiringItems(dashUsers, 0);
   document.getElementById('dExpiring').textContent = expiringItems.length.toLocaleString('bn-BD');
   renderExpiryAlerts(expiringItems);
-  checkExpiryNotifications(dashUsers);
+  /* WhatsApp API এখনো কনফিগার করা হয়নি, তাই এক্সপায়ারি নোটিফিকেশন পাঠানো/লগ করা বন্ধ রাখা হলো —
+     ড্যাশবোর্ডে এক্সপায়ারি অ্যালার্ট (উপরের renderExpiryAlerts) আগের মতোই দেখাবে, শুধু লগ/হোয়াটসঅ্যাপ পাঠানো বন্ধ */
 
   // মোট এজেন্ট ও তাদের মাধ্যমে আসা প্রার্থীদের কাছ থেকে এজেন্টের কাছে যত টাকা এখনো বাকি (মোট ভিসার দাম - এখন পর্যন্ত পরিশোধিত)
   const agentCount = Object.keys(agentsCache || {}).length;
@@ -5166,7 +5476,7 @@ function renderPartners(){
   if(!listEl || !summaryEl) return;
 
   const journeys = Object.values(dashJourneys);
-  const totalNet = journeys.reduce((s, j) => s + netOf(j).net, 0); // মোট ব্যবসার লাভ/ক্ষতি (পার্টনার-লেভেল available/settle হিসাবের জন্য, নিচে অপরিবর্তিত)
+  const totalNet = realTotalNet(journeys); // মোট ব্যবসার রিয়েল (শুধু সম্পন্ন/DEPARTED জার্নির) লাভ/ক্ষতি — পার্টনার-লেভেল available/settle হিসাবের জন্য, নিচে অপরিবর্তিত
   const entries = Object.entries(partners);
   const totalInvestment = entries.reduce((s, [, p]) => s + (p.investment || 0), 0);
   // প্রতিটি পার্টনারের share_percent আলাদাভাবে রাউন্ড করা থাকলেও যোগফলে বাইনারি ফ্লোটিং-পয়েন্ট আর্টিফ্যাক্ট
@@ -5176,14 +5486,22 @@ function renderPartners(){
   // এভারগ্রিন/লাইফটাইম হিসাব — ব্যবসার শুরু থেকে এখন পর্যন্ত মোট গ্রস ফি, মোট (ভিসা+মেডিকেল+ফ্লাইট) খরচ,
   // এবং আলাদাভাবে রেকর্ড করা রিয়েল লস। এই তিনটি সরাসরি জার্নি ডেটা থেকে হিসাব হয় — কোনো পার্টনারের
   // উইথড্র/রিইনভেস্ট/বিনিয়োগ পরিবর্তনের সাথে এর কোনো সম্পর্ক নেই, তাই এই সংখ্যাগুলো কখনো কৃত্রিমভাবে
-  // প্লাস-মাইনাস হয় না — সবসময় ব্যবসার প্রকৃত, অপরিবর্তিত ইতিহাস দেখায়
+  // প্লাস-মাইনাস হয় না — সবসময় ব্যবসার প্রকৃত, অপরিবর্তিত ইতিহাস দেখায়।
+  // গ্রস ফি ও খরচ শুধু DEPARTED (যাত্রীর ফ্লাইট শেষ হওয়া) জার্নি থেকেই গণনা হয়, যাতে প্রার্থী
+  // যোগ করার সাথে সাথেই (প্রসেস শেষ হওয়ার আগেই) অগ্রিম লাভ হিসেবে না দেখায়। লস কিন্তু সবসময়ই
+  // রিয়েল, তাই সেটা স্টেজ নির্বিশেষে (চলমান জার্নিতেও) গণনা হয়।
   let grossFee = 0, totalCost = 0, realLoss = 0;
   journeys.forEach(j => {
     const n = netOf(j);
-    grossFee += n.fee;
-    totalCost += n.rawCost;
+    if(j.current_stage === 'DEPARTED'){
+      grossFee += n.fee;
+      totalCost += n.rawCost;
+    }
     realLoss += n.losses;
   });
+  // "মোট লাভ" মানে হলো নিট লাভ (বিক্রয়মূল্য - খরচ), শুধু গ্রস ফি/বিক্রয়মূল্য নয় —
+  // আগে এখানে ভুলভাবে grossFee (মোট ফি) দেখানো হচ্ছিল, যা আসল লাভের চেয়ে অনেক বেশি দেখাত।
+  const netProfit = Math.max(grossFee - totalCost, 0);
 
   summaryEl.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;">
@@ -5193,7 +5511,7 @@ function renderPartners(){
       </div>
       <div style="min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px 6px;text-align:center;">
         <div class="hint" style="margin:0;font-size:9px;line-height:1.3;">মোট লাভ</div>
-        <b style="font-size:15px;line-height:1.3;color:#4ade80;" title="${fmtTkFull(grossFee)}">${fmtTkCompact(grossFee)}</b>
+        <b style="font-size:15px;line-height:1.3;color:#4ade80;" title="${fmtTkFull(netProfit)}">${fmtTkCompact(netProfit)}</b>
       </div>
       <div style="min-width:0;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:4px 6px;text-align:center;">
         <div class="hint" style="margin:0;font-size:9px;line-height:1.3;">মোট ক্ষতি</div>
@@ -5226,7 +5544,7 @@ function renderPartners(){
             <div style="width:30px;height:30px;border-radius:50%;flex-shrink:0;overflow:hidden;background:var(--gold);display:flex;align-items:center;justify-content:center;color:#1a1a1a;font-weight:700;font-size:13px;">${p.photoBase64 ? `<img src="${p.photoBase64}" style="width:100%;height:100%;object-fit:cover;">` : (p.name || '?').charAt(0).toUpperCase()}</div>
             <div style="min-width:0;">
               <b>${escapeHtmlForHl(p.name || '-')}</b>
-              ${p.phone ? `<span class="hint" style="margin-left:6px;">${escapeHtmlForHl(p.phone)}</span> <button type="button" onclick="callChoice('${p.phone}','${phoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;vertical-align:middle;padding:0;"><i class="fas fa-phone"></i></button>` : ''}
+              ${p.phone ? `<button type="button" onclick="callChoice('${p.phone}','${phoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;vertical-align:middle;padding:0;margin-left:6px;"><i class="fas fa-phone"></i></button>` : ''}
             </div>
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;">
@@ -5342,13 +5660,13 @@ function partnerAvailablePL(id){
   const p = partners[id];
   if(!p) return 0;
   const journeys = Object.values(dashJourneys);
-  const totalNet = journeys.reduce((s, j) => s + netOf(j).net, 0);
+  const totalNet = realTotalNet(journeys);
   const settledNet = p.settled_net || 0;
   return (totalNet - settledNet) * ((p.share_percent || 0) / 100);
 }
 function currentTotalNet(){
   const journeys = Object.values(dashJourneys);
-  return journeys.reduce((s, j) => s + netOf(j).net, 0);
+  return realTotalNet(journeys);
 }
 async function partnerWithdraw(id){
   const p = partners[id]; if(!p) return;
@@ -5425,6 +5743,19 @@ function netOf(j){
   return { net: fee - rawCost - losses, cost: rawCost + losses, rawCost, fee, losses };
 }
 
+// "রিয়েল" (realized) লাভ/ক্ষতি — এখনো চলমান (active) জার্নির প্রত্যাশিত লাভ এখানে গণনা হয় না, কারণ সেই
+// জার্নি এখনো ব্যর্থ/বাতিল হতে পারে, এবং তার খরচও (মেডিকেল/ভিসা প্রসেসিং/ফ্লাইট) পুরোপুরি এন্ট্রি নাও হতে পারে —
+// শুধু DEPARTED (সম্পন্ন) জার্নির পূর্ণ net (fee - cost - losses) রিয়েল লাভ হিসেবে গণনা হয়। তবে চলমান বা
+// মেডিকেল-ফেইল জার্নিতে ইতিমধ্যে রেকর্ড করা যেকোনো লস (j.losses) সবসময় রিয়েল ক্ষতি হিসেবেই গণনা হবে,
+// কারণ সেই টাকা সত্যিই খরচ/নষ্ট হয়ে গেছে।
+function realNetOf(j){
+  if(j.current_stage === 'DEPARTED') return netOf(j).net;
+  return -netOf(j).losses;
+}
+function realTotalNet(journeys){
+  return journeys.reduce((s, j) => s + realNetOf(j), 0);
+}
+
 /* kind: 'net' (▲profit / ▼loss / neutral at zero)
    kind: 'lossOnly' (amount is a spend that only ever counts as loss)
    kind: 'neutral' (amount is a spend-in-progress, no profit/loss judgement yet) */
@@ -5449,7 +5780,9 @@ function renderProfitLoss(journeys, ctx){
   const sumNet = list => list.reduce((s, j) => s + netOf(j).net, 0);
   const sumCost = list => list.reduce((s, j) => s + netOf(j).cost, 0);
 
-  const upcomingList = journeys.filter(j => j.flight_datetime && j.flight_datetime >= ctx.now.getTime());
+  const upcomingList = Object.entries(dashJourneys)
+    .filter(([id, j]) => j.flight_datetime && j.flight_datetime >= ctx.now.getTime())
+    .map(([id, j]) => Object.assign({}, j, { id }));
 
   // মোট প্রার্থী: ওয়েটিং লিস্টের পেন্ডিং প্রার্থীদের ভিসা-মূল্য যোগফল (এখনো বিক্রি/পেমেন্ট হয়নি, তাই সম্ভাব্য মূল্য)
   const pendingTotal = (ctx.pendingVisaMessages || []).reduce((s, m) => {
@@ -5461,20 +5794,60 @@ function renderProfitLoss(journeys, ctx){
   const activeVisaValue = journeys.filter(isActive).reduce((s, j) => s + (j.agency_fee || 0), 0);
   applyBadge('plActive', activeVisaValue, 'neutral');
 
-  // আসন্ন ফ্লাইট: প্রত্যাশিত লাভের বদলে সবচেয়ে কাছের ফ্লাইটের তারিখ দেখানো হয়
+  // আসন্ন ফ্লাইট: প্রত্যাশিত লাভের বদলে সবচেয়ে কাছের ফ্লাইটের যাত্রীর নাম দেখানো হয়
   const upcomingValEl = document.getElementById('plUpcoming');
   if(upcomingValEl){
     if(upcomingList.length){
       const nearest = upcomingList.slice().sort((a,b) => a.flight_datetime - b.flight_datetime)[0];
+      const nu = dashUsers[nearest.user_id] || {};
+      const passengerName = getUserName(nu);
+      const nd = new Date(nearest.flight_datetime);
+      const dateStr = nd.toLocaleDateString('bn-BD', { day:'2-digit', month:'2-digit', year:'numeric' });
+      const timeStr = nd.toLocaleTimeString('bn-BD', { hour:'2-digit', minute:'2-digit', hour12:true });
       upcomingValEl.className = 'dc-pl';
-      upcomingValEl.textContent = new Date(nearest.flight_datetime).toLocaleDateString('bn-BD', { day:'numeric', month:'short' });
-      upcomingValEl.title = new Date(nearest.flight_datetime).toLocaleString('bn-BD');
+      upcomingValEl.style.fontSize = '14px';
+      upcomingValEl.style.lineHeight = '1.35';
+      upcomingValEl.innerHTML = passengerName;
+      upcomingValEl.title = passengerName + ' — ' + dateStr + ', ' + timeStr;
     } else {
       upcomingValEl.className = 'dc-pl';
+      upcomingValEl.style.fontSize = '';
+      upcomingValEl.style.lineHeight = '';
       upcomingValEl.textContent = '-';
       upcomingValEl.title = '';
     }
   }
+  checkUpcomingFlightAlerts(upcomingList);
+}
+
+/* ফ্লাইটের ৫ ঘন্টা আগে ইন-অ্যাপ নোটিফিকেশন (টোস্ট) দেখানো হয়। একই ফ্লাইটের জন্য বারবার
+   টোস্ট আসা ঠেকাতে localStorage-এ কোন জার্নির জন্য ইতিমধ্যে দেখানো হয়েছে তা রাখা হয়। */
+const FLIGHT_ALERT_HOURS_BEFORE = 5;
+function checkUpcomingFlightAlerts(upcomingList){
+  const now = Date.now();
+  const windowMs = FLIGHT_ALERT_HOURS_BEFORE * 60 * 60 * 1000;
+  let alerted = {};
+  try{ alerted = JSON.parse(localStorage.getItem('flightAlertShown') || '{}'); }catch(e){ alerted = {}; }
+  (upcomingList || []).forEach(j => {
+    const diff = j.flight_datetime - now;
+    if(diff > 0 && diff <= windowMs && !alerted[j.id]){
+      const u = dashUsers[j.user_id] || {};
+      const nd = new Date(j.flight_datetime);
+      const timeStr = nd.toLocaleTimeString('bn-BD', { hour:'2-digit', minute:'2-digit', hour12:true });
+      toast(`✈ ${getUserName(u)} এর ফ্লাইট আজ ${timeStr} — ৫ ঘন্টারও কম সময় বাকি`, 'info');
+      alerted[j.id] = now;
+    }
+  });
+  try{ localStorage.setItem('flightAlertShown', JSON.stringify(alerted)); }catch(e){}
+}
+if(!window._flightAlertIntervalSet){
+  window._flightAlertIntervalSet = true;
+  setInterval(() => {
+    const list = Object.entries(dashJourneys || {})
+      .filter(([id, j]) => j.flight_datetime && j.flight_datetime >= Date.now())
+      .map(([id, j]) => Object.assign({}, j, { id }));
+    checkUpcomingFlightAlerts(list);
+  }, 5 * 60 * 1000);
 }
 
 function renderStageChart(journeys){
@@ -5485,7 +5858,9 @@ function renderStageChart(journeys){
   for(let m = 0; m <= 11; m++){
     buckets.push({ year: now.getFullYear(), month: m, label: shortMonths[m], revenue: 0, cost: 0, net: 0 });
   }
-  journeys.forEach(j => {
+  // শুধু সম্পন্ন (DEPARTED) জার্নিই মাসিক আয়/খরচ/লাভে গণনা হয় — ভিসা বিক্রি ও ফ্লাইট সম্পন্ন হওয়ার আগেই
+  // কোনো জার্নির প্রত্যাশিত/অনিশ্চিত লাভ এই চার্টে দেখানো হয় না।
+  journeys.filter(j => j.current_stage === 'DEPARTED').forEach(j => {
     const ts = j.updated_at || j.created_at;
     if(!ts) return;
     const d = new Date(ts);
@@ -5495,6 +5870,20 @@ function renderStageChart(journeys){
     b.revenue += fee;
     b.cost += cost;
     b.net += net;
+  });
+  // এখনো চলমান/মেডিকেল-ফেইল জার্নিতে ইতিমধ্যে রেকর্ড করা লস — যে মাসে লসটা রেকর্ড হয়েছে সেই মাসেই
+  // রিয়েল খরচ/ক্ষতি হিসেবে যোগ হয়, কারণ টাকাটা সত্যিই খরচ হয়ে গেছে (জার্নি সম্পন্ন না হলেও)
+  journeys.filter(j => j.current_stage !== 'DEPARTED').forEach(j => {
+    Object.values(j.losses || {}).forEach(l => {
+      const ts = l.date;
+      if(!ts) return;
+      const d = new Date(ts);
+      const b = buckets.find(x => x.year === d.getFullYear() && x.month === d.getMonth());
+      if(!b) return;
+      const amt = l.amount || 0;
+      b.cost += amt;
+      b.net -= amt;
+    });
   });
 
   const ctx = document.getElementById('stageChart');
@@ -5591,13 +5980,24 @@ function renderUpcomingFlights(flights){
   const sorted = flights.slice().sort((a,b) => a.flight_datetime - b.flight_datetime);
   el.innerHTML = sorted.map(j => {
     const u = dashUsers[j.user_id] || {};
+    const flag = COUNTRY_FLAGS[u.country] || '🌍';
+    const vt = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id] : null;
+    const visaName = vt ? vt.name : '';
+    const visaTitle = (vt && vt.details && vt.details.length && vt.details[0].search(COLON_RE) === -1) ? vt.details[0] : '';
+    const n = netOf(j);
     const hoursLeft = Math.round((j.flight_datetime - Date.now()) / (1000*60*60));
-    return `<div class="dash-row">
-      <div>
-        <div class="dash-row-title">${getUserName(u)}</div>
-        <div class="dash-row-sub">${new Date(j.flight_datetime).toLocaleString('bn-BD')}</div>
+    return `<div class="dash-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <div class="dash-row-title">${getUserName(u)}${u.phone ? ` <button type="button" onclick="callChoice('${u.phone}','${u.phone.replace(/\D/g,'')}')" style="width:auto;height:auto;background:none;border:none;color:var(--ok);display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;padding:0;margin-left:6px;vertical-align:middle;"><i class="fas fa-phone"></i></button>` : ''}</div>
+          <div class="dash-row-sub">${flag} ${u.country || '-'}${visaTitle ? ' · ' + visaTitle : ''}${visaName ? ' · ' + visaName : ''}</div>
+        </div>
+        <div class="flight-pill" style="flex-shrink:0;">T-${hoursLeft}h</div>
       </div>
-      <div class="flight-pill">T-${hoursLeft}h</div>
+      <div style="display:flex;gap:10px;font-size:11px;color:var(--text-dim);border-top:1px solid var(--border);padding-top:6px;white-space:nowrap;">
+        <div>ফ্লাইট: <b style="color:var(--text);">${new Date(j.flight_datetime).toLocaleString('bn-BD')}</b></div>
+        <div>ফি: <b style="color:var(--text);">${fmtTk(n.fee)}</b></div>
+      </div>
     </div>`;
   }).join('');
 }
