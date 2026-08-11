@@ -555,11 +555,9 @@
           <span id="chev-reportsExportPanel" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
         </div>
         <div id="reportsExportPanel" style="display:none;">
-          <p class="hint" style="margin-top:12px;">CSV ফাইল হিসেবে ডাউনলোড হবে, Excel/Google Sheets-এ সরাসরি খোলা যাবে।</p>
+          <p class="hint" style="margin-top:12px;">CSV ফাইল হিসেবে ডাউনলোড হবে, Excel/Google Sheets-এ সরাসরি খোলা যাবে — একটি ফাইলেই প্রফিট-লস, কাস্টমার লিস্ট ও পেমেন্ট হিস্ট্রি, আলাদা আলাদা সেকশনে।</p>
           <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-            <button class="btn small success" style="width:100%;" onclick="exportProfitLossReport()"><i class="fas fa-sack-dollar"></i> প্রফিট-লস রিপোর্ট (মাস অনুযায়ী)</button>
-            <button class="btn small info" style="width:100%;" onclick="exportCustomerListReport()"><i class="fas fa-users"></i> কাস্টমার লিস্ট</button>
-            <button class="btn small gold" style="width:100%;" onclick="exportPaymentsReport()"><i class="fas fa-receipt"></i> পেমেন্ট/কিস্তি রিপোর্ট</button>
+            <button class="btn small success" style="width:100%;" onclick="exportFullAgencyReport()"><i class="fas fa-sack-dollar"></i> সম্পূর্ণ এজেন্সি রিপোর্ট (CSV)</button>
           </div>
         </div>
       </div>
@@ -955,6 +953,10 @@
           <div id="veDetailsHl" class="hlBackdrop"></div>
           <textarea id="veDetails" rows="5" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="কোম্পানি: সিডার গ্রুপ&#10;মাসিক বেতন: 2000 রিয়াল&#10;দৈনিক ডিউটি: ৮ ঘন্টা প্লাস কভার টাইম"></textarea>
         </div>
+        <div class="hlWrap" style="margin-top:8px;">
+          <div id="veContractTermsHl" class="hlBackdrop"></div>
+          <textarea id="veContractTerms" rows="5" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="চুক্তিপত্রের শর্তাবলী (ঐচ্ছিক, প্রতি লাইনে একটা শর্ত — ফ্লাইটের আগে চুক্তিপত্র PDF-এ দেখানো হবে; খালি রাখলে ডিফল্ট শর্তাবলী ব্যবহার হবে)"></textarea>
+        </div>
       </div>
       <div style="margin-top:10px;"><button type="button" class="btn small" style="width:100%;" onclick="saveVisaEdit()">সেভ করুন</button></div>
     </div>
@@ -964,7 +966,27 @@
   <div class="modalOverlay" id="cfFormModal">
     <div class="modalBox">
       <button class="close-x" onclick="closeCfFormModal()"><i class="fas fa-xmark"></i></button>
-      <h3 style="margin-top:0;">নতুন ভিসা যোগ করুন</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-right:30px;">
+        <h3 style="margin:0;">নতুন ভিসা যোগ করুন</h3>
+        <button type="button" id="cfContractEditorsToggleBtn" title="চুক্তিপত্রের শর্তাবলী এডিট করুন (এই ভিসার নিজস্ব + ডিফল্ট, দুইটাই)" onclick="toggleCfContractEditors()" style="width:30px;height:30px;border-radius:50%;background:rgba(61,124,255,.16);color:#3d7cff;border:1px solid rgba(61,124,255,.35);display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;flex-shrink:0;"><i class="fas fa-file-contract"></i></button>
+      </div>
+      <div id="cfContractEditorsWrap" style="display:none;margin-top:12px;">
+        <div id="cfContractTermsWrap">
+          <div class="hint" style="margin:0 0 6px;">এই ভিসার নিজস্ব চুক্তিপত্রের শর্তাবলী — ফ্লাইট ডেট/টাইম সেভ করলে অটো-ডাউনলোডে ব্যবহার হয় (খালি রাখলে নিচের ডিফল্ট শর্তাবলী ব্যবহার হবে)</div>
+          <div class="hlWrap">
+            <div id="cfContractTermsHl" class="hlBackdrop"></div>
+            <textarea id="cfContractTerms" rows="4" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="এই ভিসার চুক্তিপত্রের শর্তাবলী (ঐচ্ছিক, প্রতি লাইনে একটা শর্ত)"></textarea>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div class="hint" style="margin:0 0 6px;">এটা "চুক্তিনামা PDF" বাটনের ডিফল্ট শর্তাবলী — কোনো নির্দিষ্ট ভিসার সাথে সম্পর্কিত না, সব জায়গায় প্রযোজ্য</div>
+          <div class="hlWrap">
+            <div id="cfDefaultContractTermsHl" class="hlBackdrop"></div>
+            <textarea id="cfDefaultContractTerms" rows="6" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="ডিফল্ট চুক্তিপত্রের শর্তাবলী (প্রতি লাইনে একটা শর্ত)"></textarea>
+          </div>
+          <button type="button" class="btn small" style="width:100%;margin-top:8px;" onclick="saveGlobalDefaultContractTerms()">ডিফল্ট শর্তাবলী সেভ করুন</button>
+        </div>
+      </div>
       <div id="cfFormPanel" class="formGrid" style="margin-top:12px;">
         <select id="cfType" style="display:none;">
           <option value="visa">ভিসা ব্যবস্থাপনা</option>
@@ -1005,6 +1027,19 @@
         </div>
         <button type="button" class="btn small" id="cfVisaAddBtn" style="display:none;" onclick="addCustomField()">ভিসা যোগ করুন</button>
       </div>
+    </div>
+  </div>
+
+  <!-- CONTRACT PDF: EDIT TERMS BEFORE DOWNLOAD -->
+  <div class="modalOverlay" id="contractPdfModal">
+    <div class="modalBox">
+      <button class="close-x" onclick="closeContractPdfModal()"><i class="fas fa-xmark"></i></button>
+      <h3 style="margin-top:0;"><i class="fas fa-file-contract" style="margin-right:6px;"></i>চুক্তিনামার শর্তাবলী</h3>
+      <div class="hlWrap" style="margin-top:12px;">
+        <div id="pdfContractTermsHl" class="hlBackdrop"></div>
+        <textarea id="pdfContractTerms" rows="9" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="চুক্তিপত্রের শর্তাবলী (প্রতি লাইনে একটা শর্ত)"></textarea>
+      </div>
+      <div style="margin-top:10px;"><button type="button" class="btn small" style="width:100%;" onclick="confirmGenerateContractPdf()"><i class="fas fa-file-pdf"></i> চুক্তিনামা PDF ডাউনলোড করুন</button></div>
     </div>
   </div>
 
@@ -1154,6 +1189,25 @@ const VALID_TRANSITIONS = {
   MEDICAL_FAILED:     [],
   DEPARTED:           []
 };
+/* চুক্তিপত্র PDF-এ ব্যবহৃত ডিফল্ট শর্তাবলী — ভিসার জন্য কাস্টম শর্তাবলী না দিলে এটাই ব্যবহার হয়,
+   এবং ফর্মে ডেমো/এডিটযোগ্য টেক্সট হিসেবেও প্রি-ফিল করা হয় */
+const DEFAULT_CONTRACT_TERMS = [
+  'এজেন্সি গ্রাহকের পাসপোর্ট প্রস্তুতকরণ, ভিসা প্রসেসিং, মেডিকেল পরীক্ষা এবং ফ্লাইট সংক্রান্ত সমস্ত প্রয়োজনীয় প্রক্রিয়া সম্পন্ন করতে সার্বিক সহায়তা প্রদান করবে।',
+  'উপরে উল্লেখিত মোট এজেন্সি ফি গ্রাহককে সম্মত কিস্তি অনুযায়ী নির্ধারিত সময়ের মধ্যে পরিশোধ করতে হবে; বিলম্বে প্রক্রিয়া ব্যাহত হলে এজেন্সি দায়ী থাকবে না।',
+  'সরকারি/দূতাবাসের সিদ্ধান্তে ভিসা প্রত্যাখ্যাত হলে, ইতিমধ্যে ব্যয়িত অফেরতযোগ্য খরচ (মেডিকেল, দূতাবাস ফি, প্রসেসিং ব্যয়) বাদ দিয়ে অবশিষ্ট অর্থ প্রযোজ্য নীতি অনুযায়ী ফেরতযোগ্য থাকবে।',
+  'গ্রাহকের প্রদত্ত সকল ব্যক্তিগত তথ্য, কাগজপত্র ও নথি সঠিক ও প্রকৃত বলে গণ্য হবে; ভুল বা মিথ্যা তথ্যের কারণে সৃষ্ট যেকোনো জটিলতার দায় সম্পূর্ণভাবে গ্রাহকের।',
+  'প্রক্রিয়াকরণের সময়কাল দূতাবাস, সরকারি সংস্থা ও নিয়োগকর্তার সিদ্ধান্তের উপর নির্ভরশীল বিধায় এজেন্সি নির্দিষ্ট সময়সীমার নিশ্চয়তা দিতে বাধ্য নয়।',
+  'গ্রাহক নিজ ইচ্ছায় প্রক্রিয়া বাতিল করতে চাইলে ইতিমধ্যে সম্পন্ন কাজ ও ব্যয়িত খরচ সমন্বয় সাপেক্ষে অবশিষ্ট অর্থ ফেরত দেওয়া হবে।',
+  'উভয় পক্ষের মধ্যে কোনো বিরোধ দেখা দিলে তা পারস্পরিক আলোচনার মাধ্যমে সমাধানের চেষ্টা করা হবে।',
+  'উভয় পক্ষ এই চুক্তির সকল শর্তাবলী সম্পূর্ণরূপে পড়ে, বুঝে ও সম্মত হয়ে স্বাক্ষর করছেন।'
+];
+/* "চুক্তিনামা PDF" বাটনের ডিফল্ট শর্তাবলী — অ্যাডমিন settings/default_contract_terms এ সেভ করে
+   বদলাতে পারে (নিচে লোড হয়); কিছু সেভ করা না থাকলে হার্ডকোডেড DEFAULT_CONTRACT_TERMS-ই ব্যবহার হয়। */
+let GLOBAL_DEFAULT_CONTRACT_TERMS = DEFAULT_CONTRACT_TERMS.slice();
+db.ref('settings/default_contract_terms').once('value').then(snap => {
+  const v = snap.val();
+  if(Array.isArray(v) && v.length) GLOBAL_DEFAULT_CONTRACT_TERMS = v;
+});
 const STAGE_LABEL = {
   DOC_COLLECTED:"ডকুমেন্ট সংগ্রহ", PASSPORT_APPLIED:"পাসপোর্ট আবেদন", PASSPORT_ISSUED:"পাসপোর্ট ইস্যু",
   VISA_APPLIED:"ভিসা আবেদন", VISA_APPROVED:"ভিসা অনুমোদিত", MEDICAL_SCHEDULED:"মেডিকেল শিডিউল",
@@ -1639,14 +1693,14 @@ function renderJourneys(){
                 const agentPhoneWithCC = agentPhoneDigits ? (agentPhoneDigits.startsWith('88') ? agentPhoneDigits : ('88' + agentPhoneDigits.replace(/^0/, ''))) : '';
                 return `<div class="accSub" style="color:var(--gold);font-weight:600;display:flex;align-items:center;gap:5px;flex-wrap:wrap;"><span><i class="fas fa-user-tie" style="margin-right:4px;"></i>${agentName}${agentPhone ? ' · ' + agentPhone : ''}</span>${agentPhone ? `<button type="button" onclick="event.stopPropagation();callChoice('${agentPhone}','${agentPhoneWithCC}')" style="width:auto;height:auto;background:none;color:var(--ok);border:none;display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;cursor:pointer;padding:0;"><i class="fas fa-phone"></i></button>` : ''}</div>`;
               })() : ''}
-              <div class="accSub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <span>${flag} ${u.country || '-'}${(() => {
+              <div class="accSub" style="display:flex;flex-direction:column;gap:3px;margin-top:4px;">
+                <span>${j ? visaPromiseCompactHtml(j) : ''}</span>
+                <span style="line-height:1.3;">${flag} ${u.country || '-'}${(() => {
                   const vt = u.visa_type_id && visaTypes[u.visa_type_id] ? visaTypes[u.visa_type_id] : null;
                   if(!vt) return '';
                   const visaTitle = (vt.details && vt.details.length && vt.details[0].search(COLON_RE) === -1) ? vt.details[0] : '';
                   return (visaTitle ? ' · ' + visaTitle : '') + (vt.name ? ' · ' + vt.name : '');
                 })()}</span>
-                <span>${j ? visaPromiseCompactHtml(j) : ''}</span>
               </div>
             </div>
             <span id="chev-j-${uid}" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
@@ -1681,9 +1735,10 @@ function renderJourneys(){
               ${currentRole === 'admin' ? `<span style="margin-left:auto;font-size:11px;font-weight:600;color:var(--gold);"><i class="fas fa-upload"></i> আপলোড করুন</span>` : ''}
             </div>
             <div class="accRow noBorder">${docHtml}</div>
+            ${j ? renderFlightCloseSection(jid, j) : ''}
             <div class="accActions">
               <button class="btn small" onclick="shareUserProgress('${uid}')"><i class="fas fa-share-nodes"></i> শেয়ার করুন</button>
-              <button class="btn small" onclick="generateContractPdf('${uid}')"><i class="fas fa-file-pdf"></i> চুক্তিনামা PDF</button>
+              <button class="btn small" onclick="openContractPdfModal('${uid}')"><i class="fas fa-file-pdf"></i> চুক্তিনামা PDF</button>
               ${currentRole === 'admin' ? `<button class="btn small danger" onclick="deleteUser('${uid}')"><i class="fas fa-trash"></i> ডিলিট</button>` : ''}
             </div>
           </div>
@@ -1861,12 +1916,16 @@ function renderPaymentSection(jid, j){
         <div class="hint" style="margin:0;color:var(--fail);width:100%;"><i class="fas fa-triangle-exclamation"></i> উপরের পরিমাণটি ক্ষতি হিসেবে গণ্য হবে</div>
         <input type="text" id="payLossNote-${jid}" placeholder="ক্ষতির বিবরণ (ঐচ্ছিক)" style="flex:1;min-width:120px;border-color:var(--fail);">
       </div>` : ''}
-      ${renderFlightCloseSection(jid, j, totalFee, due)}
     </div>`;
 }
 
-/* বকেয়া পুরোপুরি পরিশোধ হয়ে গেলে ফ্লাইটের তারিখ যোগ করার অপশন দেখানো হয়; তারিখ সেভ হলে ফাইলটি (জার্নি) ক্লোজ হয়ে যায় */
-function renderFlightCloseSection(jid, j, totalFee, due){
+/* বকেয়া পুরোপুরি পরিশোধ হয়ে গেলে ফ্লাইটের তারিখ যোগ করার অপশন দেখানো হয়; তারিখ সেভ হলে ফাইলটি (জার্নি) ক্লোজ হয়ে যায়।
+   এই সেকশনটি পেমেন্ট কার্ডের ভিতরে না দেখিয়ে ইউজার কার্ডের নিচের দিকে (শেয়ার/PDF/ডিলিট বাটনের ঠিক উপরে) দেখানো হয়। */
+function renderFlightCloseSection(jid, j){
+  const totalFee = j.agency_fee || 0;
+  const payments = j.payments || {};
+  const paid = Object.values(payments).reduce((sum, p) => sum + (p.amount || 0), 0);
+  const due = Math.round(totalFee - paid);
   const isFullyPaid = totalFee > 0 && due <= 0;
   if(!isFullyPaid) return '';
   const isClosed = j.current_stage === 'DEPARTED';
@@ -1898,13 +1957,19 @@ async function saveFlightDateAndClose(journeyId){
   const dateVal = dateInput ? dateInput.value : '';
   const timeVal = timeInput ? timeInput.value : '';
   if(!dateVal){ toast('ফ্লাইটের তারিখ দিন'); return; }
-  if(!confirm('ফ্লাইটের তারিখ ও সময় সেভ করে ফাইলটি ক্লোজ করতে চান?')) return;
+  if(!confirm('ফ্লাইটের তারিখ ও সময় সেভ করে ফাইলটি ক্লোজ করতে চান? এতে সকল তথ্যসহ চুক্তিনামা পিডিএফ ডাউনলোড হয়ে যাবে।')) return;
   const flight_datetime = new Date(dateVal + 'T' + (timeVal || '00:00')).getTime();
   await db.ref('journeys/' + journeyId).update({ flight_datetime, current_stage: 'DEPARTED', updated_at: Date.now() });
   await db.ref('status_logs').push({
     journey_id: journeyId, stage: 'DEPARTED', changed_by: currentUser, created_at: Date.now()
   });
   toast('ফ্লাইটের তারিখ সেভ হয়েছে এবং ফাইল ক্লোজ হয়েছে');
+  const j = journeysCache[journeyId];
+  const uid = j ? j.user_id : null;
+  if(uid){
+    try{ await generateContractPdf(uid); }
+    catch(err){ toast('চুক্তিনামা ডাউনলোড করতে সমস্যা হয়েছে: ' + err.message); }
+  }
   showTab('dashboard');
 }
 
@@ -2010,6 +2075,18 @@ function addUser(){
   const country = document.getElementById('uCountry').value || uSellModeCountry || '';
   if(!country){ toast('দেশ নির্বাচন করুন'); return; }
   const visa_type_id = document.getElementById('uVisaType').value || uSellModeVisaId || null;
+
+  if(!editingUserUid && visa_type_id && visaTypes[visa_type_id]){
+    const vt = visaTypes[visa_type_id];
+    const quota = vt.quota || 0;
+    if(quota > 0){
+      const soldCount = Object.values(usersCache).filter(u => u.country === country && u.visa_type_id === visa_type_id).length;
+      if(soldCount >= quota){
+        toast(`এই ভিসার কোটা (${quota}টি) শেষ! এই ভিসায় আর কোনো যাত্রী পাঠানো যাবে না।`);
+        return;
+      }
+    }
+  }
 
   const custom_data = {};
   Object.entries(customFields).forEach(([fid, f]) => {
@@ -2141,6 +2218,10 @@ function toggleAccItem(id){
 }
 function getJourneyForUser(uid){
   return Object.values(journeysCache).find(j => j.user_id === uid) || null;
+}
+function getJourneyIdForUser(uid){
+  const entry = Object.entries(journeysCache).find(([id, j]) => j.user_id === uid);
+  return entry ? entry[0] : null;
 }
 function shareUserProgress(uid){
   const u = (window._usersCache || {})[uid] || {};
@@ -2658,7 +2739,43 @@ function saveNoteAndCollapse(uid){
   if(expWrap) expWrap.style.display = 'none';
 }
 
-async function generateContractPdf(uid){
+/* চুক্তিনামা PDF বাটনে ক্লিক করলে সরাসরি PDF ডাউনলোড না হয়ে আগে শর্তাবলী এডিট করার একটা বক্স খোলে।
+   এটি ভিসা যোগ করার সময় লেখা টেমপ্লেট শর্তাবলী থেকে আলাদা — প্রতিটি যাত্রীর নিজের চূড়ান্ত (ফ্লাইট সময়ের)
+   চুক্তিনামা এখানে আলাদাভাবে সেভ থাকে। আগে এই যাত্রীর জন্য কিছু সেভ করা থাকলে তা, নাহলে ভিসার
+   টেমপ্লেট, নাহলে ডিফল্ট শর্তাবলী প্রি-ফিল করা থাকে — সবই এডিটযোগ্য */
+let pdfContractUid = null;
+function openContractPdfModal(uid){
+  pdfContractUid = uid;
+  const j = getJourneyForUser(uid);
+  /* এই বাটনটা সবসময় ডিফল্ট শর্তাবলী থেকে শুরু হয় (ভিসা অ্যাড করার সময় লেখা শর্তাবলীর সাথে মিক্স হয় না) —
+     শুধু আগে এই যাত্রীর জন্য নিজে থেকে এখান থেকেই কিছু সেভ করা থাকলে সেটা প্রি-ফিল হয় */
+  const terms = (j && j.contract_terms && j.contract_terms.length) ? j.contract_terms : GLOBAL_DEFAULT_CONTRACT_TERMS;
+  const ta = document.getElementById('pdfContractTerms');
+  ta.value = terms.join('\n');
+  document.getElementById('contractPdfModal').classList.add('active');
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
+  syncDetailsHighlight('pdfContractTerms', 'pdfContractTermsHl');
+}
+function closeContractPdfModal(){
+  document.getElementById('contractPdfModal').classList.remove('active');
+  pdfContractUid = null;
+}
+async function confirmGenerateContractPdf(){
+  if(!pdfContractUid) return;
+  const uid = pdfContractUid;
+  const ta = document.getElementById('pdfContractTerms');
+  const terms = (ta.value || '').split('\n').map(s => s.trim()).filter(Boolean);
+  closeContractPdfModal();
+  try{
+    const jid = getJourneyIdForUser(uid);
+    if(jid) await db.ref('journeys/' + jid).update({ contract_terms: terms.length ? terms : null });
+    await generateContractPdf(uid, terms.length ? terms : null);
+  }
+  catch(err){ toast('চুক্তিনামা তৈরি করতে সমস্যা হয়েছে: ' + err.message); }
+}
+
+async function generateContractPdf(uid, overrideTerms){
   const u = (window._usersCache || {})[uid] || {};
   const j = getJourneyForUser(uid);
   const name = getUserName(u);
@@ -2701,28 +2818,28 @@ async function generateContractPdf(uid){
 
     <p style="font-size:13.5px;">এই চুক্তিটি নিম্নবর্ণিত শর্তাবলীর ভিত্তিতে <b>Talent Overseas</b> (এখানে "এজেন্সি" বলে উল্লেখিত) এবং নিম্নস্বাক্ষরকারী গ্রাহকের ("গ্রাহক") মধ্যে সম্পাদিত হলো।</p>
 
-    <div style="font-size:14.5px;font-weight:700;margin-top:18px;margin-bottom:6px;color:#d4922a;">গ্রাহকের বিবরণ</div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <tr><td style="padding:5px 0;color:#8a93a3;width:170px;">নাম</td><td style="padding:5px 0;font-weight:700;">${name}</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">ফোন নম্বর</td><td style="padding:5px 0;">${phone || '-'}</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">পাসপোর্ট নম্বর</td><td style="padding:5px 0;">${passport}</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">জাতীয় পরিচয়পত্র (NID)</td><td style="padding:5px 0;">${nid}</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">ঠিকানা</td><td style="padding:5px 0;">${address}</td></tr>
-    </table>
+    <div style="font-size:14.5px;font-weight:700;margin-top:18px;margin-bottom:8px;color:#d4922a;">গ্রাহকের বিবরণ</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:24px;row-gap:8px;font-size:13px;">
+      <div><span style="color:#8a93a3;">নাম:</span> <b>${name}</b></div>
+      <div><span style="color:#8a93a3;">ফোন নম্বর:</span> ${phone || '-'}</div>
+      <div><span style="color:#8a93a3;">পাসপোর্ট নম্বর:</span> ${passport}</div>
+      <div><span style="color:#8a93a3;">NID:</span> ${nid}</div>
+      <div style="grid-column:1 / -1;"><span style="color:#8a93a3;">ঠিকানা:</span> ${address}</div>
+    </div>
 
-    <div style="font-size:14.5px;font-weight:700;margin-top:20px;margin-bottom:6px;color:#d4922a;">সেবার বিবরণ</div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;">
-      <tr><td style="padding:5px 0;color:#8a93a3;width:170px;">কর্মস্থল দেশ</td><td style="padding:5px 0;">${flag} ${country}</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">ভিসার ধরন</td><td style="padding:5px 0;">${visaTypeName}</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">বর্তমান ধাপ</td><td style="padding:5px 0;">${stageLabel}</td></tr>
-    </table>
+    <div style="font-size:14.5px;font-weight:700;margin-top:20px;margin-bottom:8px;color:#d4922a;">সেবার বিবরণ</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:24px;row-gap:8px;font-size:13px;">
+      <div><span style="color:#8a93a3;">কর্মস্থল দেশ:</span> ${flag} ${country}</div>
+      <div><span style="color:#8a93a3;">ভিসার ধরন:</span> ${visaTypeName}</div>
+      <div style="grid-column:1 / -1;"><span style="color:#8a93a3;">বর্তমান ধাপ:</span> ${stageLabel}</div>
+    </div>
 
-    <div style="font-size:14.5px;font-weight:700;margin-top:20px;margin-bottom:6px;color:#d4922a;">আর্থিক বিবরণ</div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:8px;">
-      <tr><td style="padding:5px 0;color:#8a93a3;width:170px;">মোট এজেন্সি ফি</td><td style="padding:5px 0;font-weight:700;">৳${fee}</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">পরিশোধিত</td><td style="padding:5px 0;color:#1a9e5c;font-weight:700;">৳${paid} (${pct}%)</td></tr>
-      <tr><td style="padding:5px 0;color:#8a93a3;">${dueLabelContract}</td><td style="padding:5px 0;color:${isOverpaidContract ? '#1a9e5c' : (due > 0 ? '#dc3545' : '#1a9e5c')};font-weight:700;">৳${dueDisplayContract.toLocaleString('bn-BD')}</td></tr>
-    </table>
+    <div style="font-size:14.5px;font-weight:700;margin-top:20px;margin-bottom:8px;color:#d4922a;">আর্থিক বিবরণ</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:16px;row-gap:8px;font-size:13px;margin-bottom:10px;">
+      <div><span style="color:#8a93a3;display:block;">মোট এজেন্সি ফি</span><b>৳${fee}</b></div>
+      <div><span style="color:#8a93a3;display:block;">পরিশোধিত</span><b style="color:#1a9e5c;">৳${paid} (${pct}%)</b></div>
+      <div><span style="color:#8a93a3;display:block;">${dueLabelContract}</span><b style="color:${isOverpaidContract ? '#1a9e5c' : (due > 0 ? '#dc3545' : '#1a9e5c')};">৳${dueDisplayContract.toLocaleString('bn-BD')}</b></div>
+    </div>
     <div style="height:8px;background:#f0ebe0;border-radius:4px;overflow:hidden;margin-bottom:14px;">
       <div style="height:100%;width:${pct}%;background:#1a9e5c;"></div>
     </div>
@@ -2733,14 +2850,18 @@ async function generateContractPdf(uid){
 
     <div style="font-size:14.5px;font-weight:700;margin-top:22px;margin-bottom:8px;color:#d4922a;">শর্তাবলী</div>
     <ol style="font-size:12.5px;padding-left:20px;margin:0;">
-      <li style="margin-bottom:6px;">এজেন্সি গ্রাহকের পাসপোর্ট প্রস্তুতকরণ, ভিসা প্রসেসিং, মেডিকেল পরীক্ষা এবং ফ্লাইট সংক্রান্ত সমস্ত প্রয়োজনীয় প্রক্রিয়া সম্পন্ন করতে সার্বিক সহায়তা প্রদান করবে।</li>
-      <li style="margin-bottom:6px;">উপরে উল্লেখিত মোট এজেন্সি ফি গ্রাহককে সম্মত কিস্তি অনুযায়ী নির্ধারিত সময়ের মধ্যে পরিশোধ করতে হবে; বিলম্বে প্রক্রিয়া ব্যাহত হলে এজেন্সি দায়ী থাকবে না।</li>
-      <li style="margin-bottom:6px;">সরকারি/দূতাবাসের সিদ্ধান্তে ভিসা প্রত্যাখ্যাত হলে, ইতিমধ্যে ব্যয়িত অফেরতযোগ্য খরচ (মেডিকেল, দূতাবাস ফি, প্রসেসিং ব্যয়) বাদ দিয়ে অবশিষ্ট অর্থ প্রযোজ্য নীতি অনুযায়ী ফেরতযোগ্য থাকবে।</li>
-      <li style="margin-bottom:6px;">গ্রাহকের প্রদত্ত সকল ব্যক্তিগত তথ্য, কাগজপত্র ও নথি সঠিক ও প্রকৃত বলে গণ্য হবে; ভুল বা মিথ্যা তথ্যের কারণে সৃষ্ট যেকোনো জটিলতার দায় সম্পূর্ণভাবে গ্রাহকের।</li>
-      <li style="margin-bottom:6px;">প্রক্রিয়াকরণের সময়কাল দূতাবাস, সরকারি সংস্থা ও নিয়োগকর্তার সিদ্ধান্তের উপর নির্ভরশীল বিধায় এজেন্সি নির্দিষ্ট সময়সীমার নিশ্চয়তা দিতে বাধ্য নয়।</li>
-      <li style="margin-bottom:6px;">গ্রাহক নিজ ইচ্ছায় প্রক্রিয়া বাতিল করতে চাইলে ইতিমধ্যে সম্পন্ন কাজ ও ব্যয়িত খরচ সমন্বয় সাপেক্ষে অবশিষ্ট অর্থ ফেরত দেওয়া হবে।</li>
-      <li style="margin-bottom:6px;">উভয় পক্ষের মধ্যে কোনো বিরোধ দেখা দিলে তা পারস্পরিক আলোচনার মাধ্যমে সমাধানের চেষ্টা করা হবে।</li>
-      <li style="margin-bottom:0;">উভয় পক্ষ এই চুক্তির সকল শর্তাবলী সম্পূর্ণরূপে পড়ে, বুঝে ও সম্মত হয়ে স্বাক্ষর করছেন।</li>
+      ${(() => {
+        const vt = u.visa_type_id && visaTypes[u.visa_type_id] ? visaTypes[u.visa_type_id] : null;
+        /* "চুক্তিনামা PDF" বাটন থেকে override এলে সেটাই (ডিফল্ট-ভিত্তিক, এডিটেবল)। override না থাকলে
+           (যেমন ফ্লাইট ডেট/টাইম সেভ করে অটো-ডাউনলোডের সময়) ভিসা অ্যাড/এডিট করার সময় লেখা শর্তাবলী
+           (vt.contract_terms) ব্যবহার হয় — এটা "চুক্তিনামা PDF" বাটনের ডিফল্ট থেকে সম্পূর্ণ আলাদা। */
+        const customTerms = (overrideTerms && overrideTerms.length) ? overrideTerms
+          : (vt && vt.contract_terms && vt.contract_terms.length) ? vt.contract_terms : null;
+        if(customTerms){
+          return customTerms.map(t => `<li style="margin-bottom:6px;">${t}</li>`).join('');
+        }
+        return GLOBAL_DEFAULT_CONTRACT_TERMS.map(t => `<li style="margin-bottom:6px;">${t}</li>`).join('');
+      })()}
     </ol>
 
     <div style="display:flex;justify-content:space-between;margin-top:70px;font-size:13px;">
@@ -2751,9 +2872,9 @@ async function generateContractPdf(uid){
   `;
   document.body.appendChild(wrap);
   try{
-    const canvas = await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff' });
+    const canvas = await html2canvas(wrap, { scale: 1.5, backgroundColor: '#ffffff' });
     document.body.removeChild(wrap);
-    const imgData = canvas.toDataURL('image/png');
+    const imgData = canvas.toDataURL('image/jpeg', 0.75);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -2763,12 +2884,12 @@ async function generateContractPdf(uid){
     const imgHeight = canvas.height * imgWidth / canvas.width;
     let heightLeft = imgHeight;
     let position = margin;
-    pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+    pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
     heightLeft -= (pageHeight - margin * 2);
     while(heightLeft > 0){
       position = heightLeft - imgHeight + margin;
       pdf.addPage();
-      pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
       heightLeft -= (pageHeight - margin * 2);
     }
     pdf.save(`${name}-চুক্তিনামা.pdf`);
@@ -2872,21 +2993,25 @@ function setupKeyboardAwareModal(modalId){
     reposition();
   };
   // টেক্সট ফিল্ডে ফোকাস হলে সরাসরি সেটাকে ভিউয়ের মধ্যে স্ক্রল করানো হচ্ছে — এটা
-  // visualViewport সাপোর্ট না থাকলেও কাজ করে, তাই সবসময় একটা অতিরিক্ত নিরাপত্তা হিসেবে থাকছে
-  const textInput = overlay.querySelector('textarea, input[type="text"]');
-  if(textInput){
+  // visualViewport সাপোর্ট না থাকলেও কাজ করে, তাই সবসময় একটা অতিরিক্ত নিরাপত্তা হিসেবে থাকছে।
+  // মোডালের সবগুলো টেক্সট ফিল্ডেই এটা প্রযোজ্য (শুধু প্রথমটায় না), যাতে নিচের দিকের
+  // ফিল্ডে ফোকাস করলেও কিবোর্ডের আড়ালে হারিয়ে না যায়।
+  const textInputs = overlay.querySelectorAll('textarea, input[type="text"], input[type="number"], input[type="tel"]');
+  textInputs.forEach(textInput => {
     textInput.addEventListener('focus', () => {
       if(!window.visualViewport) baselineHeight = window.innerHeight;
       setTimeout(() => {
         reposition();
-        textInput.scrollIntoView({ block: 'end', behavior: 'smooth' });
+        textInput.scrollIntoView({ block: 'center', behavior: 'smooth' });
       }, 350);
     });
-  }
+  });
 }
 setupKeyboardAwareModal('userChatModal');
 setupKeyboardAwareModal('agentChatModal');
 setupKeyboardAwareModal('vmReplyModal');
+setupKeyboardAwareModal('cfFormModal');
+setupKeyboardAwareModal('visaEditModal');
 
 function openUserChat(uid){
   ucCurrentUid = uid;
@@ -3893,10 +4018,48 @@ function openCfFormModal(){
   const detailsBox = document.getElementById('cfVisaDetails');
   detailsBox.value = '';
   detailsBox.style.height = 'auto';
+  const ceWrap = document.getElementById('cfContractEditorsWrap');
+  const ceBtn = document.getElementById('cfContractEditorsToggleBtn');
+  if(ceWrap) ceWrap.style.display = 'none';
+  if(ceBtn) ceBtn.style.background = 'rgba(61,124,255,.16)';
   toggleCfOptions();
 }
 function closeCfFormModal(){
   document.getElementById('cfFormModal').classList.remove('active');
+}
+
+/* হেডারের আইকনে ক্লিক করলে দুইটা এডিট বক্সই (এই ভিসার নিজস্ব শর্তাবলী + "চুক্তিনামা PDF"-এর ডিফল্ট
+   শর্তাবলী) একসাথে পাশাপাশি (উপরে-নিচে) টগল হয়ে খোলে/বন্ধ হয় — একই আইকন দিয়ে দুইটাই এডিট করা যায় */
+function toggleCfContractEditors(){
+  const wrap = document.getElementById('cfContractEditorsWrap');
+  const btn = document.getElementById('cfContractEditorsToggleBtn');
+  if(!wrap) return;
+  const show = wrap.style.display === 'none';
+  wrap.style.display = show ? 'block' : 'none';
+  if(btn) btn.style.background = show ? 'rgba(61,124,255,.35)' : 'rgba(61,124,255,.16)';
+  if(show){
+    const ta = document.getElementById('cfContractTerms');
+    if(ta){
+      ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px';
+    }
+    syncDetailsHighlight('cfContractTerms', 'cfContractTermsHl');
+    const dta = document.getElementById('cfDefaultContractTerms');
+    if(dta){
+      dta.value = GLOBAL_DEFAULT_CONTRACT_TERMS.join('\n');
+      dta.style.height = 'auto'; dta.style.height = dta.scrollHeight + 'px';
+    }
+    syncDetailsHighlight('cfDefaultContractTerms', 'cfDefaultContractTermsHl');
+  }
+}
+async function saveGlobalDefaultContractTerms(){
+  const ta = document.getElementById('cfDefaultContractTerms');
+  const terms = (ta.value || '').split('\n').map(s => s.trim()).filter(Boolean);
+  if(!terms.length){ toast('অন্তত একটা শর্ত লিখুন।'); return; }
+  try{
+    await db.ref('settings/default_contract_terms').set(terms);
+    GLOBAL_DEFAULT_CONTRACT_TERMS = terms;
+    toast('ডিফল্ট শর্তাবলী সেভ হয়েছে — এখন থেকে "চুক্তিনামা PDF" বাটনে এটাই প্রি-ফিল হবে');
+  }catch(err){ toast('সেভ করতে সমস্যা হয়েছে: ' + err.message); }
 }
 
 function toggleCountryListPanel(){
@@ -4049,16 +4212,22 @@ function openVisaEditModal(vid){
   }
   document.getElementById('veTitle').value = title;
   document.getElementById('veDetails').value = detailsList.join('\n');
+  document.getElementById('veContractTerms').value = (v.contract_terms && v.contract_terms.length) ? v.contract_terms.join('\n') : DEFAULT_CONTRACT_TERMS.join('\n');
   document.getElementById('visaEditModal').classList.add('active');
   const veDetailsEl = document.getElementById('veDetails');
   veDetailsEl.style.height = 'auto';
   veDetailsEl.style.height = veDetailsEl.scrollHeight + 'px';
   syncDetailsHighlight('veDetails', 'veDetailsHl');
+  const veContractTermsEl = document.getElementById('veContractTerms');
+  veContractTermsEl.style.height = 'auto';
+  veContractTermsEl.style.height = veContractTermsEl.scrollHeight + 'px';
+  syncDetailsHighlight('veContractTerms', 'veContractTermsHl');
 }
 
 function closeVisaEditModal(){
   document.getElementById('visaEditModal').classList.remove('active');
   document.getElementById('veTitle').value = '';
+  document.getElementById('veContractTerms').value = '';
   document.getElementById('veIssueDate').value = '';
   document.getElementById('veIssueDate').classList.remove('has-value');
   document.getElementById('veExpiryDate').value = '';
@@ -4084,9 +4253,10 @@ function saveVisaEdit(){
   const title = document.getElementById('veTitle').value.trim();
   const rest = document.getElementById('veDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const details = title ? [title, ...rest] : rest;
+  const contractTerms = document.getElementById('veContractTerms').value.split('\n').map(s => s.trim()).filter(Boolean);
   const issueDate = document.getElementById('veIssueDate').value;
   const expiryDate = document.getElementById('veExpiryDate').value;
-  db.ref('visa_types/' + editingVisaId).update({ name, fee, cost, quota, details, issue_date: issueDate || null, expiry_date: expiryDate || null })
+  db.ref('visa_types/' + editingVisaId).update({ name, fee, cost, quota, details, contract_terms: contractTerms.length ? contractTerms : null, issue_date: issueDate || null, expiry_date: expiryDate || null })
     .then(() => closeVisaEditModal())
     .catch(err => { toast('সেভ করতে ব্যর্থ: ' + err.message); console.error(err); });
 }
@@ -5205,10 +5375,12 @@ function addCustomField(){
   const title = document.getElementById('cfVisaTitle').value.trim();
   const rest = document.getElementById('cfVisaDetails').value.split('\n').map(s => s.trim()).filter(Boolean);
   const details = title ? [title, ...rest] : rest;
+  const contractTerms = document.getElementById('cfContractTerms').value.split('\n').map(s => s.trim()).filter(Boolean);
   const issueDate = document.getElementById('cfVisaIssueDate').value;
   const expiryDate = document.getElementById('cfVisaExpiryDate').value;
   const key = db.ref('visa_types').push().key;
   const payload = { country, name, fee, cost, quota, details, created_at: Date.now() };
+  if(contractTerms.length) payload.contract_terms = contractTerms;
   if(agencyName) payload.agency_name = agencyName;
   if(issueDate) payload.issue_date = issueDate;
   if(expiryDate) payload.expiry_date = expiryDate;
@@ -5220,7 +5392,10 @@ function addCustomField(){
     document.getElementById('cfVisaTitle').value = '';
     document.getElementById('cfVisaDetails').value = '';
     document.getElementById('cfVisaDetails').style.height = 'auto';
+    document.getElementById('cfContractTerms').value = '';
+    document.getElementById('cfContractTerms').style.height = 'auto';
     syncDetailsHighlight('cfVisaDetails', 'cfVisaDetailsHl');
+    syncDetailsHighlight('cfContractTerms', 'cfContractTermsHl');
     document.getElementById('cfAgencyName').value = '';
     document.getElementById('cfVisaIssueDate').value = '';
     document.getElementById('cfVisaIssueDate').classList.remove('has-value');
@@ -6089,47 +6264,87 @@ function downloadCsv(filename, rows){
   URL.revokeObjectURL(url);
 }
 
-function exportProfitLossReport(){
-  const rows = [['নাম','দেশ','স্টেজ','ফি (৳)','মেডিকেল খরচ (৳)','ভিসা খরচ (৳)','ফ্লাইট খরচ (৳)','মোট খরচ (৳)','নিট লাভ/ক্ষতি (৳)','সর্বশেষ আপডেট']];
-  Object.values(dashJourneys).forEach(j => {
-    const u = dashUsers[j.user_id] || {};
-    const { net, cost, fee } = netOf(j);
-    rows.push([
-      getUserName(u), u.country || '-', STAGE_LABEL[j.current_stage] || j.current_stage,
-      fee, j.cost_medical || 0, j.cost_visa || 0, j.cost_flight || 0, cost, net,
-      j.updated_at ? new Date(j.updated_at).toLocaleDateString('bn-BD') : '-'
-    ]);
-  });
-  downloadCsv('profit_loss_report_' + Date.now() + '.csv', rows);
-}
+function exportFullAgencyReport(){
+  const monthNames = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  const journeyList = Object.entries(dashJourneys).map(([jid, j]) => ({...j, jid}));
+  if(!journeyList.length){ toast('এখনো কোনো জার্নি/যাত্রীর তথ্য নেই।'); return; }
 
-function exportCustomerListReport(){
-  const rows = [['নাম','ফোন','পাসপোর্ট','দেশ','স্টেজ','যোগ হয়েছে']];
+  const rows = [];
+
+  // ===== সেকশন ১: প্রফিট-লস রিপোর্ট (মাস অনুযায়ী) =====
+  rows.push(['=== প্রফিট-লস রিপোর্ট (মাস অনুযায়ী) ===']);
+  rows.push(['মাস','নাম','ফোন','দেশ','ভিসার ধরন','এজেন্ট','স্টেজ','ফি (৳)','মেডিকেল খরচ (৳)','ভিসা খরচ (৳)','ফ্লাইট খরচ (৳)','ক্ষতি (৳)','মোট খরচ (৳)','নিট লাভ/ক্ষতি (৳)','রিয়েল লাভ/ক্ষতি (৳)','সর্বশেষ আপডেট']);
+  const groups = {};
+  journeyList.forEach(j => {
+    const d = new Date(j.updated_at || j.created_at || Date.now());
+    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    if(!groups[key]) groups[key] = { label: monthNames[d.getMonth()] + ' ' + d.getFullYear(), items: [] };
+    groups[key].items.push(j);
+  });
+  const sortedKeys = Object.keys(groups).sort();
+  let grandFee = 0, grandCost = 0, grandLoss = 0, grandNet = 0, grandReal = 0;
+  sortedKeys.forEach(key => {
+    const g = groups[key];
+    let mFee = 0, mCost = 0, mLoss = 0, mNet = 0, mReal = 0;
+    g.items.forEach(j => {
+      const u = dashUsers[j.user_id] || {};
+      const n = netOf(j);
+      const real = realNetOf(j);
+      const agentName = u.agent_id && agentsCache[u.agent_id] ? agentsCache[u.agent_id].name : 'সরাসরি';
+      const visaName = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id].name : '-';
+      rows.push([
+        g.label, getUserName(u), getUserPhone(u), u.country || '-', visaName, agentName,
+        STAGE_LABEL[j.current_stage] || j.current_stage,
+        n.fee, j.cost_medical || 0, j.cost_visa || 0, j.cost_flight || 0, n.losses, n.cost, n.net, real,
+        j.updated_at ? new Date(j.updated_at).toLocaleDateString('bn-BD') : '-'
+      ]);
+      mFee += n.fee; mCost += n.cost; mLoss += n.losses; mNet += n.net; mReal += real;
+    });
+    rows.push([g.label + ' — সাবটোটাল', '', '', '', '', '', '', mFee, '', '', '', mLoss, mCost, mNet, mReal, '']);
+    grandFee += mFee; grandCost += mCost; grandLoss += mLoss; grandNet += mNet; grandReal += mReal;
+  });
+  rows.push(['সর্বমোট', '', '', '', '', '', '', grandFee, '', '', '', grandLoss, grandCost, grandNet, grandReal, '']);
+
+  // ===== সেকশন ২: কাস্টমার লিস্ট =====
+  rows.push([]);
+  rows.push(['=== কাস্টমার লিস্ট ===']);
+  rows.push(['নাম','ফোন','পাসপোর্ট','দেশ','ভিসার ধরন','এজেন্ট','স্টেজ','মোট ফি (৳)','পরিশোধিত (৳)','বাকি (৳)','যোগ হয়েছে']);
   Object.entries(dashUsers).forEach(([uid, u]) => {
     const j = getJourneyForUser(uid);
     const stageLabel = j ? (STAGE_LABEL[j.current_stage] || j.current_stage) : 'শুরু হয়নি';
+    const visaName = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id].name : '-';
+    const agentName = u.agent_id && agentsCache[u.agent_id] ? agentsCache[u.agent_id].name : 'সরাসরি';
+    const fee = j ? (j.agency_fee || 0) : 0;
+    const paid = j ? Object.values(j.payments || {}).reduce((s, p) => s + (p.amount || 0), 0) : 0;
+    const due = fee - paid;
     rows.push([
-      getUserName(u), getUserPhone(u), getUserPassport(u), u.country || '-', stageLabel,
-      u.created_at ? new Date(u.created_at).toLocaleDateString('bn-BD') : '-'
+      getUserName(u), getUserPhone(u), getUserPassport(u), u.country || '-', visaName, agentName, stageLabel,
+      fee, paid, due, u.created_at ? new Date(u.created_at).toLocaleDateString('bn-BD') : '-'
     ]);
   });
-  downloadCsv('customer_list_' + Date.now() + '.csv', rows);
-}
 
-function exportPaymentsReport(){
-  const rows = [['কাস্টমার নাম','স্টেজ','পরিমাণ (৳)','নোট','তারিখ']];
+  // ===== সেকশন ৩: পেমেন্ট/কিস্তি রিপোর্ট =====
+  rows.push([]);
+  rows.push(['=== পেমেন্ট/কিস্তি রিপোর্ট ===']);
+  rows.push(['কাস্টমার নাম','ফোন','দেশ','ভিসার ধরন','এজেন্ট','স্টেজ','পরিমাণ (৳)','নোট','তারিখ']);
+  let totalPaid = 0;
   Object.values(dashJourneys).forEach(j => {
     const u = dashUsers[j.user_id] || {};
-    const payments = j.payments || {};
-    Object.values(payments).forEach(p => {
+    const visaName = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id].name : '-';
+    const agentName = u.agent_id && agentsCache[u.agent_id] ? agentsCache[u.agent_id].name : 'সরাসরি';
+    const payments = Object.values(j.payments || {}).sort((a,b) => (a.date||0) - (b.date||0));
+    payments.forEach(p => {
       rows.push([
-        getUserName(u), STAGE_LABEL[j.current_stage] || j.current_stage,
+        getUserName(u), getUserPhone(u), u.country || '-', visaName, agentName,
+        STAGE_LABEL[j.current_stage] || j.current_stage,
         p.amount || 0, p.note || '', p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'
       ]);
+      totalPaid += p.amount || 0;
     });
   });
-  if(rows.length === 1){ toast('এখনো কোনো পেমেন্ট এন্ট্রি নেই।'); return; }
-  downloadCsv('payments_report_' + Date.now() + '.csv', rows);
+  rows.push(['সর্বমোট', '', '', '', '', '', totalPaid, '', '']);
+
+  downloadCsv('agency_full_report_' + Date.now() + '.csv', rows);
 }
 
 /* ================= FLIGHT CALENDAR ================= */
@@ -6267,7 +6482,7 @@ function setupHlTextarea(taId, bdId){
   ta.addEventListener('scroll', () => syncDetailsHighlight(taId, bdId));
   syncDetailsHighlight(taId, bdId);
 }
-[['veDetails','veDetailsHl'], ['cfVisaDetails','cfVisaDetailsHl']].forEach(([taId, bdId]) => setupHlTextarea(taId, bdId));
+[['veDetails','veDetailsHl'], ['cfVisaDetails','cfVisaDetailsHl'], ['veContractTerms','veContractTermsHl'], ['cfContractTerms','cfContractTermsHl'], ['pdfContractTerms','pdfContractTermsHl'], ['cfDefaultContractTerms','cfDefaultContractTermsHl']].forEach(([taId, bdId]) => setupHlTextarea(taId, bdId));
 </script>
 </body>
 </html>
