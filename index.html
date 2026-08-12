@@ -2,8 +2,8 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
-<title>Talent Overseas — Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+<title>Golden Future Tours & Travels — Admin Panel</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
@@ -37,6 +37,7 @@
   }
   *{box-sizing:border-box;}
   body{margin:0;min-height:100vh;font-family:'Hind Siliguri','Noto Sans Bengali','Segoe UI',Roboto,Arial,sans-serif;
+    touch-action:manipulation;
     background:
       radial-gradient(ellipse 80% 50% at 20% 0%, rgba(61,124,255,.16), transparent 60%),
       radial-gradient(ellipse 70% 55% at 100% 100%, rgba(138,92,255,.13), transparent 60%),
@@ -302,7 +303,7 @@
   .cal-day.selected .dot{background:#fff;}
 
   /* ===== Toast notifications — clean elevated card style ===== */
-  #toastHost{position:fixed;left:0;right:0;top:62px;z-index:950;display:flex;flex-direction:column-reverse;align-items:center;gap:10px;pointer-events:none;padding:0 14px;max-width:480px;width:100%;box-sizing:border-box;margin:0 auto;}
+  #toastHost{position:fixed;left:0;right:0;top:62px;z-index:10050;display:flex;flex-direction:column-reverse;align-items:center;gap:10px;pointer-events:none;padding:0 14px;max-width:480px;width:100%;box-sizing:border-box;margin:0 auto;}
   .toast{position:relative;overflow:hidden;pointer-events:auto;width:100%;max-width:100%;box-sizing:border-box;background:linear-gradient(155deg,rgba(20,32,54,.98),rgba(10,18,33,.98));backdrop-filter:blur(18px) saturate(150%);-webkit-backdrop-filter:blur(18px) saturate(150%);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:13px 16px 15px;font-size:13.5px;font-weight:600;color:var(--text);line-height:1.4;box-shadow:0 14px 34px -6px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.02),0 0 26px -8px var(--tc,transparent);display:flex;align-items:center;gap:12px;animation:toastSlideIn .38s cubic-bezier(.22,1,.36,1);}
   .toast-icowrap{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb, var(--tc,#3ff0ff) 16%, transparent);animation:toastIcoIn .4s cubic-bezier(.34,1.4,.64,1) .06s both;}
   .toast i{font-size:14px;flex-shrink:0;color:var(--tc,#3ff0ff);}
@@ -398,8 +399,8 @@
     </div>
 
     <div id="passStep" style="display:none;">
-      <input id="loginEmail" type="text" placeholder="Email">
-      <input id="loginPass" type="password" placeholder="Password">
+      <input autocomplete="off" id="loginEmail" type="text" placeholder="Email">
+      <input autocomplete="off" id="loginPass" type="password" placeholder="Password">
       <button class="btn gold" onclick="handlePasswordLogin()"><i class="fas fa-right-to-bracket" style="margin-right:6px;"></i>লগইন</button>
       <button class="btn small" style="width:100%;background:rgba(63,240,255,.1);border:1px solid var(--border);color:#8ff6ff;margin-top:8px;" onclick="showFaceStep()">ফেস দিয়ে আবার চেষ্টা করুন</button>
     </div>
@@ -453,7 +454,7 @@
         <h1 style="margin:0;">জার্নি</h1>
         <div class="searchWrap" style="flex:1;margin-left:14px;margin-right:0;">
           <i class="fas fa-magnifying-glass"></i>
-          <input type="text" id="jSearch" placeholder="নাম, ফোন বা পাসপোর্ট দিয়ে খুঁজুন..." oninput="renderJourneys()">
+          <input autocomplete="off" type="text" id="jSearch" placeholder="নাম, ফোন বা পাসপোর্ট দিয়ে খুঁজুন..." oninput="renderJourneys()">
         </div>
       </div>
       <div class="card">
@@ -471,7 +472,7 @@
         <h1 style="margin:0;">ওয়েটিং</h1>
         <div class="searchWrap" style="flex:1;margin-left:14px;margin-right:0;">
           <i class="fas fa-magnifying-glass"></i>
-          <input type="text" id="waitingCustomerSearch" placeholder="দেশ বা এজেন্ট দিয়ে খুঁজুন..." oninput="renderVisaMessages()">
+          <input autocomplete="off" type="text" id="waitingCustomerSearch" placeholder="দেশ বা এজেন্ট দিয়ে খুঁজুন..." oninput="renderVisaMessages()">
         </div>
       </div>
       <div class="card">
@@ -485,7 +486,7 @@
         <h1 style="margin:0;">ভিসার তথ্য</h1>
         <div class="searchWrap" style="flex:1;margin-left:14px;">
           <i class="fas fa-magnifying-glass"></i>
-          <input type="text" id="visaSearch" placeholder="দেশ খুঁজুন..." oninput="renderVisaInfoList()">
+          <input autocomplete="off" type="text" id="visaSearch" placeholder="দেশ খুঁজুন..." oninput="renderVisaInfoList()">
         </div>
       </div>
       <div class="card">
@@ -499,7 +500,7 @@
       <div class="topbar"><h1>নোটিফিকেশন লগ</h1></div>
       <div class="card">
         <table>
-          <thead><tr><th>সময়</th><th>বিবরণ</th><th>চ্যানেল</th><th>টেমপ্লেট</th><th>স্ট্যাটাস</th><th></th></tr></thead>
+          <thead><tr><th>সময়</th><th>যাত্রী</th><th>নতুন স্টেজ</th><th>পরিবর্তনকারী</th></tr></thead>
           <tbody id="logRows"></tbody>
         </table>
       </div>
@@ -543,7 +544,7 @@
           <span id="chev-agentAddPanel" class="chev-ico"><i class="fas fa-chevron-down"></i></span>
         </div>
         <div id="agentAddPanel" style="display:none;">
-          <input type="text" id="agentSearchSettings" placeholder="নাম বা ফোন দিয়ে খুঁজুন..." oninput="renderAgents()" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:10px;margin-top:12px;">
+          <input autocomplete="off" type="text" id="agentSearchSettings" placeholder="নাম বা ফোন দিয়ে খুঁজুন..." oninput="renderAgents()" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;margin-bottom:10px;margin-top:12px;">
           <div id="agentRowsSettings"></div>
         </div>
       </div>
@@ -570,7 +571,7 @@
         </div>
         <div id="securityPanel" style="display:none;">
           <div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0 22px;text-align:center;">
-            <input id="flImageInput" type="file" accept="image/*" style="display:none;" onchange="handleFlImageUpload(event)">
+            <input autocomplete="off" id="flImageInput" type="file" accept="image/*" style="display:none;" onchange="handleFlImageUpload(event)">
             <div id="flDropZone" onclick="document.getElementById('flImageInput').click()" style="width:110px;height:110px;border-radius:50%;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;cursor:pointer;color:#6f8aa8;background:rgba(63,240,255,.05);overflow:hidden;flex-shrink:0;">
               <i class="fas fa-camera" style="font-size:20px;"></i>
               <span style="font-size:10px;padding:0 8px;">ছবি বাছাই করুন</span>
@@ -583,10 +584,10 @@
             <div style="font-weight:700;">পাসওয়ার্ড পরিবর্তন করুন</div>
           </div>
           <div class="formGrid">
-            <input id="pcEmail" type="text" placeholder="পূর্বের ইমেইল">
-            <input id="pcCurrentPass" type="password" placeholder="বর্তমান পাসওয়ার্ড">
-            <input id="pcNewEmail" type="text" placeholder="নতুন ইমেইল">
-            <input id="pcNewPass" type="password" placeholder="নতুন পাসওয়ার্ড">
+            <input autocomplete="off" id="pcEmail" type="text" placeholder="পূর্বের ইমেইল">
+            <input autocomplete="off" id="pcCurrentPass" type="password" placeholder="বর্তমান পাসওয়ার্ড">
+            <input autocomplete="off" id="pcNewEmail" type="text" placeholder="নতুন ইমেইল">
+            <input autocomplete="off" id="pcNewPass" type="password" placeholder="নতুন পাসওয়ার্ড">
           </div>
           <div style="margin-top:12px;"><button class="btn small" onclick="changeAdminPassword()">পরিবর্তন করুন</button></div>
           <div id="pcMsg" style="font-size:12px;margin-top:6px;"></div>
@@ -647,8 +648,8 @@
             <img id="uPhotoPreview" style="display:none;width:100%;height:100%;object-fit:cover;">
           </div>
         </div>
-        <input type="file" id="uPhoto" accept="image/*,application/pdf,.pdf,.doc,.docx,.jpg,.jpeg,.png" multiple onchange="handleUserPhotoSelect(event)" style="display:none;">
-        <input type="text" id="uFullName" placeholder="ইউজারের নাম" style="width:100%;max-width:260px;box-sizing:border-box;margin:8px auto 0;display:block;text-align:center;">
+        <input autocomplete="off" type="file" id="uPhoto" accept="image/*,application/pdf,.pdf,.doc,.docx,.jpg,.jpeg,.png" multiple onchange="handleUserPhotoSelect(event)" style="display:none;">
+        <input autocomplete="off" type="text" id="uFullName" placeholder="ইউজারের নাম" style="width:100%;max-width:260px;box-sizing:border-box;margin:8px auto 0;display:block;text-align:center;">
       </div>
 
       <div class="formGrid" id="uFormGrid">
@@ -667,22 +668,22 @@
       <div id="customFieldsWrap"></div>
       <div id="uSellExtraWrap" style="display:none;margin-top:10px;">
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;">
-          <input type="tel" id="uCustomerPhone" placeholder="মাতার মোবাইল নম্বর" style="width:100%;box-sizing:border-box;">
-          <input type="tel" id="uFatherPhone" placeholder="পিতার মোবাইল নম্বর" style="width:100%;box-sizing:border-box;">
+          <input autocomplete="off" type="text" id="uCustomerPhone" placeholder="পিতার নাম" style="width:100%;box-sizing:border-box;">
+          <input autocomplete="off" type="tel" id="uFatherPhone" placeholder="পিতার মোবাইল নম্বর" style="width:100%;box-sizing:border-box;">
         </div>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-top:10px;">
-          <input type="number" id="uVisaPromiseDays" placeholder="প্রসেসিং সময়">
-          <input type="date" id="uVisaPromiseStart" title="কবে থেকে গণনা শুরু">
+          <input autocomplete="off" type="number" id="uVisaPromiseDays" placeholder="প্রসেসিং সময়">
+          <input autocomplete="off" type="date" id="uVisaPromiseStart" title="কবে থেকে গণনা শুরু">
         </div>
       </div>
       <div id="uDepositWrap" style="display:none;margin-top:10px;">
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;">
-          <input type="number" id="uDepositAmt" placeholder="জমা/অগ্রিম টাকা (৳)" style="width:100%;box-sizing:border-box;">
-          <input type="text" id="uDepositNote" placeholder="জমার নোট (ঐচ্ছিক)" style="width:100%;box-sizing:border-box;">
+          <input autocomplete="off" type="number" id="uDepositAmt" placeholder="জমা/অগ্রিম টাকা (৳)" style="width:100%;box-sizing:border-box;">
+          <input autocomplete="off" type="text" id="uDepositNote" placeholder="জমার নোট (ঐচ্ছিক)" style="width:100%;box-sizing:border-box;">
         </div>
       </div>
       <div style="margin-top:10px;">
-        <textarea id="uNotes" class="noteBox" placeholder="এই ইউজার সম্পর্কে নোট লিখুন..."></textarea>
+        <textarea autocomplete="off" id="uNotes" class="noteBox" placeholder="এই ইউজার সম্পর্কে নোট লিখুন..."></textarea>
       </div>
       <div id="uDocumentsWrap" style="display:none;margin-top:10px;">
         <div id="uDocumentsList"></div>
@@ -746,7 +747,7 @@
       <h3 style="margin-top:0;">মেসেজ পাঠান</h3>
       <p class="hint" style="margin-top:0;margin-bottom:6px;" id="vmVisaLabel"></p>
       <div id="vmVisaInfo"></div>
-      <input type="file" id="vmFile" accept="image/*,.pdf" onchange="handleVmFileSelect(event)" style="width:100%;box-sizing:border-box;">
+      <input autocomplete="off" type="file" id="vmFile" accept="image/*,.pdf" onchange="handleVmFileSelect(event)" style="width:100%;box-sizing:border-box;">
       <div id="vmFilePreviewWrap" style="display:none;text-align:center;margin-top:10px;">
         <img id="vmFilePreview" style="max-width:100%;max-height:220px;border-radius:8px;border:1px solid var(--border);" alt="">
         <div class="hint" id="vmFileName" style="margin-top:4px;"></div>
@@ -771,7 +772,7 @@
       <div id="vmReplyMessagesList" style="flex:1;overflow-y:auto;min-height:180px;max-height:50vh;display:flex;flex-direction:column;gap:10px;padding:6px 2px;"></div>
       <div id="vmReplyMsg" style="font-size:12px;margin-top:2px;"></div>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <textarea id="vmReplyText" rows="1" placeholder="এই ভিসা আবেদন সম্পর্কে লিখুন..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;box-sizing:border-box;font-family:inherit;"></textarea>
+        <textarea autocomplete="off" id="vmReplyText" rows="1" placeholder="এই ভিসা আবেদন সম্পর্কে লিখুন..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;box-sizing:border-box;font-family:inherit;"></textarea>
         <button type="button" class="btn small" style="width:auto;padding:0 16px;flex-shrink:0;" onclick="saveVmReply()"><i class="fas fa-paper-plane"></i></button>
       </div>
     </div>
@@ -783,7 +784,7 @@
       <button class="close-x" onclick="closeVmDeleteModal()"><i class="fas fa-xmark"></i></button>
       <h3 style="margin-top:0;">আবেদন ডিলিট করুন</h3>
       <p class="hint" style="margin-top:0;" id="vmDeleteLabel"></p>
-      <textarea id="vmDeleteReason" rows="4" placeholder="ডিলিটের কারণ লিখুন (এজেন্ট এই মেসেজটি দেখতে পাবেন)..." style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>
+      <textarea autocomplete="off" id="vmDeleteReason" rows="4" placeholder="ডিলিটের কারণ লিখুন (এজেন্ট এই মেসেজটি দেখতে পাবেন)..." style="width:100%;box-sizing:border-box;resize:vertical;"></textarea>
       <div id="vmDeleteMsg" style="font-size:12px;margin-top:6px;"></div>
       <div style="margin-top:10px;"><button class="btn small danger" style="width:100%;" onclick="confirmDeleteVisaMessage()">ডিলিট করুন</button></div>
     </div>
@@ -802,7 +803,7 @@
       </div>
       <div id="ucMessagesList" style="flex:1;overflow-y:auto;min-height:180px;max-height:50vh;display:flex;flex-direction:column;gap:10px;padding:6px 2px;"></div>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <textarea id="ucInputText" rows="1" placeholder="লিখুন..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;box-sizing:border-box;font-family:inherit;"></textarea>
+        <textarea autocomplete="off" id="ucInputText" rows="1" placeholder="লিখুন..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;box-sizing:border-box;font-family:inherit;"></textarea>
         <button type="button" class="btn small" style="width:auto;padding:0 16px;flex-shrink:0;" onclick="sendUserChatMessage()"><i class="fas fa-paper-plane"></i></button>
       </div>
     </div>
@@ -821,7 +822,7 @@
       </div>
       <div id="acMessagesList" style="flex:1;overflow-y:auto;min-height:180px;max-height:50vh;display:flex;flex-direction:column;gap:10px;padding:6px 2px;"></div>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <textarea id="acInputText" rows="1" placeholder="লিখুন..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;box-sizing:border-box;font-family:inherit;"></textarea>
+        <textarea autocomplete="off" id="acInputText" rows="1" placeholder="লিখুন..." style="flex:1;resize:none;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:13px;box-sizing:border-box;font-family:inherit;"></textarea>
         <button type="button" class="btn small" style="width:auto;padding:0 16px;flex-shrink:0;" onclick="sendAgentChatMessage()"><i class="fas fa-paper-plane"></i></button>
       </div>
     </div>
@@ -857,15 +858,15 @@
             <img id="eagPhotoPreview" style="display:none;width:100%;height:100%;object-fit:cover;">
           </div>
         </div>
-        <input type="file" id="eagPhoto" accept="image/*" onchange="handleEditAgentPhotoSelect(event)" style="display:none;">
+        <input autocomplete="off" type="file" id="eagPhoto" accept="image/*" onchange="handleEditAgentPhotoSelect(event)" style="display:none;">
         <div class="hint" id="eagPhotoFaceMsg" style="margin-top:6px;"></div>
       </div>
       <div class="formGrid">
-        <input id="eagName" placeholder="এজেন্টের নাম">
-        <input id="eagPhone" placeholder="ফোন নম্বর">
-        <input id="eagEmail" type="email" placeholder="ইমেইল (লগইনের জন্য)">
-        <input id="eagPass" type="password" placeholder="নতুন পাসওয়ার্ড (খালি রাখলে অপরিবর্তিত থাকবে)">
-        <input id="eagContactPhone" type="tel" placeholder="এডমিনের সাথে যোগাযোগের নম্বর (কল বাটনে ব্যবহার হবে)">
+        <input autocomplete="off" id="eagName" placeholder="এজেন্টের নাম">
+        <input autocomplete="off" id="eagPhone" placeholder="ফোন নম্বর">
+        <input autocomplete="off" id="eagEmail" type="email" placeholder="ইমেইল (লগইনের জন্য)">
+        <input autocomplete="off" id="eagPass" type="password" placeholder="নতুন পাসওয়ার্ড (খালি রাখলে অপরিবর্তিত থাকবে)">
+        <input autocomplete="off" id="eagContactPhone" type="tel" placeholder="এডমিনের সাথে যোগাযোগের নম্বর (কল বাটনে ব্যবহার হবে)">
       </div>
       <div id="eagMsg" style="font-size:12px;margin-top:6px;"></div>
       <div style="margin-top:10px;"><button class="btn small" style="width:100%;" onclick="saveAgentEdit()">সংরক্ষণ করুন</button></div>
@@ -884,15 +885,15 @@
             <img id="agPhotoPreview" style="display:none;width:100%;height:100%;object-fit:cover;">
           </div>
         </div>
-        <input type="file" id="agPhoto" accept="image/*" onchange="handleAgentPhotoSelect(event)" style="display:none;">
+        <input autocomplete="off" type="file" id="agPhoto" accept="image/*" onchange="handleAgentPhotoSelect(event)" style="display:none;">
         <div class="hint" id="agPhotoFaceMsg" style="margin-top:6px;"></div>
       </div>
       <div class="formGrid">
-        <input id="agName" placeholder="এজেন্টের নাম">
-        <input id="agPhone" placeholder="ফোন নম্বর">
-        <input id="agEmail" type="email" placeholder="ইমেইল (লগইনের জন্য)">
-        <input id="agPass" type="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ ডিজিট)">
-        <input id="agContactPhone" type="tel" placeholder="এডমিনের সাথে যোগাযোগের নম্বর (কল বাটনে ব্যবহার হবে)">
+        <input autocomplete="off" id="agName" placeholder="এজেন্টের নাম">
+        <input autocomplete="off" id="agPhone" placeholder="ফোন নম্বর">
+        <input autocomplete="off" id="agEmail" type="email" placeholder="ইমেইল (লগইনের জন্য)">
+        <input autocomplete="off" id="agPass" type="password" placeholder="পাসওয়ার্ড (কমপক্ষে ৬ ডিজিট)">
+        <input autocomplete="off" id="agContactPhone" type="tel" placeholder="এডমিনের সাথে যোগাযোগের নম্বর (কল বাটনে ব্যবহার হবে)">
       </div>
       <div id="agMsg" style="font-size:12px;margin-top:6px;"></div>
       <div style="margin-top:10px;"><button class="btn small" style="width:100%;" onclick="addAgent()">যোগ করুন</button></div>
@@ -911,13 +912,13 @@
             <img id="ptPhotoPreview" style="display:none;width:100%;height:100%;object-fit:cover;">
           </div>
         </div>
-        <input type="file" id="ptPhoto" accept="image/*" onchange="handlePartnerPhotoSelect(event)" style="display:none;">
+        <input autocomplete="off" type="file" id="ptPhoto" accept="image/*" onchange="handlePartnerPhotoSelect(event)" style="display:none;">
       </div>
       <div class="formGrid">
-        <input id="ptName" placeholder="পার্টনারের নাম">
-        <input id="ptPhone" type="tel" placeholder="ফোন নম্বর (ঐচ্ছিক)">
-        <input id="ptInvestment" type="number" placeholder="মোট বিনিয়োগ (৳)" oninput="autoCalcPartnerShare()">
-        <input id="ptShare" type="number" placeholder="মুনাফার শেয়ার (%) — স্বয়ংক্রিয়" readonly style="opacity:.75;">
+        <input autocomplete="off" id="ptName" placeholder="পার্টনারের নাম">
+        <input autocomplete="off" id="ptPhone" type="tel" placeholder="ফোন নম্বর (ঐচ্ছিক)">
+        <input autocomplete="off" id="ptInvestment" type="number" placeholder="মোট বিনিয়োগ (৳)" oninput="autoCalcPartnerShare()">
+        <input autocomplete="off" id="ptShare" type="number" placeholder="মুনাফার শেয়ার (%) — স্বয়ংক্রিয়" readonly style="opacity:.75;">
       </div>
       <div id="ptMsg" style="font-size:12px;margin-top:6px;"></div>
       <div style="margin-top:10px;"><button class="btn small" style="width:100%;" onclick="savePartner()">সেভ করুন</button></div>
@@ -931,31 +932,31 @@
       <h3 style="margin-top:0;">ভিসা এডিট করুন</h3>
       <div class="formGrid">
         <div class="flex" style="gap:8px;flex-wrap:wrap;">
-          <input id="veName" placeholder="ভিসার ধরন" style="flex:1;min-width:120px;">
-          <input id="veFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
-          <input id="veCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
-          <input id="veQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="veName" placeholder="ভিসার ধরন" style="flex:1;min-width:120px;">
+          <input autocomplete="off" id="veFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="veCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="veQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
         </div>
         <div class="flex" style="gap:8px;flex-wrap:wrap;">
           <div class="dateFieldWrap">
-            <input id="veIssueDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
+            <input autocomplete="off" id="veIssueDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
             <span class="dateFieldLabel">ভিসা ইস্যুর তারিখ (ঐচ্ছিক)</span>
           </div>
           <div class="dateFieldWrap">
-            <input id="veExpiryDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
+            <input autocomplete="off" id="veExpiryDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
             <span class="dateFieldLabel">মেয়াদ উত্তীর্ণের তারিখ (ঐচ্ছিক)</span>
           </div>
         </div>
       </div>
       <div style="margin-top:10px;">
-        <input id="veTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
+        <input autocomplete="off" id="veTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
         <div class="hlWrap">
           <div id="veDetailsHl" class="hlBackdrop"></div>
-          <textarea id="veDetails" rows="5" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="কোম্পানি: সিডার গ্রুপ&#10;মাসিক বেতন: 2000 রিয়াল&#10;দৈনিক ডিউটি: ৮ ঘন্টা প্লাস কভার টাইম"></textarea>
+          <textarea autocomplete="off" id="veDetails" rows="5" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="কোম্পানি: সিডার গ্রুপ&#10;মাসিক বেতন: 2000 রিয়াল&#10;দৈনিক ডিউটি: ৮ ঘন্টা প্লাস কভার টাইম"></textarea>
         </div>
         <div class="hlWrap" style="margin-top:8px;">
           <div id="veContractTermsHl" class="hlBackdrop"></div>
-          <textarea id="veContractTerms" rows="5" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="চুক্তিপত্রের শর্তাবলী (ঐচ্ছিক, প্রতি লাইনে একটা শর্ত — ফ্লাইটের আগে চুক্তিপত্র PDF-এ দেখানো হবে; খালি রাখলে ডিফল্ট শর্তাবলী ব্যবহার হবে)"></textarea>
+          <textarea autocomplete="off" id="veContractTerms" rows="5" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="চুক্তিপত্রের শর্তাবলী (ঐচ্ছিক, প্রতি লাইনে একটা শর্ত — ফ্লাইটের আগে চুক্তিপত্র PDF-এ দেখানো হবে; খালি রাখলে ডিফল্ট শর্তাবলী ব্যবহার হবে)"></textarea>
         </div>
       </div>
       <div style="margin-top:10px;"><button type="button" class="btn small" style="width:100%;" onclick="saveVisaEdit()">সেভ করুন</button></div>
@@ -975,14 +976,14 @@
           <div class="hint" style="margin:0 0 6px;">এই ভিসার নিজস্ব চুক্তিপত্রের শর্তাবলী — ফ্লাইট ডেট/টাইম সেভ করলে অটো-ডাউনলোডে ব্যবহার হয় (খালি রাখলে নিচের ডিফল্ট শর্তাবলী ব্যবহার হবে)</div>
           <div class="hlWrap">
             <div id="cfContractTermsHl" class="hlBackdrop"></div>
-            <textarea id="cfContractTerms" rows="4" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="এই ভিসার চুক্তিপত্রের শর্তাবলী (ঐচ্ছিক, প্রতি লাইনে একটা শর্ত)"></textarea>
+            <textarea autocomplete="off" id="cfContractTerms" rows="4" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="এই ভিসার চুক্তিপত্রের শর্তাবলী (ঐচ্ছিক, প্রতি লাইনে একটা শর্ত)"></textarea>
           </div>
         </div>
         <div style="margin-top:14px;">
           <div class="hint" style="margin:0 0 6px;">এটা "চুক্তিনামা PDF" বাটনের ডিফল্ট শর্তাবলী — কোনো নির্দিষ্ট ভিসার সাথে সম্পর্কিত না, সব জায়গায় প্রযোজ্য</div>
           <div class="hlWrap">
             <div id="cfDefaultContractTermsHl" class="hlBackdrop"></div>
-            <textarea id="cfDefaultContractTerms" rows="6" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="ডিফল্ট চুক্তিপত্রের শর্তাবলী (প্রতি লাইনে একটা শর্ত)"></textarea>
+            <textarea autocomplete="off" id="cfDefaultContractTerms" rows="6" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="ডিফল্ট চুক্তিপত্রের শর্তাবলী (প্রতি লাইনে একটা শর্ত)"></textarea>
           </div>
           <button type="button" class="btn small" style="width:100%;margin-top:8px;" onclick="saveGlobalDefaultContractTerms()">ডিফল্ট শর্তাবলী সেভ করুন</button>
         </div>
@@ -996,33 +997,33 @@
             <option value="">দেশ নির্বাচন করুন</option>
             <option value="__manage__">দেশ যোগ/মুছুন  ➕➖</option>
           </select>
-          <input id="cfAgencyName" placeholder="অন্য এজেন্সির নাম (ঐচ্ছিক)" title="পূরণ করলে এই ভিসার খরচ নিজের রিজার্ভ থেকে বাদ যাবে না — অন্য এজেন্সির মাধ্যমে সংগ্রহ করা ভিসা হিসেবে গণ্য হবে" style="flex:1;min-width:0;">
+          <input autocomplete="off" id="cfAgencyName" placeholder="অন্য এজেন্সির নাম (ঐচ্ছিক)" title="পূরণ করলে এই ভিসার খরচ নিজের রিজার্ভ থেকে বাদ যাবে না — অন্য এজেন্সির মাধ্যমে সংগ্রহ করা ভিসা হিসেবে গণ্য হবে" style="flex:1;min-width:0;">
         </div>
         <select id="cfVisaSelect" style="display:none;">
           <option value="">এই দেশের সকল ভিসার জন্য</option>
         </select>
-        <input id="cfOptions" style="display:none;">
+        <input autocomplete="off" id="cfOptions" style="display:none;">
         <div class="flex" id="cfVisaFeeQuotaRow" style="gap:8px;display:none;flex-wrap:wrap;">
-          <input id="cfVisaName" placeholder="ভিসার ধরন (যেমন: ওয়ার্কার ভিসা)" style="flex:1;min-width:120px;">
-          <input id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
-          <input id="cfVisaCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
-          <input id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="cfVisaName" placeholder="ভিসার ধরন (যেমন: ওয়ার্কার ভিসা)" style="flex:1;min-width:120px;">
+          <input autocomplete="off" id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="cfVisaCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
         </div>
         <div class="flex" id="cfVisaDateRow" style="gap:8px;display:none;flex-wrap:wrap;">
           <div class="dateFieldWrap">
-            <input id="cfVisaIssueDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
+            <input autocomplete="off" id="cfVisaIssueDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
             <span class="dateFieldLabel">ভিসা ইস্যুর তারিখ (ঐচ্ছিক)</span>
           </div>
           <div class="dateFieldWrap">
-            <input id="cfVisaExpiryDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
+            <input autocomplete="off" id="cfVisaExpiryDate" type="date" oninput="this.classList.toggle('has-value', !!this.value)">
             <span class="dateFieldLabel">মেয়াদ উত্তীর্ণের তারিখ (ঐচ্ছিক)</span>
           </div>
         </div>
         <div id="cfVisaDetailsWrap" style="display:none;">
-          <input id="cfVisaTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
+          <input autocomplete="off" id="cfVisaTitle" placeholder="টাইটেল/হেডিং (ঐচ্ছিক, যেমন: সিডার গ্রুপ বলিদয়া - চাকরির অফার)" style="width:100%;margin-bottom:8px;">
           <div class="hlWrap">
             <div id="cfVisaDetailsHl" class="hlBackdrop"></div>
-            <textarea id="cfVisaDetails" rows="4" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="অতিরিক্ত বিস্তারিত তথ্য (ঐচ্ছিক, প্রতি লাইনে একটা, যেমন: কোম্পানি: সিডার গ্রুপ)"></textarea>
+            <textarea autocomplete="off" id="cfVisaDetails" rows="4" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="অতিরিক্ত বিস্তারিত তথ্য (ঐচ্ছিক, প্রতি লাইনে একটা, যেমন: কোম্পানি: সিডার গ্রুপ)"></textarea>
           </div>
         </div>
         <button type="button" class="btn small" id="cfVisaAddBtn" style="display:none;" onclick="addCustomField()">ভিসা যোগ করুন</button>
@@ -1037,7 +1038,7 @@
       <h3 style="margin-top:0;"><i class="fas fa-file-contract" style="margin-right:6px;"></i>চুক্তিনামার শর্তাবলী</h3>
       <div class="hlWrap" style="margin-top:12px;">
         <div id="pdfContractTermsHl" class="hlBackdrop"></div>
-        <textarea id="pdfContractTerms" rows="9" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="চুক্তিপত্রের শর্তাবলী (প্রতি লাইনে একটা শর্ত)"></textarea>
+        <textarea autocomplete="off" id="pdfContractTerms" rows="9" style="width:100%;resize:none;overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';" placeholder="চুক্তিপত্রের শর্তাবলী (প্রতি লাইনে একটা শর্ত)"></textarea>
       </div>
       <div style="margin-top:10px;"><button type="button" class="btn small" style="width:100%;" onclick="confirmGenerateContractPdf()"><i class="fas fa-file-pdf"></i> চুক্তিনামা PDF ডাউনলোড করুন</button></div>
     </div>
@@ -1056,7 +1057,7 @@
 
 <script>
 /* ================= FIREBASE CONFIG =================
-   Talent Overseas Firebase প্রজেক্ট।
+   Golden Future Tours & Travels Firebase প্রজেক্ট।
 */
 const firebaseConfig = {
   apiKey: "AIzaSyAgVJbrqR-B4zguaFKVCusNE1AqUF-kt-k",
@@ -1680,7 +1681,7 @@ function renderJourneys(){
         const customEntries = Object.keys(customFields)
           .filter(fid => u.custom_data && u.custom_data[fid] && customFields[fid])
           .map(fid => ({ label: customFields[fid].label || fid, val: u.custom_data[fid] }));
-        if(u.phone) customEntries.push({ label: 'মাতার মোবাইল নম্বর', val: u.phone });
+        if(u.phone) customEntries.push({ label: 'পিতার নাম', val: u.phone });
         if(u.father_phone) customEntries.push({ label: 'পিতার মোবাইল নম্বর', val: u.father_phone });
         const customHtml = customEntries.length ? `
             <div class="accInfoGrid">
@@ -1731,7 +1732,7 @@ function renderJourneys(){
               <span id="noteExpiryBadge-${uid}" onclick="noteBoxTapped('${uid}')">${noteExpiryBadgeHtml(u)}</span>
               <div id="noteExpiryWrap-${uid}" style="display:none;align-items:center;gap:4px;flex-shrink:0;">
                 <i class="fas fa-calendar-day hint" style="font-size:11px;"></i>
-                <input type="date" id="noteExpiry-${uid}" value="${u.note_expiry || ''}" onchange="saveUserNote('${uid}')" onblur="handleNoteFieldBlur('${uid}')" style="font-size:11px;padding:2px 4px;width:112px;">
+                <input autocomplete="off" type="date" id="noteExpiry-${uid}" value="${u.note_expiry || ''}" onchange="saveUserNote('${uid}')" onblur="handleNoteFieldBlur('${uid}')" style="font-size:11px;padding:2px 4px;width:112px;">
               </div>
               ` : `
               <span>${noteExpiryBadgeHtml(u)}</span>
@@ -1740,7 +1741,7 @@ function renderJourneys(){
             <div class="accRow" style="flex-direction:column;align-items:stretch;gap:6px;">
               ${currentRole === 'admin' ? `
               <div id="noteDisplay-${uid}" class="noteBoxDisplay" onclick="noteBoxTapped('${uid}')" title="এডিট করতে ৩ বার ট্যাপ করুন">${noteDisplayHtml(u)}</div>
-              <textarea class="noteBox" id="note-${uid}" style="display:none;border:none;outline:none;box-shadow:none;resize:none;overflow:hidden;" oninput="autoGrowNoteTa(this)" onblur="handleNoteFieldBlur('${uid}')">${u.notes || ''}</textarea>
+              <textarea autocomplete="off" class="noteBox" id="note-${uid}" style="display:none;border:none;outline:none;box-shadow:none;resize:none;overflow:hidden;" oninput="autoGrowNoteTa(this)" onblur="handleNoteFieldBlur('${uid}')">${u.notes || ''}</textarea>
               ` : `
               <div class="noteBoxDisplay">${noteDisplayHtml(u)}</div>
               `}
@@ -1753,7 +1754,7 @@ function renderJourneys(){
             ${j ? renderFlightCloseSection(jid, j) : ''}
             <div class="accActions">
               <button class="btn small" onclick="shareUserProgress('${uid}')"><i class="fas fa-share-nodes"></i> শেয়ার করুন</button>
-              <button class="btn small" onclick="openContractPdfModal('${uid}')"><i class="fas fa-file-pdf"></i> চুক্তিনামা PDF</button>
+              <button class="btn small" onclick="downloadContractPdfDirect('${uid}')"><i class="fas fa-file-pdf"></i> চুক্তিনামা PDF</button>
               ${currentRole === 'admin' ? `<button class="btn small danger" onclick="deleteUser('${uid}')"><i class="fas fa-trash"></i> ডিলিট</button>` : ''}
             </div>
           </div>
@@ -1923,13 +1924,13 @@ function renderPaymentSection(jid, j){
       <div id="paymentList-${jid}">${rowsHtml}${lossRowsHtml}</div>
       ${currentRole === 'admin' ? `
       <div style="display:flex;gap:6px;margin-top:8px;align-items:stretch;">
-        <input type="number" id="payAmt-${jid}" placeholder="পরিমাণ (৳)" style="flex:0 0 90px;min-width:0;">
-        <input type="text" id="payNote-${jid}" placeholder="নোট (ঐচ্ছিক)" style="flex:1;min-width:0;" oninput="checkAgencyLossTrigger('${jid}')">
+        <input autocomplete="off" type="number" id="payAmt-${jid}" placeholder="পরিমাণ (৳)" style="flex:0 0 90px;min-width:0;">
+        <input autocomplete="off" type="text" id="payNote-${jid}" placeholder="নোট (ঐচ্ছিক)" style="flex:1;min-width:0;" oninput="checkAgencyLossTrigger('${jid}')">
         <button class="btn small" style="width:44px;flex-shrink:0;padding:0;" onclick="addPayment('${jid}')" title="যোগ করুন"><i class="fas fa-check"></i></button>
       </div>
       <div id="payLossWrap-${jid}" style="display:none;margin-top:6px;gap:6px;flex-wrap:wrap;">
         <div class="hint" style="margin:0;color:var(--fail);width:100%;"><i class="fas fa-triangle-exclamation"></i> উপরের পরিমাণটি ক্ষতি হিসেবে গণ্য হবে</div>
-        <input type="text" id="payLossNote-${jid}" placeholder="ক্ষতির বিবরণ (ঐচ্ছিক)" style="flex:1;min-width:120px;border-color:var(--fail);">
+        <input autocomplete="off" type="text" id="payLossNote-${jid}" placeholder="ক্ষতির বিবরণ (ঐচ্ছিক)" style="flex:1;min-width:120px;border-color:var(--fail);">
       </div>` : ''}
     </div>`;
 }
@@ -1958,8 +1959,8 @@ function renderFlightCloseSection(jid, j){
     <div style="margin-top:8px;border:1px solid var(--ok);border-radius:8px;padding:8px;">
       <div class="hint" style="margin:0 0 6px;color:var(--ok);">${noticeHtml}</div>
       <div style="display:flex;gap:6px;align-items:stretch;">
-        <input type="date" id="flightDateClose-${jid}" value="${existingDate}" style="flex:1;min-width:0;">
-        <input type="time" id="flightTimeClose-${jid}" value="${existingTime}" style="flex:0 0 110px;min-width:0;">
+        <input autocomplete="off" type="date" id="flightDateClose-${jid}" value="${existingDate}" style="flex:1;min-width:0;">
+        <input autocomplete="off" type="time" id="flightTimeClose-${jid}" value="${existingTime}" style="flex:0 0 110px;min-width:0;">
         <button class="btn small" style="width:44px;flex-shrink:0;padding:0;" onclick="saveFlightDateAndClose('${jid}')" title="সেভ করুন"><i class="fas fa-check"></i></button>
       </div>
     </div>`;
@@ -2041,35 +2042,6 @@ async function deleteLoss(journeyId, lossId){
   if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন ক্ষতির হিসাব ডিলিট করতে পারবেন।'); return; }
   if(!confirm('এই ক্ষতির হিসাবটা মুছে ফেলতে চান?')) return;
   await db.ref('journeys/' + journeyId + '/losses/' + lossId).remove();
-}
-
-/* Writes a 'pending' notification and calls the configured webhook.
-   Actual WhatsApp/SMS sending + secret key handling happens server-side. */
-async function queueNotification(journeyId, stage){
-  const templateKey = stage.toLowerCase();
-  const notifRef = db.ref('notifications').push();
-  await notifRef.set({
-    journey_id: journeyId, channel: 'whatsapp', template_key: templateKey,
-    status: 'pending', created_at: Date.now()
-  });
-
-  const settingsSnap = await db.ref('settings').once('value');
-  const settings = settingsSnap.val() || {};
-  if(!settings.waWebhook){
-    await notifRef.update({ status: 'failed', error_message: 'কোনো webhook কনফিগার করা হয়নি (Settings ট্যাব দেখুন)' });
-    return;
-  }
-  try{
-    const resp = await fetch(settings.waWebhook, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ journey_id: journeyId, template_key: templateKey })
-    });
-    if(!resp.ok) throw new Error('HTTP ' + resp.status);
-    await notifRef.update({ status: 'sent', sent_at: Date.now() });
-  }catch(e){
-    await notifRef.update({ status: 'failed', error_message: e.message });
-  }
 }
 
 /* ================= USERS ================= */
@@ -2257,7 +2229,7 @@ function shareUserProgress(uid){
       <div><span style="color:#8a93a3;">বর্তমান অবস্থা:</span> ${stageLabel}</div>
       ${j && j.flight_datetime ? `<div><span style="color:#8a93a3;">ফ্লাইট:</span> ${new Date(j.flight_datetime).toLocaleString('bn-BD')}</div>` : ''}
     </div>
-    <div style="margin-top:20px;padding-top:14px;border-top:1px dashed #e2ddd3;font-size:11px;color:#b3ab9e;">Talent Overseas</div>
+    <div style="margin-top:20px;padding-top:14px;border-top:1px dashed #e2ddd3;font-size:11px;color:#b3ab9e;">Golden Future Tours & Travels</div>
   `;
   document.body.appendChild(card);
 
@@ -2759,6 +2731,12 @@ function saveNoteAndCollapse(uid){
    চুক্তিনামা এখানে আলাদাভাবে সেভ থাকে। আগে এই যাত্রীর জন্য কিছু সেভ করা থাকলে তা, নাহলে ভিসার
    টেমপ্লেট, নাহলে ডিফল্ট শর্তাবলী প্রি-ফিল করা থাকে — সবই এডিটযোগ্য */
 let pdfContractUid = null;
+async function downloadContractPdfDirect(uid){
+  const j = getJourneyForUser(uid);
+  const terms = (j && j.contract_terms && j.contract_terms.length) ? j.contract_terms : GLOBAL_DEFAULT_CONTRACT_TERMS;
+  try{ await generateContractPdf(uid, terms); }
+  catch(err){ toast('চুক্তিনামা তৈরি করতে সমস্যা হয়েছে: ' + err.message); }
+}
 function openContractPdfModal(uid){
   pdfContractUid = uid;
   const j = getJourneyForUser(uid);
@@ -2798,6 +2776,17 @@ async function generateContractPdf(uid, overrideTerms){
   const passport = getUserPassport(u);
   const nid = getUserField(u, 'nid', ['nid','জাতীয় পরিচয়পত্র','এনআইডি']) || '-';
   const address = getUserField(u, 'address', ['ঠিকানা','address']) || '-';
+  const cd = u.custom_data || {};
+  const addressFields = [
+    { label: 'গ্রাম', val: cd.cf_village },
+    { label: 'থানা', val: cd.cf_thana },
+    { label: 'জেলা', val: cd.cf_district },
+    { label: 'বিভাগ', val: cd.cf_division },
+    { label: 'পোস্টাল কোড', val: cd.cf_postal }
+  ].filter(f => f.val);
+  const addressHtml = addressFields.length
+    ? addressFields.map(f => `<div><span style="color:#8a93a3;">${f.label}:</span> ${f.val}</div>`).join('')
+    : `<div style="grid-column:1 / -1;"><span style="color:#8a93a3;">ঠিকানা:</span> ${address}</div>`;
   const country = u.country || '-';
   const flag = COUNTRY_FLAGS[u.country] || '';
   const visaTypeName = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id].name : '-';
@@ -2825,13 +2814,13 @@ async function generateContractPdf(uid, overrideTerms){
   wrap.style.cssText = 'position:fixed;left:-9999px;top:0;width:780px;padding:50px;background:#fff;font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;color:#1a2233;line-height:1.85;';
   wrap.innerHTML = `
     <div style="text-align:center;border-bottom:3px solid #d4922a;padding-bottom:16px;margin-bottom:22px;">
-      <div style="font-size:26px;font-weight:800;color:#d4922a;letter-spacing:0.5px;">Talent Overseas</div>
+      <div style="font-size:26px;font-weight:800;color:#d4922a;letter-spacing:0.5px;">Golden Future Tours & Travels</div>
       <div style="font-size:12px;color:#8a93a3;margin-top:2px;">Overseas Employment & Visa Processing Services</div>
       <div style="font-size:19px;font-weight:700;margin-top:14px;">সেবা চুক্তিনামা</div>
       <div style="font-size:12px;color:#8a93a3;margin-top:6px;">চুক্তি নং: ${contractNo} &nbsp;|&nbsp; তারিখ: ${today}</div>
     </div>
 
-    <p style="font-size:13.5px;">এই চুক্তিটি নিম্নবর্ণিত শর্তাবলীর ভিত্তিতে <b>Talent Overseas</b> (এখানে "এজেন্সি" বলে উল্লেখিত) এবং নিম্নস্বাক্ষরকারী গ্রাহকের ("গ্রাহক") মধ্যে সম্পাদিত হলো।</p>
+    <p style="font-size:13.5px;">এই চুক্তিটি নিম্নবর্ণিত শর্তাবলীর ভিত্তিতে <b>Golden Future Tours & Travels</b> (এখানে "এজেন্সি" বলে উল্লেখিত) এবং নিম্নস্বাক্ষরকারী গ্রাহকের ("গ্রাহক") মধ্যে সম্পাদিত হলো।</p>
 
     <div style="font-size:14.5px;font-weight:700;margin-top:18px;margin-bottom:8px;color:#d4922a;">গ্রাহকের বিবরণ</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:24px;row-gap:8px;font-size:13px;">
@@ -2839,7 +2828,7 @@ async function generateContractPdf(uid, overrideTerms){
       <div><span style="color:#8a93a3;">ফোন নম্বর:</span> ${phone || '-'}</div>
       <div><span style="color:#8a93a3;">পাসপোর্ট নম্বর:</span> ${passport}</div>
       <div><span style="color:#8a93a3;">NID:</span> ${nid}</div>
-      <div style="grid-column:1 / -1;"><span style="color:#8a93a3;">ঠিকানা:</span> ${address}</div>
+      ${addressHtml}
     </div>
 
     <div style="font-size:14.5px;font-weight:700;margin-top:20px;margin-bottom:8px;color:#d4922a;">সেবার বিবরণ</div>
@@ -2883,7 +2872,7 @@ async function generateContractPdf(uid, overrideTerms){
       <div style="text-align:center;width:220px;"><div style="border-top:1px solid #444;padding-top:6px;">গ্রাহকের স্বাক্ষর ও তারিখ</div></div>
       <div style="text-align:center;width:220px;"><div style="border-top:1px solid #444;padding-top:6px;">এজেন্সির পক্ষে স্বাক্ষর ও তারিখ</div></div>
     </div>
-    <div style="text-align:center;font-size:10.5px;color:#b8bfc9;margin-top:36px;">এটি একটি সিস্টেম-জেনারেটেড ডকুমেন্ট — Talent Overseas</div>
+    <div style="text-align:center;font-size:10.5px;color:#b8bfc9;margin-top:36px;">এটি একটি সিস্টেম-জেনারেটেড ডকুমেন্ট — Golden Future Tours & Travels</div>
   `;
   document.body.appendChild(wrap);
   try{
@@ -4448,7 +4437,7 @@ function renderUDocumentsRows(){
     return `
     <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:8px;padding:8px;border:1px solid var(--border);border-radius:8px;">
       <div style="flex:1;display:grid;gap:6px;">
-        <input type="file" id="uDocFile${i}" accept="image/*,application/pdf,.pdf,.doc,.docx,.jpg,.jpeg,.png,*/*" multiple style="display:none;" onchange="handleUDocumentFileSelect(event,${i})">
+        <input autocomplete="off" type="file" id="uDocFile${i}" accept="image/*,application/pdf,.pdf,.doc,.docx,.jpg,.jpeg,.png,*/*" multiple style="display:none;" onchange="handleUDocumentFileSelect(event,${i})">
         ${pages.length ? `
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;">
             ${pages.map((p, pi) => `
@@ -4467,9 +4456,9 @@ function renderUDocumentsRows(){
         ` : ''}
         <button type="button" class="btn small gold" style="width:auto;padding:4px 10px;font-size:11px;" onclick="document.getElementById('uDocFile${i}').click()"><i class="fas fa-plus"></i> ${pages.length ? 'আরও পৃষ্ঠা যোগ করুন' : 'ডকুমেন্ট যোগ করুন'}</button>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;">
-          <input type="text" style="width:100%;box-sizing:border-box;" placeholder="ডকুমেন্টের নাম (যেমন: পাসপোর্ট, ভিসা)" value="${d.name || ''}" oninput="updateUDocumentField(${i},'name',this.value)">
+          <input autocomplete="off" type="text" style="width:100%;box-sizing:border-box;" placeholder="ডকুমেন্টের নাম (যেমন: পাসপোর্ট, ভিসা)" value="${d.name || ''}" oninput="updateUDocumentField(${i},'name',this.value)">
           <button type="button" class="btn small danger" style="width:auto;padding:6px 10px;flex-shrink:0;" onclick="removeUDocumentRow(${i})"><i class="fas fa-xmark"></i></button>
-          <input type="date" title="মেয়াদ শেষের তারিখ (ঐচ্ছিক)" style="width:100%;box-sizing:border-box;" value="${d.expiry || ''}" oninput="updateUDocumentField(${i},'expiry',this.value)">
+          <input autocomplete="off" type="date" title="মেয়াদ শেষের তারিখ (ঐচ্ছিক)" style="width:100%;box-sizing:border-box;" value="${d.expiry || ''}" oninput="updateUDocumentField(${i},'expiry',this.value)">
         </div>
       </div>
     </div>
@@ -4960,7 +4949,7 @@ function openLossList(){
         ${canEdit ? `<div id="lossReduce-${g.jid}-${l.lid}" style="display:none;margin-top:6px;border:1px solid var(--border);border-radius:8px;padding:8px;">
           <div class="hint" style="margin:0 0 6px;color:var(--fail);"><i class="fas fa-hand-holding-dollar"></i> যাত্রী কত টাকা ফেরত দিতে রাজি হয়েছে, তা লিখুন — ক্ষতির পরিমাণ থেকে বাদ যাবে</div>
           <div style="display:flex;gap:6px;align-items:stretch;">
-            <input type="number" id="lossReduceAmt-${g.jid}-${l.lid}" placeholder="ফেরতের পরিমাণ (৳)" style="flex:1;min-width:0;">
+            <input autocomplete="off" type="number" id="lossReduceAmt-${g.jid}-${l.lid}" placeholder="ফেরতের পরিমাণ (৳)" style="flex:1;min-width:0;">
             <button class="btn small" style="width:44px;flex-shrink:0;padding:0;" onclick="saveLossReduction('${g.jid}','${l.lid}',${l.amount})" title="সেভ করুন"><i class="fas fa-check"></i></button>
           </div>
         </div>` : ''}
@@ -5140,7 +5129,7 @@ function renderDuDocumentsRows(){
     return `
     <div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:8px;padding:8px;border:1px solid var(--border);border-radius:8px;">
       <div style="flex:1;display:grid;gap:6px;">
-        <input type="file" id="duDocFile${i}" accept="image/*,application/pdf,.pdf,.doc,.docx,.jpg,.jpeg,.png,*/*" multiple style="display:none;" onchange="handleDuDocumentFileSelect(event,${i})">
+        <input autocomplete="off" type="file" id="duDocFile${i}" accept="image/*,application/pdf,.pdf,.doc,.docx,.jpg,.jpeg,.png,*/*" multiple style="display:none;" onchange="handleDuDocumentFileSelect(event,${i})">
         ${pages.length ? `
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;">
             ${pages.map((p, pi) => `
@@ -5161,9 +5150,9 @@ function renderDuDocumentsRows(){
         ` : ''}
         <button type="button" class="btn small gold" style="width:auto;padding:4px 10px;font-size:11px;" onclick="document.getElementById('duDocFile${i}').click()"><i class="fas fa-plus"></i> ${pages.length ? 'আরও পৃষ্ঠা যোগ করুন' : 'ডকুমেন্ট যোগ করুন'}</button>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center;">
-          <input type="text" style="width:100%;box-sizing:border-box;" placeholder="ডকুমেন্টের নাম (যেমন: পাসপোর্ট, ভিসা)" value="${d.name || ''}" oninput="updateDuDocumentField(${i},'name',this.value)">
+          <input autocomplete="off" type="text" style="width:100%;box-sizing:border-box;" placeholder="ডকুমেন্টের নাম (যেমন: পাসপোর্ট, ভিসা)" value="${d.name || ''}" oninput="updateDuDocumentField(${i},'name',this.value)">
           <button type="button" class="btn small danger" style="width:auto;padding:6px 10px;flex-shrink:0;" onclick="removeDuDocumentRow(${i})"><i class="fas fa-xmark"></i></button>
-          <input type="date" title="মেয়াদ শেষের তারিখ (ঐচ্ছিক)" style="width:100%;box-sizing:border-box;" value="${d.expiry || ''}" oninput="updateDuDocumentField(${i},'expiry',this.value)">
+          <input autocomplete="off" type="date" title="মেয়াদ শেষের তারিখ (ঐচ্ছিক)" style="width:100%;box-sizing:border-box;" value="${d.expiry || ''}" oninput="updateDuDocumentField(${i},'expiry',this.value)">
         </div>
       </div>
     </div>
@@ -5448,59 +5437,44 @@ function renderCustomFieldInputs(prefill){
         return `<select id="cf-${fid}"><option value="">${f.label}</option>${opts}</select>`;
       }
       if(f.type === 'description'){
-        return `<textarea id="cf-${fid}" rows="2" placeholder="${f.label}" style="width:100%;">${val}</textarea>`;
+        return `<textarea autocomplete="off" id="cf-${fid}" rows="2" placeholder="${f.label}" style="width:100%;">${val}</textarea>`;
       }
       if(f.type === 'date'){
         return `<div style="position:relative;">
           <span id="cf-${fid}-ph" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:#8a93a3;pointer-events:none;${val ? 'display:none;' : ''}">${f.label}</span>
-          <input id="cf-${fid}" type="date" value="${val}" style="width:100%;box-sizing:border-box;" oninput="document.getElementById('cf-${fid}-ph').style.display=this.value?'none':'block'" onfocus="document.getElementById('cf-${fid}-ph').style.display='none'" onblur="document.getElementById('cf-${fid}-ph').style.display=this.value?'none':'block'">
+          <input autocomplete="off" id="cf-${fid}" type="date" value="${val}" style="width:100%;box-sizing:border-box;" oninput="document.getElementById('cf-${fid}-ph').style.display=this.value?'none':'block'" onfocus="document.getElementById('cf-${fid}-ph').style.display='none'" onblur="document.getElementById('cf-${fid}-ph').style.display=this.value?'none':'block'">
         </div>`;
       }
-      return `<input id="cf-${fid}" type="${f.type === 'number' ? 'number' : 'text'}" ${f.inputmode ? `inputmode="${f.inputmode}"` : ''} placeholder="${f.label}" value="${val}">`;
+      return `<input autocomplete="off" id="cf-${fid}" type="${f.type === 'number' ? 'number' : 'text'}" ${f.inputmode ? `inputmode="${f.inputmode}"` : ''} placeholder="${f.label}" value="${val}">`;
     }).join('') + '</div>';
 }
 
 /* ================= LOGS ================= */
 function loadLogs(){
-  db.ref('notifications').limitToLast(200).on('value', snap => {
+  db.ref('status_logs').limitToLast(200).on('value', snap => {
     const logs = snap.val() || {};
     dashNotifs = logs; // dashboard একই cache রিইউজ করে, আলাদা listener লাগে না
     if(typeof renderDashboard === 'function') renderDashboard();
     const rows = Object.entries(logs)
       .reverse().map(([id, n]) => {
-      const statusClass = n.status === 'sent' ? 'badge-ok' : n.status === 'failed' ? 'badge-fail' : 'badge-pending';
-      const meta = n.meta || {};
-      const detail = meta.label
-        ? (meta.label + (meta.expiry_date ? ' (' + meta.expiry_date + ')' : ''))
-        : (n.journey_id ? 'জার্নি: ' + n.journey_id : '-');
+      const j = journeysCache[n.journey_id];
+      const u = j ? (window._usersCache || {})[j.user_id] : null;
+      const userLabel = u ? getUserName(u) : (n.journey_id ? 'জার্নি: ' + n.journey_id : '-');
+      const stageLabel = STAGE_LABEL[n.stage] || n.stage || '-';
       return `<tr>
         <td data-label="সময়">${new Date(n.created_at).toLocaleString('bn-BD')}</td>
-        <td data-label="বিবরণ">${detail}</td>
-        <td data-label="চ্যানেল">${n.channel}</td>
-        <td data-label="টেমপ্লেট">${n.template_key}</td>
-        <td data-label="স্ট্যাটাস" class="${statusClass}">${n.status}${n.error_message ? ' — ' + n.error_message : ''}</td>
-        <td data-label="">${n.status === 'failed' ? `<button class="btn small" onclick="retryNotification('${id}')">রিট্রাই</button>` : ''}</td>
+        <td data-label="যাত্রী">${userLabel}</td>
+        <td data-label="নতুন স্টেজ">${stageLabel}</td>
+        <td data-label="পরিবর্তনকারী">${n.changed_by || '-'}</td>
       </tr>`;
     }).join('');
-    document.getElementById('logRows').innerHTML = rows || '<tr><td colspan="6" class="hint">কোনো লগ নেই</td></tr>';
+    document.getElementById('logRows').innerHTML = rows || '<tr><td colspan="4" class="hint">কোনো লগ নেই</td></tr>';
   });
-}
-async function retryNotification(id){
-  const nSnap = await db.ref('notifications/' + id).once('value');
-  const n = nSnap.val();
-  if(!n) return;
-  await queueNotification(n.journey_id, n.template_key.toUpperCase());
 }
 
 
 
 /* ================= SETTINGS ================= */
-db.ref('settings').once('value').then(snap => {
-  const s = snap.val() || {};
-  if(document.getElementById('waWebhook')) document.getElementById('waWebhook').value = s.waWebhook || '';
-  if(document.getElementById('smsWebhook')) document.getElementById('smsWebhook').value = s.smsWebhook || '';
-  if(document.getElementById('aviationKey')) document.getElementById('aviationKey').value = s.aviationKey || '';
-});
 
 /* ================= DASHBOARD ================= */
 let stageChartInstance = null;
@@ -5586,8 +5560,8 @@ function renderDashboard(){
   const expiringItems = getExpiringItems(dashUsers, 0);
   document.getElementById('dExpiring').textContent = expiringItems.length.toLocaleString('bn-BD');
   renderExpiryAlerts(expiringItems);
-  /* WhatsApp API এখনো কনফিগার করা হয়নি, তাই এক্সপায়ারি নোটিফিকেশন পাঠানো/লগ করা বন্ধ রাখা হলো —
-     ড্যাশবোর্ডে এক্সপায়ারি অ্যালার্ট (উপরের renderExpiryAlerts) আগের মতোই দেখাবে, শুধু লগ/হোয়াটসঅ্যাপ পাঠানো বন্ধ */
+  /* মেয়াদোত্তীর্ণ ডকুমেন্টের অ্যালার্ট ড্যাশবোর্ডে দেখানো হয় (renderExpiryAlerts) — এখানে কোনো
+     স্বয়ংক্রিয় বার্তা পাঠানো হয় না, শুধু ভিজ্যুয়াল সতর্কতা। */
 
   // মোট এজেন্ট ও তাদের মাধ্যমে আসা প্রার্থীদের কাছ থেকে এজেন্টের কাছে যত টাকা এখনো বাকি (মোট ভিসার দাম - এখন পর্যন্ত পরিশোধিত)
   const agentCount = Object.keys(agentsCache || {}).length;
@@ -5608,9 +5582,6 @@ function renderDashboard(){
   const departedCount = journeys.filter(j => j.current_stage === 'DEPARTED').length;
   const dDepartedCountEl = document.getElementById('dDepartedCount');
   if(dDepartedCountEl) dDepartedCountEl.textContent = departedCount.toLocaleString('bn-BD');
-
-  // Notifications sent today (used elsewhere; no longer shown as its own card)
-  const notifsToday = Object.values(dashNotifs).filter(n => (n.created_at||0) >= startOfToday);
 
   // ব্যবসার মোট লাভ/ক্ষতি — ড্যাশবোর্ডে এখানে "এখনো না-তোলা" লাভ দেখানো হয়, তাই পার্টনাররা যা ইতিমধ্যে
   // উইথড্র করেছেন তা বাদ দেওয়া হচ্ছে (পার্টনার সেকশনের মোট লাভ/ক্ষতি বক্স কিন্তু সবসময় পুরো/গ্রস হিসাবই দেখায়, ওখানে উইথড্র বিয়োগ হয় না)
@@ -6236,8 +6207,8 @@ function renderUpcomingFlights(flights){
       </div>
       ${canEdit && jid ? `<div id="ufEdit-${jid}" style="display:none;margin-top:2px;border:1px solid var(--border);border-radius:8px;padding:8px;">
         <div style="display:flex;gap:6px;align-items:stretch;">
-          <input type="date" id="ufDate-${jid}" value="${dateVal}" style="flex:1;min-width:0;">
-          <input type="time" id="ufTime-${jid}" value="${timeVal}" style="flex:0 0 110px;min-width:0;">
+          <input autocomplete="off" type="date" id="ufDate-${jid}" value="${dateVal}" style="flex:1;min-width:0;">
+          <input autocomplete="off" type="time" id="ufTime-${jid}" value="${timeVal}" style="flex:0 0 110px;min-width:0;">
           <button class="btn small" style="width:44px;flex-shrink:0;padding:0;" onclick="saveUpcomingFlightTime('${jid}')" title="সেভ করুন"><i class="fas fa-check"></i></button>
         </div>
       </div>` : ''}
