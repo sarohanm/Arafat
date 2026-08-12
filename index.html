@@ -1193,14 +1193,46 @@ const VALID_TRANSITIONS = {
 /* চুক্তিপত্র PDF-এ ব্যবহৃত ডিফল্ট শর্তাবলী — ভিসার জন্য কাস্টম শর্তাবলী না দিলে এটাই ব্যবহার হয়,
    এবং ফর্মে ডেমো/এডিটযোগ্য টেক্সট হিসেবেও প্রি-ফিল করা হয় */
 const DEFAULT_CONTRACT_TERMS = [
-  'এজেন্সি গ্রাহকের পাসপোর্ট প্রস্তুতকরণ, ভিসা প্রসেসিং, মেডিকেল পরীক্ষা এবং ফ্লাইট সংক্রান্ত সমস্ত প্রয়োজনীয় প্রক্রিয়া সম্পন্ন করতে সার্বিক সহায়তা প্রদান করবে।',
-  'উপরে উল্লেখিত মোট এজেন্সি ফি গ্রাহককে সম্মত কিস্তি অনুযায়ী নির্ধারিত সময়ের মধ্যে পরিশোধ করতে হবে; বিলম্বে প্রক্রিয়া ব্যাহত হলে এজেন্সি দায়ী থাকবে না।',
-  'সরকারি/দূতাবাসের সিদ্ধান্তে ভিসা প্রত্যাখ্যাত হলে, ইতিমধ্যে ব্যয়িত অফেরতযোগ্য খরচ (মেডিকেল, দূতাবাস ফি, প্রসেসিং ব্যয়) বাদ দিয়ে অবশিষ্ট অর্থ প্রযোজ্য নীতি অনুযায়ী ফেরতযোগ্য থাকবে।',
-  'গ্রাহকের প্রদত্ত সকল ব্যক্তিগত তথ্য, কাগজপত্র ও নথি সঠিক ও প্রকৃত বলে গণ্য হবে; ভুল বা মিথ্যা তথ্যের কারণে সৃষ্ট যেকোনো জটিলতার দায় সম্পূর্ণভাবে গ্রাহকের।',
-  'প্রক্রিয়াকরণের সময়কাল দূতাবাস, সরকারি সংস্থা ও নিয়োগকর্তার সিদ্ধান্তের উপর নির্ভরশীল বিধায় এজেন্সি নির্দিষ্ট সময়সীমার নিশ্চয়তা দিতে বাধ্য নয়।',
-  'গ্রাহক নিজ ইচ্ছায় প্রক্রিয়া বাতিল করতে চাইলে ইতিমধ্যে সম্পন্ন কাজ ও ব্যয়িত খরচ সমন্বয় সাপেক্ষে অবশিষ্ট অর্থ ফেরত দেওয়া হবে।',
-  'উভয় পক্ষের মধ্যে কোনো বিরোধ দেখা দিলে তা পারস্পরিক আলোচনার মাধ্যমে সমাধানের চেষ্টা করা হবে।',
-  'উভয় পক্ষ এই চুক্তির সকল শর্তাবলী সম্পূর্ণরূপে পড়ে, বুঝে ও সম্মত হয়ে স্বাক্ষর করছেন।'
+  /* ১. সেবার সুযোগ */
+  'এজেন্সি গ্রাহকের পাসপোর্ট প্রস্তুতকরণ, ভিসা প্রসেসিং, মেডিকেল পরীক্ষা, প্রশিক্ষণ (প্রযোজ্য ক্ষেত্রে) এবং ফ্লাইট বুকিং সংক্রান্ত সমস্ত প্রয়োজনীয় প্রক্রিয়াগত সহায়তা প্রদান করবে; এজেন্সির দায়বদ্ধতা কেবলমাত্র এই প্রক্রিয়াগত সহায়তা পর্যন্ত সীমাবদ্ধ, বিদেশে চাকরির ফলাফল বা স্থায়িত্বের নিশ্চয়তা এর অন্তর্ভুক্ত নয়।',
+  /* ২. ফি ও পরিশোধ */
+  'উপরে উল্লেখিত মোট এজেন্সি ফি গ্রাহককে সম্মত কিস্তি অনুযায়ী নির্ধারিত সময়ের মধ্যে পরিশোধ করতে হবে; নির্ধারিত সময়ে কিস্তি পরিশোধ না হলে প্রক্রিয়া সাময়িকভাবে স্থগিত রাখার অধিকার এজেন্সির থাকবে এবং এর ফলে সৃষ্ট বিলম্বের জন্য এজেন্সি দায়ী থাকবে না।',
+  /* ৩. তথ্যের সঠিকতা ও ঘোষণা */
+  'গ্রাহক এই মর্মে ঘোষণা করছেন যে, তার প্রদত্ত সকল ব্যক্তিগত তথ্য, শিক্ষাগত/পেশাগত কাগজপত্র ও নথিপত্র সঠিক, হালনাগাদ ও প্রকৃত; কোনো তথ্য বা নথি ভুল, বিকৃত বা মিথ্যা প্রমাণিত হলে তার ফলে সৃষ্ট যেকোনো আইনি জটিলতা, আর্থিক ক্ষতি বা ভিসা বাতিলের সম্পূর্ণ দায় গ্রাহকের নিজের, এবং এজেন্সি তাৎক্ষণিকভাবে এই চুক্তি বাতিল করার অধিকার সংরক্ষণ করে।',
+  /* ৪. ভিসা প্রত্যাখ্যান ও রিফান্ড নীতি */
+  'সরকারি সংস্থা, দূতাবাস বা নিয়োগকর্তার সিদ্ধান্তে ভিসা প্রত্যাখ্যাত হলে, ইতিমধ্যে ব্যয়িত অফেরতযোগ্য খরচ (মেডিকেল ফি, দূতাবাস ফি, প্রসেসিং ব্যয়, প্রশিক্ষণ ব্যয়) বাদ দিয়ে অবশিষ্ট অর্থ এজেন্সির প্রযোজ্য রিফান্ড নীতি অনুযায়ী যুক্তিসঙ্গত সময়ের মধ্যে ফেরতযোগ্য থাকবে।',
+  /* ৫. প্রক্রিয়াকরণের সময়সীমা */
+  'প্রক্রিয়াকরণের সময়কাল দূতাবাস, সরকারি সংস্থা ও নিয়োগকর্তার সিদ্ধান্তের উপর সম্পূর্ণরূপে নির্ভরশীল বিধায় এজেন্সি কোনো নির্দিষ্ট সময়সীমার নিশ্চয়তা দিতে বাধ্য নয়; আনুমানিক সময়সীমা কেবল ধারণা প্রদানের উদ্দেশ্যে জানানো হতে পারে, যা বাধ্যতামূলক অঙ্গীকার হিসেবে গণ্য হবে না।',
+  /* ৬. গ্রাহক কর্তৃক বাতিলকরণ */
+  'গ্রাহক নিজ ইচ্ছায় প্রক্রিয়া বাতিল করতে চাইলে লিখিতভাবে এজেন্সিকে অবহিত করতে হবে; ইতিমধ্যে সম্পন্ন কাজ, ব্যয়িত খরচ ও প্রশাসনিক চার্জ সমন্বয় সাপেক্ষে অবশিষ্ট অর্থ যুক্তিসঙ্গত সময়ের মধ্যে ফেরত দেওয়া হবে।',
+  /* ৭. অনিবার্য পরিস্থিতি / Force Majeure */
+  'প্রাকৃতিক দুর্যোগ, মহামারী, যুদ্ধ, রাজনৈতিক অস্থিরতা, সরকারি নীতি পরিবর্তন, দূতাবাস বন্ধ থাকা, বিমান চলাচল স্থগিতাদেশ বা এজেন্সির নিয়ন্ত্রণের বাইরের অন্য কোনো অনিবার্য পরিস্থিতির (Force Majeure) কারণে চুক্তি পালনে বিলম্ব, স্থগিতাদেশ বা ব্যর্থতা ঘটলে এজেন্সি তার জন্য দায়ী থাকবে না; এমন পরিস্থিতিতে উভয় পক্ষ পারস্পরিক সমঝোতার মাধ্যমে সময়সূচি পুনর্নির্ধারণ বা চুক্তির শর্ত সমন্বয় করবে।',
+  /* ৮. তথ্য গোপনীয়তা ও ডেটা সুরক্ষা */
+  'গ্রাহকের প্রদত্ত ব্যক্তিগত তথ্য, পাসপোর্ট, NID, ছবি ও অন্যান্য নথিপত্র এজেন্সি কর্তৃক শুধুমাত্র ভিসা প্রক্রিয়াকরণ, যোগাযোগ ও আইনি প্রয়োজনের উদ্দেশ্যে সংগ্রহ ও সংরক্ষণ করা হবে; গ্রাহকের সুস্পষ্ট সম্মতি বা আইনি বাধ্যবাধকতা ব্যতীত এই তথ্য তৃতীয় কোনো পক্ষের কাছে (সংশ্লিষ্ট দূতাবাস, সরকারি সংস্থা ও নিয়োগকর্তা ব্যতীত) প্রকাশ করা হবে না; এজেন্সি যুক্তিসঙ্গত প্রযুক্তিগত ও প্রশাসনিক সতর্কতা অবলম্বন করে এই তথ্যের নিরাপত্তা নিশ্চিত করবে।',
+  /* ৯. গোপনীয়তা বজায় রাখা (উভয় পক্ষ) */
+  'এই চুক্তি সম্পাদনের সময় বা প্রক্রিয়াকরণের সময় অবগত হওয়া উভয় পক্ষের ব্যবসায়িক বা ব্যক্তিগত গোপনীয় তথ্য কোনো পক্ষ অপর পক্ষের লিখিত সম্মতি ছাড়া তৃতীয় পক্ষের নিকট প্রকাশ করবে না, চুক্তি সমাপ্তির পরেও এই বাধ্যবাধকতা বলবৎ থাকবে।',
+  /* ১০. দায় সীমাবদ্ধতা ও ক্ষতিপূরণ */
+  'এজেন্সির সামগ্রিক দায়বদ্ধতা কোনো অবস্থাতেই গ্রাহকের প্রদত্ত মোট এজেন্সি ফি-এর বেশি হবে না; পরোক্ষ, আনুষঙ্গিক বা পরিণামমূলক ক্ষতি (যেমন আয়ের ক্ষতি, সুযোগ হারানো) এর আওতায় পড়বে না। গ্রাহক কর্তৃক প্রদত্ত ভুল তথ্য, নথি জালিয়াতি বা চুক্তি লঙ্ঘনের কারণে এজেন্সির বিরুদ্ধে উত্থাপিত কোনো তৃতীয় পক্ষের দাবি বা আইনি ব্যয়ের জন্য গ্রাহক এজেন্সিকে ক্ষতিপূরণ প্রদান করতে বাধ্য থাকবেন।',
+  /* ১১. বিদেশে অবস্থানকালীন দায়িত্ব */
+  'বিদেশে অবস্থানকালে সংশ্লিষ্ট দেশের প্রচলিত আইন-কানুন, কাজের নিয়ম ও সামাজিক রীতিনীতি মেনে চলা যাত্রীর একান্ত ব্যক্তিগত দায়িত্ব; আইন লঙ্ঘনের কারণে সৃষ্ট কোনো শাস্তি, জরিমানা বা আইনি পরিণতির জন্য এজেন্সি দায়ী থাকবে না।',
+  /* ১২. চুক্তি সমাপ্তি/বাতিল */
+  'কোনো পক্ষ এই চুক্তির কোনো মৌলিক শর্ত লঙ্ঘন করলে, অপর পক্ষ লিখিত নোটিশের মাধ্যমে ত্রুটি সংশোধনের জন্য যুক্তিসঙ্গত সময় প্রদান করবে; নির্ধারিত সময়ের মধ্যে সংশোধন না হলে ক্ষতিগ্রস্ত পক্ষ এই চুক্তি লিখিতভাবে বাতিল করার অধিকার রাখে, যা ইতিমধ্যে অর্জিত অধিকার বা বাধ্যবাধকতাকে প্রভাবিত করবে না।',
+  /* ১৩. জামিনদারের দায়বদ্ধতা */
+  'নিম্নস্বাক্ষরকারী জামিনদার এই মর্মে অঙ্গীকার করছেন যে, গ্রাহক কোনো কারণে চুক্তি অনুযায়ী তার আর্থিক বা অন্যান্য বাধ্যবাধকতা পূরণে ব্যর্থ হলে, জামিনদার গ্রাহকের সাথে যৌথ ও পৃথকভাবে (jointly and severally) সেই বাধ্যবাধকতা পূরণের জন্য দায়ী থাকবেন এবং এজেন্সির অনুরোধে সাড়া দিতে বাধ্য থাকবেন।',
+  /* ১৪. সাক্ষীর ঘোষণা */
+  'নিম্নস্বাক্ষরকারী সাক্ষীগণ এই মর্মে সাক্ষ্য দিচ্ছেন যে, তারা গ্রাহক ও এজেন্সি প্রতিনিধিকে স্বেচ্ছায়, সজ্ঞানে ও কোনোরূপ জবরদস্তি ছাড়াই এই চুক্তিতে স্বাক্ষর করতে প্রত্যক্ষ করেছেন এবং উভয় পক্ষের পরিচয় সম্পর্কে নিশ্চিত।',
+  /* ১৫. বিরোধ নিষ্পত্তি ও এখতিয়ার */
+  'উভয় পক্ষের মধ্যে এই চুক্তি সংক্রান্ত কোনো বিরোধ দেখা দিলে তা প্রথমে পারস্পরিক আলোচনা ও সমঝোতার মাধ্যমে সমাধানের চেষ্টা করা হবে; সমাধান না হলে বিরোধটি বাংলাদেশের প্রচলিত আইন অনুযায়ী সংশ্লিষ্ট এখতিয়ারভুক্ত আদালত বা সালিশি পরিষদের মাধ্যমে নিষ্পত্তি করা হবে।',
+  /* ১৬. প্রযোজ্য আইন */
+  'এই চুক্তি গণপ্রজাতন্ত্রী বাংলাদেশ সরকারের প্রচলিত আইন ও জনশক্তি, কর্মসংস্থান ও প্রশিক্ষণ ব্যুরো (BMET) কর্তৃক নির্ধারিত বিধিবিধান দ্বারা পরিচালিত ও ব্যাখ্যাযোগ্য হবে।',
+  /* ১৭. চুক্তি সংশোধন */
+  'এই চুক্তির কোনো শর্ত সংশোধন, পরিবর্তন বা সংযোজন করতে হলে তা অবশ্যই উভয় পক্ষের লিখিত সম্মতিক্রমে পৃথক সংযুক্তি (addendum) আকারে সম্পাদিত হতে হবে; মৌখিক কোনো পরিবর্তন বৈধ বলে গণ্য হবে না।',
+  /* ১৮. বিচ্ছিন্নতা */
+  'এই চুক্তির কোনো শর্ত কোনো আদালত বা কর্তৃপক্ষ কর্তৃক অবৈধ, অকার্যকর বা প্রয়োগযোগ্য নয় বলে বিবেচিত হলে, চুক্তির অবশিষ্ট শর্তাবলী পূর্ণ কার্যকর ও বলবৎ থাকবে।',
+  /* ১৯. সম্পূর্ণ চুক্তি */
+  'এই দলিলটি উভয় পক্ষের মধ্যে সম্পাদিত সম্পূর্ণ চুক্তি (Entire Agreement) হিসেবে বিবেচিত হবে এবং এই বিষয়ে পূর্বে হওয়া যেকোনো মৌখিক বা লিখিত আলোচনা, প্রতিশ্রুতি বা বোঝাপড়াকে রহিত করবে।',
+  /* ২০. চূড়ান্ত স্বীকৃতি */
+  'উভয় পক্ষ, জামিনদার ও সাক্ষীগণ এই চুক্তির সকল শর্তাবলী সম্পূর্ণরূপে পড়ে, বুঝে ও স্বেচ্ছায় সম্মত হয়ে নিজ নিজ স্বাক্ষর, তারিখ ও প্রয়োজনীয় তথ্য প্রদান করছেন।'
 ];
 /* "চুক্তিনামা PDF" বাটনের ডিফল্ট শর্তাবলী — অ্যাডমিন settings/default_contract_terms এ সেভ করে
    বদলাতে পারে (নিচে লোড হয়); কিছু সেভ করা না থাকলে হার্ডকোডেড DEFAULT_CONTRACT_TERMS-ই ব্যবহার হয়। */
@@ -1226,6 +1258,9 @@ const VISA_SPECIFIC_DEMO_TERMS = [
   'বিদেশে অবস্থানকালে সংশ্লিষ্ট দেশের প্রচলিত আইন-কানুন, কাজের নিয়ম ও সামাজিক রীতিনীতি মেনে চলা যাত্রীর একান্ত ব্যক্তিগত দায়িত্ব; আইন লঙ্ঘনের কারণে সৃষ্ট কোনো শাস্তি, জরিমানা বা আইনি পরিণতির জন্য এজেন্সি দায়ী থাকবে না।',
   'রিটার্ন টিকিট, ফ্লাইট শিডিউল বা ভিসা সংক্রান্ত কোনো পরিবর্তন হলে তা যথাসময়ে যাত্রীকে জানানো হবে; যাত্রীর প্রদত্ত ভুল যোগাযোগের তথ্য বা যোগাযোগ বিচ্ছিন্নতার কারণে সৃষ্ট কোনো ক্ষতির দায় যাত্রীর নিজের।',
   'যাত্রী বিদেশে পৌঁছানোর পর প্রাপ্ত কর্ম পরিবেশ, বেতন-ভাতা বা বাসস্থান সংক্রান্ত কোনো অসন্তুষ্টি থাকলে তা নিয়োগকর্তার সাথে বা প্রযোজ্য ক্ষেত্রে দূতাবাসের মাধ্যমে সমাধান করতে হবে; এজেন্সির ভূমিকা শুধু প্রক্রিয়াগত সহায়তা পর্যন্ত সীমাবদ্ধ।',
+  'যুদ্ধ, মহামারী, প্রাকৃতিক দুর্যোগ, রাজনৈতিক অস্থিরতা, দূতাবাস/সীমান্ত বন্ধ থাকা বা বিমান চলাচল স্থগিতাদেশের মতো অনিবার্য পরিস্থিতির (Force Majeure) কারণে যাত্রার তারিখ বা প্রক্রিয়ায় বিলম্ব হলে এজেন্সি দায়ী থাকবে না; পরিস্থিতি স্বাভাবিক হওয়া সাপেক্ষে নতুন সময়সূচি নির্ধারণ করা হবে।',
+  'যাত্রীর পাসপোর্ট, ভিসা, মেডিকেল রিপোর্ট ও অন্যান্য ব্যক্তিগত নথি শুধুমাত্র এই ভিসা প্রক্রিয়াকরণের উদ্দেশ্যে সংগ্রহ করা হয়েছে এবং তা সংশ্লিষ্ট দূতাবাস, নিয়োগকর্তা ও সরকারি কর্তৃপক্ষ ব্যতীত অন্য কোনো তৃতীয় পক্ষের সাথে শেয়ার করা হবে না।',
+  'যাত্রী এই মর্মে ঘোষণা করছেন যে, নিয়োগকর্তা/কর্মস্থল সংক্রান্ত তথ্য যাচাই করেই তিনি স্বেচ্ছায় এই ভিসায় যাত্রা করতে সম্মত হয়েছেন এবং ভবিষ্যতে এ সংক্রান্ত কোনো ভুল বোঝাবুঝির জন্য এজেন্সিকে দায়ী করবেন না।',
   'উভয় পক্ষ এই ভিসা-নির্দিষ্ট শর্তাবলী সম্পূর্ণরূপে পড়ে, বুঝে ও স্বেচ্ছায় সম্মত হয়ে স্বাক্ষর করছেন।'
 ];
 const STAGE_LABEL = {
@@ -2807,6 +2842,20 @@ async function generateContractPdf(uid, overrideTerms){
   const country = u.country || '-';
   const flag = COUNTRY_FLAGS[u.country] || '';
   const visaTypeName = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id].name : '-';
+  const vtForInfo = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id] : null;
+  const visaIssueDate = (vtForInfo && vtForInfo.issue_date) ? new Date(vtForInfo.issue_date).toLocaleDateString('bn-BD') : '-';
+  const visaExpiryDate = (vtForInfo && vtForInfo.expiry_date) ? new Date(vtForInfo.expiry_date).toLocaleDateString('bn-BD') : '-';
+  const flightDateTimeStr = (j && j.flight_datetime) ? new Date(j.flight_datetime).toLocaleString('bn-BD') : 'এখনো নির্ধারিত হয়নি';
+  /* ভিসার নিজস্ব বিস্তারিত তথ্য (পদ, বেতন, কর্মঘণ্টা ইত্যাদি "key: value" আকারের লাইন) —
+     ভিসা যোগ/এডিট করার সময় লেখা vt.details অ্যারে থেকে আসে, চুক্তিনামায় গ্রাহককে জানানো জরুরি */
+  const visaDetailLines = (vtForInfo && Array.isArray(vtForInfo.details)) ? vtForInfo.details.slice() : [];
+  const visaDetailsHtml = visaDetailLines.length ? `
+      <div style="margin-top:12px;">
+        <div style="font-size:8px;letter-spacing:.6px;text-transform:uppercase;color:${CLR.muted};margin-bottom:6px;">ভিসার বিস্তারিত তথ্য</div>
+        <div style="background:${CLR.goldBg};padding:10px 12px;border-left:2.5px solid ${CLR.gold};">
+          ${visaDetailLines.map(d => `<div style="font-size:10.5px;color:${CLR.text};margin-bottom:4px;">${d}</div>`).join('')}
+        </div>
+      </div>` : '';
   const stageLabel = j ? (STAGE_LABEL[j.current_stage] || j.current_stage || '-') : '-';
   const fee = j ? (j.agency_fee || 0) : 0;
   const payments = j ? (j.payments || {}) : {};
@@ -2839,6 +2888,13 @@ async function generateContractPdf(uid, overrideTerms){
       <div style="width:64px;height:1px;background:${CLR.line};"></div>
       <div style="width:6px;height:6px;background:${CLR.gold};transform:rotate(45deg);margin:0 10px;"></div>
       <div style="width:64px;height:1px;background:${CLR.line};"></div>
+    </div>`;
+  /* জামিনদার/সাক্ষীর তথ্যের জন্য হাতে-লেখা ফাঁকা ঘর — এই তথ্য Firebase-এ সংরক্ষিত হয় না,
+     স্বাক্ষরের সময় কাগজে হাতে পূরণ করা হবে */
+  const blankField = (label) => `
+    <div>
+      <div style="font-size:8px;letter-spacing:.6px;text-transform:uppercase;color:${CLR.muted};margin-bottom:3px;">${label}</div>
+      <div style="height:18px;border-bottom:1px solid #444;"></div>
     </div>`;
 
   const wrap = document.createElement('div');
@@ -2873,8 +2929,12 @@ async function generateContractPdf(uid, overrideTerms){
       <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:26px;row-gap:10px;">
         ${fieldBlock('কর্মস্থল দেশ', `${flag} ${country}`)}
         ${fieldBlock('ভিসার ধরন', visaTypeName)}
-        ${fieldBlock('বর্তমান ধাপ', stageLabel, true)}
+        ${fieldBlock('বর্তমান ধাপ', stageLabel)}
+        ${fieldBlock('ভিসা ইস্যু তারিখ', visaIssueDate)}
+        ${fieldBlock('ভিসার মেয়াদ উত্তীর্ণের তারিখ', visaExpiryDate)}
+        ${fieldBlock('ফ্লাইটের তারিখ ও সময়', flightDateTimeStr)}
       </div>
+      ${visaDetailsHtml}
 
       ${sectionHead('03', 'আর্থিক বিবরণ')}
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;column-gap:12px;margin-bottom:10px;">
@@ -2925,6 +2985,49 @@ async function generateContractPdf(uid, overrideTerms){
         })()}
       </div>
 
+      ${sectionHead('05', 'জামিনদারের তথ্য')}
+      <p style="font-size:9.5px;color:${CLR.muted};margin:0 0 10px;">গ্রাহকের আর্থিক ও চুক্তিগত বাধ্যবাধকতার জন্য যৌথভাবে দায়বদ্ধ থাকবেন এমন একজন জামিনদারের তথ্য নিচে হাতে লিখে পূরণ করতে হবে।</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:26px;row-gap:12px;">
+        ${blankField('জামিনদারের নাম')}
+        ${blankField('গ্রাহকের সাথে সম্পর্ক')}
+        ${blankField('জাতীয় পরিচয়পত্র (NID) নম্বর')}
+        ${blankField('ফোন নম্বর')}
+        <div style="grid-column:1 / -1;">${blankField('ঠিকানা')}</div>
+      </div>
+      <div style="margin-top:16px;width:230px;">
+        <div style="height:30px;"></div>
+        <div style="border-top:1px solid #444;padding-top:6px;font-size:11px;color:${CLR.text};">জামিনদারের স্বাক্ষর ও তারিখ</div>
+      </div>
+
+      ${sectionHead('06', 'সাক্ষীর তথ্য')}
+      <p style="font-size:9.5px;color:${CLR.muted};margin:0 0 10px;">নিম্নস্বাক্ষরকারী দুইজন সাক্ষী এই চুক্তি স্বাক্ষরের সাক্ষী হিসেবে থাকবেন।</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:26px;">
+        <div>
+          <div style="font-size:9px;font-weight:700;color:${CLR.gold};margin-bottom:8px;">সাক্ষী ১</div>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            ${blankField('নাম')}
+            ${blankField('জাতীয় পরিচয়পত্র (NID) নম্বর')}
+            ${blankField('ফোন নম্বর')}
+          </div>
+          <div style="margin-top:14px;">
+            <div style="height:28px;"></div>
+            <div style="border-top:1px solid #444;padding-top:6px;font-size:10.5px;color:${CLR.text};">স্বাক্ষর ও তারিখ</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;color:${CLR.gold};margin-bottom:8px;">সাক্ষী ২</div>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            ${blankField('নাম')}
+            ${blankField('জাতীয় পরিচয়পত্র (NID) নম্বর')}
+            ${blankField('ফোন নম্বর')}
+          </div>
+          <div style="margin-top:14px;">
+            <div style="height:28px;"></div>
+            <div style="border-top:1px solid #444;padding-top:6px;font-size:10.5px;color:${CLR.text};">স্বাক্ষর ও তারিখ</div>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;font-size:11px;">
         <div style="text-align:center;width:210px;">
           <div style="height:34px;"></div>
@@ -2944,25 +3047,43 @@ async function generateContractPdf(uid, overrideTerms){
   try{
     const canvas = await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff' });
     document.body.removeChild(wrap);
-    const imgData = canvas.toDataURL('image/jpeg', 0.85);
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 28;
     const maxWidth = pageWidth - margin * 2;
-    const maxHeight = pageHeight - margin * 2;
-    let imgWidth = maxWidth;
-    let imgHeight = canvas.height * imgWidth / canvas.width;
-    if(imgHeight > maxHeight){
-      // পুরো চুক্তিনামা এক পৃষ্ঠায় ধরানোর জন্য প্রয়োজনে অনুপাত ঠিক রেখে ছোট করা হচ্ছে
-      const scaleDown = maxHeight / imgHeight;
-      imgHeight = maxHeight;
-      imgWidth = imgWidth * scaleDown;
+    const imgWidth = maxWidth;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    const maxHeightPerPage = pageHeight - margin * 2;
+    if(imgHeight <= maxHeightPerPage){
+      // পুরো চুক্তিনামা এক পৃষ্ঠাতেই ধরে যাচ্ছে
+      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+    } else {
+      // বাড়তি ধারার (জামিনদার/সাক্ষী সহ) দীর্ঘ চুক্তিনামা একাধিক A4 পৃষ্ঠায় ভাগ করে বসানো হচ্ছে,
+      // যাতে কোনো অংশ ছোট করে চেপে অপাঠ্য না হয়ে যায়
+      const pxPerPtY = canvas.height / imgHeight; // ক্যানভাসের কত পিক্সেল = এক pt উচ্চতায়
+      const pageHeightPx = Math.floor(maxHeightPerPage * pxPerPtY);
+      let renderedPx = 0;
+      let pageIndex = 0;
+      while(renderedPx < canvas.height){
+        const sliceHeightPx = Math.min(pageHeightPx, canvas.height - renderedPx);
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceHeightPx;
+        const ctx = sliceCanvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+        ctx.drawImage(canvas, 0, renderedPx, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx);
+        const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+        const sliceHeightPt = sliceHeightPx / pxPerPtY;
+        if(pageIndex > 0) pdf.addPage();
+        pdf.addImage(sliceData, 'JPEG', margin, margin, imgWidth, sliceHeightPt);
+        renderedPx += sliceHeightPx;
+        pageIndex++;
+      }
     }
-    const x = margin + (maxWidth - imgWidth) / 2;
-    const y = margin;
-    pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
     pdf.save(`${name}-চুক্তিনামা.pdf`);
   }catch(err){
     if(wrap.parentNode) document.body.removeChild(wrap);
