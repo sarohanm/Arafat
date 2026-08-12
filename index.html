@@ -27,6 +27,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(typeof pdfjsLib !== 'undefined'){ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }</script>
+<!-- QRCode.js — চুক্তিনামা PDF-এর ফুটারে কোম্পানির ওয়েবসাইটের QR কোড দেখানোর জন্য -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
 <style>
   :root{
@@ -1198,7 +1200,7 @@ const COMPANY_INFO = {
   tagline: '– আপনার ভ্রমণ, আমাদের অঙ্গীকার –',
   phone: '+880 1925-336999',
   email: 'goldenfuture22@gmail.com',
-  address: 'বেহালাবাজার, সিরাজগঞ্জপুর, সিরাজগঞ্জ',
+  address: 'বাড়ি # এইচ-৯৩/২ (১ম তলা), নিউ এয়ারপোর্ট রোড, কাকলী, বনানী, ঢাকা-১২১৩',
   website: 'www.goldenfuturebd.com'
 };
 /* লগইন স্ক্রিনে ব্যবহৃত কোম্পানির লোগো — চুক্তিনামা PDF-এর হেডারেও একই লোগো ব্যবহার করা হয় */
@@ -2827,6 +2829,14 @@ async function generateContractPdf(uid, overrideTerms){
   const nid = getUserField(u, 'nid', ['nid','জাতীয় পরিচয়পত্র','এনআইডি']) || '-';
   const address = getUserField(u, 'address', ['ঠিকানা','address']) || '-';
   const cd = u.custom_data || {};
+  /* গ্রাহকের ছবি — userPhotos/{uid} নোডে (নতুন) বা u.photoBase64 তে (পুরনো ডেটা) সংরক্ষিত থাকে */
+  let customerPhoto = u.photoBase64 || userPhotosCache[uid] || null;
+  if(!customerPhoto){
+    try{
+      const photoSnap = await db.ref('userPhotos/' + uid).once('value');
+      if(photoSnap.exists()){ customerPhoto = photoSnap.val(); userPhotosCache[uid] = customerPhoto; }
+    }catch(err){ /* ছবি না পেলেও PDF তৈরি আটকাবে না */ }
+  }
   /* "GOLDEN FUTURE — এক্সাক্ট লুক" সার্টিফিকেট-স্টাইল চুক্তিনামা ডিজাইন — সম্পূর্ণটা এক পেজেই (landscape A4):
      নেভি/গোল্ড ফ্রেম, লোগো-ব্যাজ হেডার, ৩টি তথ্য কার্ড + পেমেন্ট টেবিল, শর্তাবলী (২ কলাম), স্বাক্ষর বক্স +
      সিলমোহর, এবং ব্র্যান্ডেড ফুটার — সবকিছু কমপ্যাক্ট সাইজে একই পৃষ্ঠায়। রঙ টোকেন: */
@@ -2873,13 +2883,13 @@ async function generateContractPdf(uid, overrideTerms){
   const extraPaymentCount = Math.max(0, paidEntries.length - SHOWN_PAYMENT_ROWS);
   const paymentRowsHtml = shownPayments.length ? shownPayments.map((p,i) => `
       <tr style="background:${i % 2 ? CLR.goldBg : '#fff'};">
-        <td style="padding:3px 8px;font-size:8.5px;color:${CLR.muted};">${i+1}</td>
-        <td style="padding:3px 8px;font-size:8.5px;">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
-        <td style="padding:3px 8px;font-size:8.5px;font-weight:700;color:${CLR.green};">৳${p.amount || 0}</td>
-        <td style="padding:3px 8px;font-size:8.5px;color:${CLR.muted};">${p.note || '-'}</td>
+        <td style="padding:4px 8px;font-size:9px;color:${CLR.muted};">${i+1}</td>
+        <td style="padding:4px 8px;font-size:9px;">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
+        <td style="padding:4px 8px;font-size:9px;font-weight:700;color:${CLR.green};">৳${p.amount || 0}</td>
+        <td style="padding:4px 8px;font-size:9px;color:${CLR.muted};">${p.note || '-'}</td>
       </tr>`).join('') + (extraPaymentCount ? `
-      <tr><td colspan="4" style="padding:3px 8px;font-size:8px;color:${CLR.muted};text-align:center;">+ আরও ${extraPaymentCount} টি কিস্তি (মোট ${paidEntries.length} টি)</td></tr>` : '')
-    : `<tr><td colspan="4" style="padding:6px;font-size:8.5px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
+      <tr><td colspan="4" style="padding:4px 8px;font-size:8.5px;color:${CLR.muted};text-align:center;">+ আরও ${extraPaymentCount} টি কিস্তি (মোট ${paidEntries.length} টি)</td></tr>` : '')
+    : `<tr><td colspan="4" style="padding:7px;font-size:9px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
 
   /* "চুক্তিনামা PDF" বাটন থেকে override এলে সেটাই ব্যবহার হয়; override না থাকলে ভিসা অ্যাড/এডিট করার
      সময় লেখা vt.contract_terms, সেটাও না থাকলে গ্লোবাল ডিফল্ট শর্তাবলী */
@@ -2895,22 +2905,29 @@ async function generateContractPdf(uid, overrideTerms){
   const leftTerms = termsList.slice(0, halfTerms);
   const rightTerms = termsList.slice(halfTerms);
 
+  /* ওয়েবসাইটের QR কোড — ফুটারে দেখানো হবে (স্ক্যান করলে কোম্পানির ওয়েবসাইট খুলবে) */
+  let qrDataUri = '';
+  try{
+    const qrUrl = COMPANY_INFO.website.startsWith('http') ? COMPANY_INFO.website : ('https://' + COMPANY_INFO.website);
+    qrDataUri = await QRCode.toDataURL(qrUrl, { width: 160, margin: 1, color: { dark: CLR.navy, light: '#ffffff' } });
+  }catch(err){ /* QR তৈরি না হলেও PDF তৈরি আটকাবে না */ }
+
   /* ---- ছোট ছোট বিল্ডিং-ব্লক হেল্পার ---- */
   const ribbon = (label, big) => `
     <div style="display:inline-block;background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;font-weight:900;
-      font-size:${big ? '17px' : '11.5px'};letter-spacing:.5px;padding:${big ? '6px 34px' : '4px 14px'};border-radius:${big ? '18px' : '7px'};
+      font-size:${big ? '18px' : '12px'};letter-spacing:.5px;padding:${big ? '7px 36px' : '4px 15px'};border-radius:${big ? '18px' : '7px'};
       border:1.4px solid ${CLR.gold};">${label}</div>`;
   const pageBadge = (label) => `
     <div style="position:absolute;top:0;right:26px;background:${CLR.navy};color:#fff;font-size:9px;font-weight:700;
       padding:3px 12px;border-radius:0 0 6px 6px;border:1.2px solid ${CLR.gold};border-top:none;">${label}</div>`;
   const infoRow = (label, value) => `
-    <div style="display:flex;align-items:flex-end;font-size:9px;margin-bottom:4px;">
+    <div style="display:flex;align-items:flex-end;font-size:9.6px;margin-bottom:5px;">
       <span style="color:${CLR.navy};font-weight:700;white-space:nowrap;">${label}</span>
       <span style="flex:1;border-bottom:1px dotted ${CLR.line};margin:0 3px 2px;"></span>
       <span style="color:${CLR.text};font-weight:600;text-align:right;max-width:56%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${value}</span>
     </div>`;
   const cardHead = (label) => `
-    <div style="display:inline-block;background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;font-size:9.5px;
+    <div style="display:inline-block;background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;font-size:10px;
       font-weight:800;padding:3px 12px;border-radius:6px;border:1.2px solid ${CLR.gold};position:relative;top:-9px;left:10px;z-index:2;">${label}</div>`;
   const cardOpen = (label) => `
     <div style="flex:1;border:1.2px solid ${CLR.goldLight};border-radius:8px;background:#fff;padding:0 11px 8px;position:relative;">
@@ -2918,15 +2935,15 @@ async function generateContractPdf(uid, overrideTerms){
       <div style="margin-top:-2px;">`;
   const cardClose = `</div></div>`;
   const termRow = (num, text) => `
-    <div style="display:flex;gap:5px;margin-bottom:4px;">
-      <div style="width:12px;height:12px;border-radius:50%;background:${CLR.navy};color:#fff;font-size:6.5px;font-weight:800;
+    <div style="display:flex;gap:5px;margin-bottom:5px;">
+      <div style="width:13px;height:13px;border-radius:50%;background:${CLR.navy};color:#fff;font-size:7px;font-weight:800;
         display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;border:.8px solid ${CLR.gold};">${num}</div>
-      <div style="flex:1;font-size:7.6px;line-height:1.32;color:${CLR.text};">${text}</div>
+      <div style="flex:1;font-size:8.2px;line-height:1.38;color:${CLR.text};">${text}</div>
     </div>`;
   const sigCard = (title, roleLabel) => `
     <div style="flex:1;border:1.2px solid ${CLR.goldLight};border-radius:8px;background:#fff;padding:0 12px 8px;position:relative;">
       ${cardHead(title)}
-      <div style="margin-top:0;font-size:8.6px;line-height:1.85;color:${CLR.text};">
+      <div style="margin-top:0;font-size:9.2px;line-height:1.9;color:${CLR.text};">
         <div>নাম &nbsp;: <span style="display:inline-block;width:65%;border-bottom:1px dotted ${CLR.line};">&nbsp;</span></div>
         <div>${roleLabel} &nbsp;: <span style="display:inline-block;width:55%;border-bottom:1px dotted ${CLR.line};">&nbsp;</span></div>
         <div>তারিখ ও স্বাক্ষর &nbsp;: <span style="display:inline-block;width:45%;border-bottom:1px dotted ${CLR.line};">&nbsp;</span></div>
@@ -2953,13 +2970,21 @@ async function generateContractPdf(uid, overrideTerms){
   const pageOuterCss = `position:fixed;left:-9999px;top:0;width:1123px;height:794px;box-sizing:border-box;overflow:hidden;
     background:${CLR.navy};font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;color:${CLR.text};padding:6px;`;
   const pageInnerOpen = `<div style="position:relative;width:100%;height:100%;box-sizing:border-box;background:${CLR.paper};
-      border:2px solid ${CLR.goldLight};padding:10px 24px 10px;display:flex;flex-direction:column;overflow:hidden;">`;
+      border:2px solid ${CLR.goldLight};padding:10px 24px 10px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;">`;
+
+  const watermark = `
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:420px;height:420px;
+      z-index:0;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <img src="${COMPANY_LOGO_DATA_URI}" style="width:100%;height:100%;object-fit:contain;opacity:.07;" />
+    </div>`;
 
   /* ================= সম্পূর্ণ চুক্তিনামা — এক পেজেই (landscape A4) ================= */
   const page1 = document.createElement('div');
   page1.style.cssText = pageOuterCss;
   page1.innerHTML = `
     ${pageInnerOpen}
+      ${watermark}
+      <div style="position:relative;z-index:1;display:flex;flex-direction:column;height:100%;justify-content:space-between;">
       ${pageBadge('Page 1/1')}
       ${headerBlock}
 
@@ -2982,13 +3007,26 @@ async function generateContractPdf(uid, overrideTerms){
 
       <div style="display:flex;gap:9px;margin-top:14px;align-items:stretch;">
         ${cardOpen('👤 গ্রাহকের তথ্য')}
-          ${infoRow('গ্রাহকের নাম', name)}
-          ${infoRow('পিতার নাম', fatherName)}
-          ${infoRow('মোবাইল নং', phone)}
-          ${infoRow('পাসপোর্ট নং', passport)}
-          ${infoRow('NID', nid)}
-          ${infoRow('জন্ম তারিখ', dob)}
-          ${infoRow('বর্তমান ঠিকানা', addressLine)}
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1;min-width:0;">
+              ${infoRow('গ্রাহকের নাম', name)}
+              ${infoRow('পিতার নাম', fatherName)}
+              ${infoRow('মোবাইল নং', phone)}
+              ${infoRow('পাসপোর্ট নং', passport)}
+              ${infoRow('NID', nid)}
+              ${infoRow('জন্ম তারিখ', dob)}
+              ${infoRow('বর্তমান ঠিকানা', addressLine)}
+            </div>
+            <div style="width:50px;flex-shrink:0;">
+              <div style="width:50px;height:60px;border:1.2px solid ${CLR.goldLight};border-radius:6px;overflow:hidden;
+                background:#f2f0ea;display:flex;align-items:center;justify-content:center;">
+                ${customerPhoto
+                  ? `<img src="${customerPhoto}" style="width:100%;height:100%;object-fit:cover;" />`
+                  : `<i class="fas fa-user" style="color:${CLR.muted};font-size:20px;"></i>`}
+              </div>
+              <div style="text-align:center;font-size:5.6px;color:${CLR.muted};margin-top:2px;">গ্রাহকের ছবি</div>
+            </div>
+          </div>
         ${cardClose}
         ${cardOpen('✈ ভ্রমণের তথ্য')}
           ${infoRow('গন্তব্য দেশ', `${flag} ${country}`)}
@@ -3016,10 +3054,10 @@ async function generateContractPdf(uid, overrideTerms){
       <div style="margin-top:8px;border:1.2px solid ${CLR.goldLight};border-radius:7px;overflow:hidden;">
         <table style="width:100%;border-collapse:collapse;">
           <tr style="background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;">
-            <td style="padding:3px 8px;font-weight:700;font-size:8px;">ক্রম</td>
-            <td style="padding:3px 8px;font-weight:700;font-size:8px;">তারিখ</td>
-            <td style="padding:3px 8px;font-weight:700;font-size:8px;">পরিমাণ</td>
-            <td style="padding:3px 8px;font-weight:700;font-size:8px;">নোট</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">ক্রম</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">তারিখ</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">পরিমাণ</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">নোট</td>
           </tr>
           ${paymentRowsHtml}
         </table>
@@ -3037,20 +3075,29 @@ async function generateContractPdf(uid, overrideTerms){
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
         ${sigCard('👤 কোম্পানির প্রতিনিধি', 'পদবি')}
         <div style="width:62px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-          <div style="width:52px;height:52px;border-radius:50%;border:1.6px solid ${CLR.navy};display:flex;flex-direction:column;
-            align-items:center;justify-content:center;text-align:center;color:${CLR.navy};font-size:5.2px;font-weight:800;line-height:1.3;">
-            <div>GOLDEN FUTURE</div><div>TOURS &amp; TRAVELS</div><div style="margin-top:2px;">★ VERIFIED ★</div>
+          <div style="width:56px;height:56px;border-radius:50%;border:1.6px solid ${CLR.navy};outline:1px solid ${CLR.navy};outline-offset:2px;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:${CLR.navy};
+            transform:rotate(-9deg);background:rgba(13,31,61,.03);">
+            <img src="${COMPANY_LOGO_DATA_URI}" style="width:18px;height:18px;object-fit:contain;margin-bottom:1px;" />
+            <div style="font-size:4.6px;font-weight:800;letter-spacing:.2px;">GOLDEN FUTURE</div>
+            <div style="font-size:4.6px;font-weight:800;letter-spacing:.2px;">TOURS &amp; TRAVELS</div>
+            <div style="margin-top:1px;font-size:4.4px;font-weight:700;color:${CLR.gold};">★ VERIFIED ★</div>
           </div>
         </div>
         ${sigCard('👤 গ্রাহকের স্বাক্ষর', 'মোবাইল')}
       </div>
 
       <div style="margin-top:8px;background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;border-radius:7px;
-        padding:5px 18px;display:flex;align-items:center;justify-content:space-between;font-size:7.8px;border:1.2px solid ${CLR.gold};">
-        <div><b style="font-family:'Noto Serif Bengali',serif;color:${CLR.goldLight};font-size:10.5px;">GOLDEN FUTURE</b><br>
+        padding:6px 18px;display:flex;align-items:center;justify-content:space-between;font-size:8.3px;border:1.2px solid ${CLR.gold};">
+        <div><b style="font-family:'Noto Serif Bengali',serif;color:${CLR.goldLight};font-size:11px;">GOLDEN FUTURE</b><br>
           TOURS &amp; TRAVELS — ${COMPANY_INFO.tagline}</div>
         <div style="border-left:1px solid ${CLR.goldLight};padding-left:14px;"><i class="fas fa-location-dot"></i> Head Office<br>${COMPANY_INFO.address}</div>
         <div style="border-left:1px solid ${CLR.goldLight};padding-left:14px;"><i class="fas fa-phone"></i> Hotline<br>${COMPANY_INFO.phone}</div>
+        ${qrDataUri ? `<div style="border-left:1px solid ${CLR.goldLight};padding-left:12px;display:flex;align-items:center;gap:6px;">
+          <img src="${qrDataUri}" style="width:34px;height:34px;border-radius:4px;background:#fff;padding:2px;" />
+          <span style="font-size:6.6px;line-height:1.3;max-width:46px;">স্ক্যান করে<br>ওয়েবসাইট দেখুন</span>
+        </div>` : ''}
+      </div>
       </div>
     </div>
   `;
