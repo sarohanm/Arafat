@@ -2893,12 +2893,6 @@ async function generateContractPdf(uid, overrideTerms){
     </div>`;
   /* জামিনদার/সাক্ষীর তথ্যের জন্য হাতে-লেখা ফাঁকা ঘর — এই তথ্য Firebase-এ সংরক্ষিত হয় না,
      স্বাক্ষরের সময় কাগজে হাতে পূরণ করা হবে */
-  const blankField = (label) => `
-    <div>
-      <div style="font-size:8px;letter-spacing:.6px;text-transform:uppercase;color:${CLR.muted};margin-bottom:3px;">${label}</div>
-      <div style="height:18px;border-bottom:1px solid #444;"></div>
-    </div>`;
-
   const wrap = document.createElement('div');
   wrap.style.cssText = `position:fixed;left:-9999px;top:0;width:780px;padding:16px;background:${CLR.paper};font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;color:${CLR.text};line-height:1.45;`;
   wrap.innerHTML = `
@@ -2988,49 +2982,6 @@ async function generateContractPdf(uid, overrideTerms){
         })()}
       </div>
 
-      ${sectionHead('05', 'জামিনদারের তথ্য')}
-      <p style="font-size:9.5px;color:${CLR.muted};margin:0 0 10px;">গ্রাহকের আর্থিক ও চুক্তিগত বাধ্যবাধকতার জন্য যৌথভাবে দায়বদ্ধ থাকবেন এমন একজন জামিনদারের তথ্য নিচে হাতে লিখে পূরণ করতে হবে।</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:26px;row-gap:12px;">
-        ${blankField('জামিনদারের নাম')}
-        ${blankField('গ্রাহকের সাথে সম্পর্ক')}
-        ${blankField('জাতীয় পরিচয়পত্র (NID) নম্বর')}
-        ${blankField('ফোন নম্বর')}
-        <div style="grid-column:1 / -1;">${blankField('ঠিকানা')}</div>
-      </div>
-      <div style="margin-top:16px;width:230px;">
-        <div style="height:30px;"></div>
-        <div style="border-top:1px solid #444;padding-top:6px;font-size:11px;color:${CLR.text};">জামিনদারের স্বাক্ষর ও তারিখ</div>
-      </div>
-
-      ${sectionHead('06', 'সাক্ষীর তথ্য')}
-      <p style="font-size:9.5px;color:${CLR.muted};margin:0 0 10px;">নিম্নস্বাক্ষরকারী দুইজন সাক্ষী এই চুক্তি স্বাক্ষরের সাক্ষী হিসেবে থাকবেন।</p>
-      <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:26px;">
-        <div>
-          <div style="font-size:9px;font-weight:700;color:${CLR.gold};margin-bottom:8px;">সাক্ষী ১</div>
-          <div style="display:flex;flex-direction:column;gap:11px;">
-            ${blankField('নাম')}
-            ${blankField('জাতীয় পরিচয়পত্র (NID) নম্বর')}
-            ${blankField('ফোন নম্বর')}
-          </div>
-          <div style="margin-top:14px;">
-            <div style="height:28px;"></div>
-            <div style="border-top:1px solid #444;padding-top:6px;font-size:10.5px;color:${CLR.text};">স্বাক্ষর ও তারিখ</div>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:9px;font-weight:700;color:${CLR.gold};margin-bottom:8px;">সাক্ষী ২</div>
-          <div style="display:flex;flex-direction:column;gap:11px;">
-            ${blankField('নাম')}
-            ${blankField('জাতীয় পরিচয়পত্র (NID) নম্বর')}
-            ${blankField('ফোন নম্বর')}
-          </div>
-          <div style="margin-top:14px;">
-            <div style="height:28px;"></div>
-            <div style="border-top:1px solid #444;padding-top:6px;font-size:10.5px;color:${CLR.text};">স্বাক্ষর ও তারিখ</div>
-          </div>
-        </div>
-      </div>
-
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:30px;font-size:11px;">
         <div style="text-align:center;width:210px;">
           <div style="height:34px;"></div>
@@ -3048,9 +2999,9 @@ async function generateContractPdf(uid, overrideTerms){
   `;
   document.body.appendChild(wrap);
   try{
-    const canvas = await html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff' });
+    const canvas = await html2canvas(wrap, { scale: 1.5, backgroundColor: '#ffffff' });
     document.body.removeChild(wrap);
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const imgData = canvas.toDataURL('image/jpeg', 0.75);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'pt', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -3061,31 +3012,15 @@ async function generateContractPdf(uid, overrideTerms){
     const imgHeight = canvas.height * imgWidth / canvas.width;
     const maxHeightPerPage = pageHeight - margin * 2;
     if(imgHeight <= maxHeightPerPage){
-      // পুরো চুক্তিনামা এক পৃষ্ঠাতেই ধরে যাচ্ছে
+      // পুরো চুক্তিনামা এক পৃষ্ঠাতেই স্বাভাবিক সাইজে ধরে যাচ্ছে
       pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
     } else {
-      // বাড়তি ধারার (জামিনদার/সাক্ষী সহ) দীর্ঘ চুক্তিনামা একাধিক A4 পৃষ্ঠায় ভাগ করে বসানো হচ্ছে,
-      // যাতে কোনো অংশ ছোট করে চেপে অপাঠ্য না হয়ে যায়
-      const pxPerPtY = canvas.height / imgHeight; // ক্যানভাসের কত পিক্সেল = এক pt উচ্চতায়
-      const pageHeightPx = Math.floor(maxHeightPerPage * pxPerPtY);
-      let renderedPx = 0;
-      let pageIndex = 0;
-      while(renderedPx < canvas.height){
-        const sliceHeightPx = Math.min(pageHeightPx, canvas.height - renderedPx);
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = sliceHeightPx;
-        const ctx = sliceCanvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-        ctx.drawImage(canvas, 0, renderedPx, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx);
-        const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
-        const sliceHeightPt = sliceHeightPx / pxPerPtY;
-        if(pageIndex > 0) pdf.addPage();
-        pdf.addImage(sliceData, 'JPEG', margin, margin, imgWidth, sliceHeightPt);
-        renderedPx += sliceHeightPx;
-        pageIndex++;
-      }
+      // কনটেন্ট এক পেজের চেয়ে লম্বা হলে, একাধিক পেজে ভাগ না করে পুরোটা ছোট (scale down)
+      // করে এক পৃষ্ঠাতেই বসিয়ে দেওয়া হচ্ছে — চুক্তিনামা সবসময় ১ পেজেই থাকবে
+      const fitHeight = maxHeightPerPage;
+      const fitWidth = canvas.width * fitHeight / canvas.height;
+      const xOffset = margin + (maxWidth - fitWidth) / 2;
+      pdf.addImage(imgData, 'JPEG', xOffset, margin, fitWidth, fitHeight);
     }
     pdf.save(`${name}-চুক্তিনামা.pdf`);
   }catch(err){
