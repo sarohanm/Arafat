@@ -1198,8 +1198,8 @@ const VALID_TRANSITIONS = {
 const COMPANY_INFO = {
   name: 'Golden Future Tours & Travels',
   tagline: '– আপনার ভ্রমণ, আমাদের অঙ্গীকার –',
-  phone: '+880 1925-336999',
-  email: 'goldenfuture22@gmail.com',
+  phone: '+88 01782689944',
+  email: 'goldenfuturetourstravels@gmail.com',
   address: 'বাড়ি # এইচ-৯৩/২ (১ম তলা), নিউ এয়ারপোর্ট রোড, কাকলী, বনানী, ঢাকা-১২১৩',
   website: 'www.goldenfuturebd.com'
 };
@@ -2897,8 +2897,8 @@ async function generateContractPdf(uid, overrideTerms){
   const customTerms = (overrideTerms && overrideTerms.length) ? overrideTerms
     : (vt && vt.contract_terms && vt.contract_terms.length) ? vt.contract_terms : null;
   const termsListFull = (customTerms && customTerms.length) ? customTerms : GLOBAL_DEFAULT_CONTRACT_TERMS;
-  /* এক পেজে জায়গা সীমিত — সর্বোচ্চ ১৪টি শর্ত দেখানো হয়, বাকি থাকলে একটা নোট লাইন যোগ হয় */
-  const MAX_TERMS_SHOWN = 14;
+  /* এখন প্রতিটা কপি নিজের ফুল পেজ পায়, তাই সবগুলো (সর্বোচ্চ ২০টি) শর্তই দেখানো হয় */
+  const MAX_TERMS_SHOWN = 20;
   const termsList = termsListFull.slice(0, MAX_TERMS_SHOWN);
   const hiddenTermsCount = Math.max(0, termsListFull.length - MAX_TERMS_SHOWN);
   const halfTerms = Math.ceil(termsList.length / 2);
@@ -2935,10 +2935,10 @@ async function generateContractPdf(uid, overrideTerms){
       <div style="margin-top:-2px;">`;
   const cardClose = `</div></div>`;
   const termRow = (num, text) => `
-    <div style="display:flex;gap:5px;margin-bottom:5px;">
-      <div style="width:13px;height:13px;border-radius:50%;background:${CLR.navy};color:#fff;font-size:7px;font-weight:800;
+    <div style="display:flex;gap:4px;margin-bottom:3.2px;">
+      <div style="width:11px;height:11px;border-radius:50%;background:${CLR.navy};color:#fff;font-size:6px;font-weight:800;
         display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;border:.8px solid ${CLR.gold};">${num}</div>
-      <div style="flex:1;font-size:8.2px;line-height:1.38;color:${CLR.text};">${text}</div>
+      <div style="flex:1;font-size:6.9px;line-height:1.28;color:${CLR.text};">${text}</div>
     </div>`;
   const sigCard = (title, roleLabel) => `
     <div style="flex:1;border:1.2px solid ${CLR.goldLight};border-radius:8px;background:#fff;padding:0 12px 8px;position:relative;">
@@ -2984,16 +2984,22 @@ async function generateContractPdf(uid, overrideTerms){
       <img src="${COMPANY_LOGO_DATA_URI}" style="width:100%;height:100%;object-fit:contain;opacity:.07;" />
     </div>`;
 
-  /* ================= সম্পূর্ণ চুক্তিনামা — এক পেজেই (landscape A4) ================= */
-  const page1 = document.createElement('div');
-  page1.style.cssText = pageOuterCss;
-  page1.innerHTML = `
-    ${pageInnerOpen}
+  /* ---- কমপ্যাক্ট "কপি" প্যানেলের জন্য ছোট বিল্ডিং-ব্লক হেল্পার (একই পেজে ২টা কপি বসানোর জন্য) ---- */
+  const copyBadge = (copyKind) => {
+    const isAgency = copyKind === 'agency';
+    const label = isAgency ? '🏢 এজেন্সি কপি' : '🧳 গ্রাহকের কপি';
+    const bg = isAgency ? CLR.navy : CLR.gold;
+    return `<div style="background:${bg};color:#fff;font-size:9px;font-weight:800;padding:3px 12px;
+      border-radius:8px;border:1px solid ${CLR.gold};white-space:nowrap;">${label}</div>`;
+  };
+
+  const buildFullPageContent = (copyKind, pageLabel) => `
       ${watermark}
-      ${pageBadge('Page 1/1')}
+      ${pageBadge(pageLabel)}
       ${headerBlock}
 
-      <div style="display:flex;align-items:center;margin-top:8px;">
+      <div style="display:flex;align-items:center;margin-top:8px;gap:8px;">
+        ${copyBadge(copyKind)}
         <div style="flex:1;"></div>
         ${ribbon('চুক্তিনামা', true)}
         <div style="flex:1;display:flex;justify-content:flex-end;">
@@ -3089,23 +3095,37 @@ async function generateContractPdf(uid, overrideTerms){
           <img src="${qrDataUri}" style="width:34px;height:34px;border-radius:4px;background:#fff;padding:2px;" />
           <span style="font-size:6.6px;line-height:1.3;max-width:46px;">স্ক্যান করে<br>ওয়েবসাইট দেখুন</span>
         </div>` : ''}
-      </div>
-    </div>
-  `;
+      </div>`;
+
+  /* ================= ২ পেজের PDF — Page 1: এজেন্সি কপি (ফুল সাইজ), Page 2: গ্রাহকের কপি (ফুল সাইজ) ================= */
+  const page1 = document.createElement('div');
+  page1.style.cssText = pageOuterCss;
+  page1.innerHTML = `${pageInnerOpen}${buildFullPageContent('agency', 'Page 1/2')}</div>`;
+
+  const page2 = document.createElement('div');
+  page2.style.cssText = pageOuterCss;
+  page2.innerHTML = `${pageInnerOpen}${buildFullPageContent('customer', 'Page 2/2')}</div>`;
 
   document.body.appendChild(page1);
+  document.body.appendChild(page2);
   try{
     const canvas1 = await html2canvas(page1, { scale: 2, backgroundColor: '#ffffff' });
+    const canvas2 = await html2canvas(page2, { scale: 2, backgroundColor: '#ffffff' });
     document.body.removeChild(page1);
+    document.body.removeChild(page2);
     const img1 = canvas1.toDataURL('image/jpeg', 0.85);
+    const img2 = canvas2.toDataURL('image/jpeg', 0.85);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('l', 'pt', 'a4');
     const pw = pdf.internal.pageSize.getWidth();
     const ph = pdf.internal.pageSize.getHeight();
     pdf.addImage(img1, 'JPEG', 0, 0, pw, ph);
+    pdf.addPage('a4', 'l');
+    pdf.addImage(img2, 'JPEG', 0, 0, pw, ph);
     pdf.save(`${name}-চুক্তিনামা.pdf`);
   }catch(err){
     if(page1.parentNode) document.body.removeChild(page1);
+    if(page2.parentNode) document.body.removeChild(page2);
     toast('চুক্তিনামা তৈরি করতে সমস্যা হয়েছে: ' + err.message);
   }
 }
