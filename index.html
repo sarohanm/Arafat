@@ -2877,19 +2877,25 @@ async function generateContractPdf(uid, overrideTerms){
   const lastPaymentMethod = (lastPayment && lastPayment.note) ? lastPayment.note : '-';
   const today = new Date().toLocaleDateString('bn-BD');
   const contractNo = 'GF/CT/' + new Date().getFullYear() + '/' + String(uid).slice(-4).toUpperCase();
-  /* এক পেজেই আটকে রাখতে পেমেন্ট টেবিলে সর্বোচ্চ কয়েকটি সাম্প্রতিক কিস্তি দেখানো হয়, বাকিটা সারমর্ম হিসেবে */
-  const SHOWN_PAYMENT_ROWS = 3;
-  const shownPayments = paidEntries.slice(-SHOWN_PAYMENT_ROWS);
-  const extraPaymentCount = Math.max(0, paidEntries.length - SHOWN_PAYMENT_ROWS);
-  const paymentRowsHtml = shownPayments.length ? shownPayments.map((p,i) => `
-      <tr style="background:${i % 2 ? CLR.goldBg : '#fff'};">
-        <td style="padding:4px 8px;font-size:9px;color:${CLR.muted};">${i+1}</td>
-        <td style="padding:4px 8px;font-size:9px;">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
-        <td style="padding:4px 8px;font-size:9px;font-weight:700;color:${CLR.green};">৳${p.amount || 0}</td>
-        <td style="padding:4px 8px;font-size:9px;color:${CLR.muted};">${p.note || '-'}</td>
-      </tr>`).join('') + (extraPaymentCount ? `
-      <tr><td colspan="4" style="padding:4px 8px;font-size:8.5px;color:${CLR.muted};text-align:center;">+ আরও ${extraPaymentCount} টি কিস্তি (মোট ${paidEntries.length} টি)</td></tr>` : '')
-    : `<tr><td colspan="4" style="padding:7px;font-size:9px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
+  /* "পেমেন্ট/লেনদেনের বিবরণ" — শুধুমাত্র বাস্তবে রেকর্ড করা কিস্তিগুলোই সারি হিসেবে দেখানো হয়, কোনো ফাঁকা/হাতে-লেখার সারি নেই */
+  const paymentTableRowsHtml = paidEntries.length ? paidEntries.map((p, i) => {
+    const bg = i % 2 ? CLR.goldBg : '#fff';
+    return `<tr style="background:${bg};">
+        <td style="padding:5px 8px;font-size:9px;text-align:center;color:${CLR.muted};">${String(i + 1).padStart(2, '0')}</td>
+        <td style="padding:5px 8px;font-size:9px;">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
+        <td style="padding:5px 8px;font-size:9px;">${p.note || 'কিস্তি পরিশোধ'}</td>
+        <td style="padding:5px 8px;font-size:9px;font-weight:700;color:${CLR.green};">৳${(p.amount || 0).toLocaleString('bn-BD')}</td>
+        <td style="padding:5px 8px;font-size:9px;">${p.note || '-'}</td>
+        <td style="padding:5px 8px;font-size:9px;"></td>
+        <td style="padding:5px 8px;font-size:9px;"></td>
+      </tr>`;
+  }).join('') : `<tr><td colspan="7" style="padding:8px;font-size:9px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
+  const paymentTableTotalRow = `
+    <tr style="background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;">
+      <td colspan="3" style="padding:5px 8px;font-size:9px;font-weight:800;text-align:right;">মোট</td>
+      <td style="padding:5px 8px;font-size:9px;font-weight:800;">${paid > 0 ? '৳' + paid.toLocaleString('bn-BD') : ''}</td>
+      <td colspan="3"></td>
+    </tr>`;
 
   /* "চুক্তিনামা PDF" বাটন থেকে override এলে সেটাই ব্যবহার হয়; override না থাকলে ভিসা অ্যাড/এডিট করার
      সময় লেখা vt.contract_terms, সেটাও না থাকলে গ্লোবাল ডিফল্ট শর্তাবলী */
@@ -2917,24 +2923,14 @@ async function generateContractPdf(uid, overrideTerms){
     <div style="display:inline-block;background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;font-weight:900;
       font-size:${big ? '18px' : '12px'};letter-spacing:.5px;padding:${big ? '7px 36px' : '4px 15px'};border-radius:${big ? '18px' : '7px'};
       border:1.4px solid ${CLR.gold};">${label}</div>`;
-  /* টপ-রাইট কোণাকাটা ব্যাজ — রেফারেন্স ডিজাইনের মতো diagonal-cut কোণ */
   const pageBadge = (label) => `
-    <div style="position:absolute;top:0;right:0;background:${CLR.navy};color:#fff;font-size:9px;font-weight:700;
-      padding:4px 16px 4px 20px;clip-path:polygon(12px 0,100% 0,100% 100%,0 100%);border-bottom:1.2px solid ${CLR.gold};border-left:1.2px solid ${CLR.gold};">${label}</div>`;
+    <div style="position:absolute;top:0;right:26px;background:${CLR.navy};color:#fff;font-size:9px;font-weight:700;
+      padding:3px 12px;border-radius:0 0 6px 6px;border:1.2px solid ${CLR.gold};border-top:none;">${label}</div>`;
   const infoRow = (label, value) => `
     <div style="display:flex;align-items:flex-end;font-size:9.6px;margin-bottom:5px;">
       <span style="color:${CLR.navy};font-weight:700;white-space:nowrap;">${label}</span>
       <span style="flex:1;border-bottom:1px dotted ${CLR.line};margin:0 3px 2px;"></span>
       <span style="color:${CLR.text};font-weight:600;text-align:right;max-width:56%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${value}</span>
-    </div>`;
-  /* নাম্বার বাবল সহ ফিল্ড রো — গ্রাহক/ভ্রমণের তথ্য কার্ডে ব্যবহৃত হয় (রেফারেন্স ডিজাইনের ①②③ স্টাইল) */
-  const infoRowNum = (num, label, value) => `
-    <div style="display:flex;align-items:flex-end;font-size:9.6px;margin-bottom:5px;gap:4px;">
-      <div style="width:12px;height:12px;border-radius:50%;background:${CLR.navy};color:#fff;font-size:6.2px;font-weight:800;
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:1px;border:.7px solid ${CLR.gold};">${num}</div>
-      <span style="color:${CLR.navy};font-weight:700;white-space:nowrap;">${label}</span>
-      <span style="flex:1;border-bottom:1px dotted ${CLR.line};margin:0 3px 2px;"></span>
-      <span style="color:${CLR.text};font-weight:600;text-align:right;max-width:50%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${value}</span>
     </div>`;
   const cardHead = (label) => `
     <div style="display:inline-block;background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;font-size:10px;
@@ -2961,10 +2957,9 @@ async function generateContractPdf(uid, overrideTerms){
     </div>`;
   const headerBlock = `
     <div style="display:flex;align-items:center;gap:10px;">
-      <div style="width:64px;height:60px;background:linear-gradient(160deg,${CLR.navy},${CLR.navy2});
-        border:1.6px solid ${CLR.gold};clip-path:polygon(0 0,100% 0,100% 74%,50% 100%,0 74%);
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;padding-bottom:5px;">
-        <img src="${COMPANY_LOGO_DATA_URI}" style="width:38px;height:38px;object-fit:contain;" />
+      <div style="width:62px;height:56px;border-radius:8px 8px 20px 20px;background:linear-gradient(160deg,${CLR.navy},${CLR.navy2});
+        border:1.6px solid ${CLR.gold};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <img src="${COMPANY_LOGO_DATA_URI}" style="width:40px;height:40px;object-fit:contain;" />
       </div>
       <div style="width:46px;height:56px;border-radius:8px;border:1.6px solid ${CLR.goldLight};background:#f2f0ea;
         display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
@@ -2989,6 +2984,8 @@ async function generateContractPdf(uid, overrideTerms){
   const pageInnerOpen = `<div style="position:relative;width:100%;height:100%;box-sizing:border-box;background:${CLR.paper};
       border:2px solid ${CLR.goldLight};padding:10px 24px 10px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;">`;
 
+  const watermark = '';
+
   /* ---- কমপ্যাক্ট "কপি" প্যানেলের জন্য ছোট বিল্ডিং-ব্লক হেল্পার (একই পেজে ২টা কপি বসানোর জন্য) ---- */
   const copyBadge = (copyKind) => {
     const isAgency = copyKind === 'agency';
@@ -2999,6 +2996,7 @@ async function generateContractPdf(uid, overrideTerms){
   };
 
   const buildFullPageContent = (copyKind, pageLabel) => `
+      ${watermark}
       ${pageBadge(pageLabel)}
       ${headerBlock}
 
@@ -3022,21 +3020,21 @@ async function generateContractPdf(uid, overrideTerms){
 
       <div style="display:flex;gap:9px;margin-top:14px;align-items:stretch;">
         ${cardOpen('👤 গ্রাহকের তথ্য')}
-          ${infoRowNum(1, 'গ্রাহকের নাম', name)}
-          ${infoRowNum(2, 'পিতার নাম', fatherName)}
-          ${infoRowNum(3, 'মোবাইল নং', phone)}
-          ${infoRowNum(4, 'পাসপোর্ট নং', passport)}
-          ${infoRowNum(5, 'NID', nid)}
-          ${infoRowNum(6, 'জন্ম তারিখ', dob)}
-          ${infoRowNum(7, 'বর্তমান ঠিকানা', addressLine)}
+          ${infoRow('গ্রাহকের নাম', name)}
+          ${infoRow('পিতার নাম', fatherName)}
+          ${infoRow('মোবাইল নং', phone)}
+          ${infoRow('পাসপোর্ট নং', passport)}
+          ${infoRow('NID', nid)}
+          ${infoRow('জন্ম তারিখ', dob)}
+          ${infoRow('বর্তমান ঠিকানা', addressLine)}
         ${cardClose}
         ${cardOpen('✈ ভ্রমণের তথ্য')}
-          ${infoRowNum(1, 'গন্তব্য দেশ', `${flag} ${country}`)}
-          ${infoRowNum(2, 'ভিসার ধরন', visaTypeName)}
-          ${infoRowNum(3, 'বর্তমান ধাপ', stageLabel)}
-          ${infoRowNum(4, 'ভিসা ইস্যু তারিখ', visaIssueDate)}
-          ${infoRowNum(5, 'ভিসার মেয়াদ', visaExpiryDate)}
-          ${infoRowNum(6, 'ফ্লাইট তারিখ ও সময়', flightDateTimeStr)}
+          ${infoRow('গন্তব্য দেশ', `${flag} ${country}`)}
+          ${infoRow('ভিসার ধরন', visaTypeName)}
+          ${infoRow('বর্তমান ধাপ', stageLabel)}
+          ${infoRow('ভিসা ইস্যু তারিখ', visaIssueDate)}
+          ${infoRow('ভিসার মেয়াদ', visaExpiryDate)}
+          ${infoRow('ফ্লাইট তারিখ ও সময়', flightDateTimeStr)}
         ${cardClose}
         ${cardOpen('▣ আর্থিক বিবরণ')}
           ${infoRow('মোট প্যাকেজ মূল্য', '৳' + fee.toLocaleString('bn-BD'))}
@@ -3053,15 +3051,25 @@ async function generateContractPdf(uid, overrideTerms){
         ${cardClose}
       </div>
 
-      <div style="margin-top:8px;border:1.2px solid ${CLR.goldLight};border-radius:7px;overflow:hidden;">
+      <div style="margin-top:8px;">
+        <div style="display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});
+          color:#fff;font-size:9px;font-weight:800;padding:3px 12px;border-radius:6px 6px 0 0;border:1.2px solid ${CLR.gold};border-bottom:none;">
+          <i class="fas fa-receipt"></i> পেমেন্ট/লেনদেনের বিবরণ
+        </div>
+      </div>
+      <div style="border:1.2px solid ${CLR.goldLight};border-radius:0 7px 7px 7px;overflow:hidden;">
         <table style="width:100%;border-collapse:collapse;">
           <tr style="background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;">
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">ক্রম</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">ক্রমিক নং</td>
             <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">তারিখ</td>
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">পরিমাণ</td>
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">নোট</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">বিবরণ</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">টাকার পরিমাণ (৳)</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">পরিশোধের পদ্ধতি</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">রসিদ নং</td>
+            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">স্বাক্ষর</td>
           </tr>
-          ${paymentRowsHtml}
+          ${paymentTableRowsHtml}
+          ${paymentTableTotalRow}
         </table>
       </div>
 
