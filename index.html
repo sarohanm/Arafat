@@ -2837,9 +2837,9 @@ async function generateContractPdf(uid, overrideTerms){
       if(photoSnap.exists()){ customerPhoto = photoSnap.val(); userPhotosCache[uid] = customerPhoto; }
     }catch(err){ /* ছবি না পেলেও PDF তৈরি আটকাবে না */ }
   }
-  /* "GOLDEN FUTURE" — নতুন অফিশিয়াল ডিজাইন (golden-future-contract.html অনুযায়ী): ক্রিম ব্যাকগ্রাউন্ড,
-     নেভি/গোল্ড ফ্রেম, Playfair Display + Noto Sans Bengali ফন্ট, ৩টি তথ্য বক্স + পেমেন্ট টেবিল (Page 1),
-     শর্তাবলী + স্বাক্ষর বক্স + সিলমোহর + ফুটার (Page 2)। প্রতিটা পেজ পোর্ট্রেট A4 অনুপাতে (1000x1414px)। রঙ টোকেন: */
+  /* "GOLDEN FUTURE" — অফিশিয়াল ডিজাইন, কিন্তু সম্পূর্ণটা এক পেজেই (landscape A4): নেভি/গোল্ড ফ্রেম,
+     লোগো-ব্যাজ হেডার, ৩টি তথ্য বক্স + পেমেন্ট টেবিল, শর্তাবলী (২ কলাম), স্বাক্ষর বক্স + সিলমোহর, ব্র্যান্ডেড ফুটার —
+     সবকিছু কমপ্যাক্ট সাইজে একই পৃষ্ঠায়। রঙ টোকেন: */
   const CLR = {
     navy: '#0f1c3f', navy2: '#152552', gold: '#c9a44c', goldLight: '#e8cf8a', cream: '#faf7f0',
     text: '#1c1c1c', muted: '#6b6b6b', line: '#d8cba7', green: '#178f52', red: '#c0392b'
@@ -2876,19 +2876,19 @@ async function generateContractPdf(uid, overrideTerms){
   const lastPaymentMethod = (lastPayment && lastPayment.note) ? lastPayment.note : '-';
   const today = new Date().toLocaleDateString('bn-BD');
   const contractNo = 'GF/CT/' + new Date().getFullYear() + '/' + String(uid).slice(-4).toUpperCase();
-  /* পেমেন্ট টেবিলে সর্বোচ্চ কয়েকটি সাম্প্রতিক কিস্তি দেখানো হয়, বাকিটা সারমর্ম হিসেবে */
-  const SHOWN_PAYMENT_ROWS = 5;
+  /* এক পেজেই আটকে রাখতে পেমেন্ট টেবিলে সর্বোচ্চ কয়েকটি সাম্প্রতিক কিস্তি দেখানো হয়, বাকিটা সারমর্ম হিসেবে */
+  const SHOWN_PAYMENT_ROWS = 3;
   const shownPayments = paidEntries.slice(-SHOWN_PAYMENT_ROWS);
   const extraPaymentCount = Math.max(0, paidEntries.length - SHOWN_PAYMENT_ROWS);
   const paymentRowsHtml = shownPayments.length ? shownPayments.map((p,i) => `
       <tr style="background:${i % 2 ? '#faf3e0' : '#fff'};">
-        <td style="padding:6px 8px;text-align:center;font-size:10.5px;color:${CLR.muted};border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${i+1}</td>
-        <td style="padding:6px 8px;text-align:center;font-size:10.5px;border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
-        <td style="padding:6px 8px;text-align:center;font-size:10.5px;color:${CLR.muted};border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${p.note || '-'}</td>
-        <td style="padding:6px 8px;text-align:center;font-size:10.5px;font-weight:700;color:${CLR.green};border-top:1px solid ${CLR.line};">৳${(p.amount || 0).toLocaleString('bn-BD')}</td>
+        <td style="padding:4px 8px;text-align:center;font-size:8.4px;color:${CLR.muted};border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${i+1}</td>
+        <td style="padding:4px 8px;text-align:center;font-size:8.4px;border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
+        <td style="padding:4px 8px;text-align:center;font-size:8.4px;color:${CLR.muted};border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${p.note || '-'}</td>
+        <td style="padding:4px 8px;text-align:center;font-size:8.4px;font-weight:700;color:${CLR.green};border-top:1px solid ${CLR.line};">৳${(p.amount || 0).toLocaleString('bn-BD')}</td>
       </tr>`).join('') + (extraPaymentCount ? `
-      <tr><td colspan="4" style="padding:6px 8px;font-size:9.5px;color:${CLR.muted};text-align:center;border-top:1px solid ${CLR.line};">+ আরও ${extraPaymentCount} টি কিস্তি (মোট ${paidEntries.length} টি)</td></tr>` : '')
-    : `<tr><td colspan="4" style="padding:12px;font-size:10.5px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
+      <tr><td colspan="4" style="padding:4px 8px;font-size:7.6px;color:${CLR.muted};text-align:center;border-top:1px solid ${CLR.line};">+ আরও ${extraPaymentCount} টি কিস্তি (মোট ${paidEntries.length} টি)</td></tr>` : '')
+    : `<tr><td colspan="4" style="padding:8px;font-size:8.4px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
 
   /* "চুক্তিনামা PDF" বাটন থেকে override এলে সেটাই ব্যবহার হয়; override না থাকলে ভিসা অ্যাড/এডিট করার
      সময় লেখা vt.contract_terms, সেটাও না থাকলে গ্লোবাল ডিফল্ট শর্তাবলী */
@@ -2896,8 +2896,8 @@ async function generateContractPdf(uid, overrideTerms){
   const customTerms = (overrideTerms && overrideTerms.length) ? overrideTerms
     : (vt && vt.contract_terms && vt.contract_terms.length) ? vt.contract_terms : null;
   const termsListFull = (customTerms && customTerms.length) ? customTerms : GLOBAL_DEFAULT_CONTRACT_TERMS;
-  /* প্রতিটা কপি নিজের ফুল পেজ পায়, তাই সবগুলো (সর্বোচ্চ ২০টি) শর্তই দেখানো হয় */
-  const MAX_TERMS_SHOWN = 20;
+  /* সম্পূর্ণটা এক পেজে আটকে রাখতে সর্বোচ্চ ১৬টি শর্ত দেখানো হয় (২ কলামে ৮+৮) */
+  const MAX_TERMS_SHOWN = 16;
   const termsList = termsListFull.slice(0, MAX_TERMS_SHOWN);
   const hiddenTermsCount = Math.max(0, termsListFull.length - MAX_TERMS_SHOWN);
   const halfTerms = Math.ceil(termsList.length / 2);
@@ -2911,31 +2911,27 @@ async function generateContractPdf(uid, overrideTerms){
     qrDataUri = await QRCode.toDataURL(qrUrl, { width: 160, margin: 1, color: { dark: CLR.navy, light: '#ffffff' } });
   }catch(err){ /* QR তৈরি না হলেও PDF তৈরি আটকাবে না */ }
 
-  /* ---- বিল্ডিং-ব্লক হেল্পার (নতুন "Golden Future" ডিজাইন অনুযায়ী) ---- */
-  const pageTagBlock = (label) => `
-    <div style="position:absolute;top:0;right:0;background:${CLR.navy};color:${CLR.goldLight};font-size:10.5px;font-weight:700;
-      padding:4px 14px;border-radius:0 2px 0 10px;">${label}</div>`;
-
+  /* ---- বিল্ডিং-ব্লক হেল্পার (কমপ্যাক্ট, এক-পেজ সংস্করণ) ---- */
   const headerBlock = `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:12px;border-bottom:3px solid ${CLR.gold};">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="width:72px;height:72px;border-radius:50%;background:${CLR.navy};border:3px solid ${CLR.gold};display:flex;
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:8px;border-bottom:2.4px solid ${CLR.gold};">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:52px;height:52px;border-radius:10px;border:1.3px solid ${CLR.goldLight};background:#f2f0ea;display:flex;
           align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
-          <img src="${COMPANY_LOGO_DATA_URI}" style="width:66%;height:66%;object-fit:contain;" />
+          <img src="${COMPANY_LOGO_DATA_URI}" style="width:82%;height:82%;object-fit:contain;" />
         </div>
-        <div style="width:48px;height:58px;border-radius:8px;border:1.6px solid ${CLR.goldLight};background:#f2f0ea;
+        <div style="width:52px;height:52px;border-radius:10px;border:1.3px solid ${CLR.goldLight};background:#f2f0ea;
           display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
           ${customerPhoto
             ? `<img src="${customerPhoto}" style="width:100%;height:100%;object-fit:cover;" />`
-            : `<i class="fas fa-user" style="color:#9a9a9a;font-size:19px;"></i>`}
+            : `<i class="fas fa-user" style="color:#9a9a9a;font-size:18px;"></i>`}
         </div>
         <div>
-          <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:29px;color:${CLR.navy};letter-spacing:1px;line-height:1;">GOLDEN FUTURE</div>
-          <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:13.5px;color:${CLR.gold};letter-spacing:4px;margin-top:4px;">TOURS &amp; TRAVELS</div>
-          <div style="margin-top:5px;font-size:10.8px;color:${CLR.navy2};font-weight:600;">${COMPANY_INFO.tagline}</div>
+          <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:21px;color:${CLR.navy};letter-spacing:.6px;line-height:1;">GOLDEN FUTURE</div>
+          <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:9.6px;color:${CLR.gold};letter-spacing:3px;margin-top:3px;">TOURS &amp; TRAVELS</div>
+          <div style="margin-top:3px;font-size:8.4px;color:${CLR.navy2};font-weight:600;">${COMPANY_INFO.tagline}</div>
         </div>
       </div>
-      <div style="font-size:10.3px;color:${CLR.navy};line-height:1.85;text-align:right;">
+      <div style="font-size:8px;color:${CLR.navy};line-height:1.6;text-align:right;">
         <div>${COMPANY_INFO.phone} ☎</div>
         <div>${COMPANY_INFO.email} ✉</div>
         <div style="max-width:230px;">${COMPANY_INFO.address} 📍</div>
@@ -2943,26 +2939,24 @@ async function generateContractPdf(uid, overrideTerms){
       </div>
     </div>`;
 
-  const titleBannerBlock = `
-    <div style="display:flex;justify-content:center;margin:16px 0 8px;">
-      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:25px;font-weight:700;padding:8px 46px;
-        border:2px solid ${CLR.gold};border-radius:6px;letter-spacing:2px;">চুক্তিনামা</div>
-    </div>`;
-
-  const contractMetaBlock = `
-    <div style="display:flex;justify-content:flex-end;margin-top:-4px;">
-      <div style="border:1.5px solid ${CLR.gold};border-radius:6px;padding:7px 16px;font-size:11.5px;color:${CLR.navy};line-height:1.8;">
-        <div><b>চুক্তি নং :</b> ${contractNo}</div>
-        <div><b>তারিখ :</b> ${today}</div>
+  const titleRowBlock = `
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+      <div style="width:124px;flex-shrink:0;"></div>
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:16px;font-weight:700;padding:5px 26px;
+        border:1.6px solid ${CLR.gold};border-radius:6px;letter-spacing:1.5px;">চুক্তিনামা</div>
+      <div style="flex:1;display:flex;justify-content:flex-end;">
+        <div style="border:1.2px solid ${CLR.gold};border-radius:6px;padding:4px 12px;font-size:8.4px;color:${CLR.navy};line-height:1.65;min-width:150px;">
+          <div><b>চুক্তি নং :</b> ${contractNo}</div>
+          <div><b>তারিখ :</b> ${today}</div>
+        </div>
       </div>
     </div>`;
 
   const introBlock = `
-    <div style="background:#fff;border:1px solid ${CLR.line};border-radius:6px;padding:10px 15px;font-size:11.8px;
-      line-height:1.75;margin:11px 0;color:#2a2a2a;">
+    <div style="background:#fff;border:1px solid ${CLR.line};border-radius:6px;padding:5px 12px;font-size:8.4px;
+      line-height:1.55;margin:6px 0;color:#2a2a2a;text-align:center;">
       এই মর্মে স্বীকার করা যাচ্ছে যে, নিম্ন স্বাক্ষরকারী গ্রাহক <b style="color:${CLR.navy};">${name}</b> এবং
-      <b style="color:${CLR.navy};">Golden Future Tours &amp; Travels</b> ("প্রতিষ্ঠান") এর মধ্যে নিম্নবর্ণিত শর্তাবলীর
-      ভিত্তিতে এই চুক্তিনামা সম্পাদিত হলো।
+      <b style="color:${CLR.navy};">Golden Future Tours &amp; Travels</b> ("প্রতিষ্ঠান") এর মধ্যে নিম্নবর্ণিত শর্তাবলীর ভিত্তিতে এই চুক্তিনামা সম্পাদিত হলো।
     </div>`;
 
   const fieldFactory = () => {
@@ -2972,11 +2966,11 @@ async function generateContractPdf(uid, overrideTerms){
       const labelColor = opts.highlight ? CLR.red : CLR.navy;
       const valueColor = opts.highlight ? CLR.red : CLR.text;
       return `
-        <div style="display:flex;align-items:baseline;gap:6px;font-size:10.6px;margin:6.5px 0;">
-          <span style="width:14px;height:14px;border-radius:50%;background:${CLR.gold};color:${CLR.navy};font-size:7.8px;
+        <div style="display:flex;align-items:baseline;gap:5px;font-size:7.7px;margin:3px 0;">
+          <span style="width:11px;height:11px;border-radius:50%;background:${CLR.gold};color:${CLR.navy};font-size:6.2px;
             font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${n}</span>
           <span style="white-space:nowrap;font-weight:600;color:${labelColor};">${label}</span>
-          <span style="flex:1;border-bottom:1px dotted #bbb;height:9px;"></span>
+          <span style="flex:1;border-bottom:1px dotted #bbb;height:7px;"></span>
           <span style="font-weight:700;color:${valueColor};white-space:nowrap;text-align:right;max-width:52%;overflow:hidden;text-overflow:ellipsis;">${value || '-'}</span>
         </div>`;
     };
@@ -2984,61 +2978,60 @@ async function generateContractPdf(uid, overrideTerms){
 
   const box = (headerLabel, bodyHtml, showTotalRow) => `
     <div style="flex:1;border:1px solid ${CLR.line};border-radius:6px;background:#fff;overflow:hidden;display:flex;flex-direction:column;">
-      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:11.3px;font-weight:700;padding:6px 10px;">${headerLabel}</div>
-      <div style="padding:8px 11px;flex:1;">${bodyHtml}</div>
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:9px;font-weight:700;padding:4px 9px;">${headerLabel}</div>
+      <div style="padding:5px 9px;flex:1;">${bodyHtml}</div>
       ${showTotalRow ? `
-      <div style="background:${CLR.navy};color:#fff;font-weight:700;font-size:10.3px;padding:6px 11px;display:flex;justify-content:space-between;">
+      <div style="background:${CLR.navy};color:#fff;font-weight:700;font-size:8px;padding:4px 9px;display:flex;justify-content:space-between;">
         <span>মোট পরিশোধিত টাকা</span><span style="color:${CLR.goldLight};">৳${paid.toLocaleString('bn-BD')}</span>
       </div>` : ''}
     </div>`;
 
   const termRow = (num, text) => `
-    <div style="display:flex;gap:7px;font-size:10.2px;line-height:1.5;padding:5.5px 0;border-bottom:1px dashed ${CLR.line};color:#262626;">
-      <div style="width:17px;height:17px;border-radius:50%;background:${CLR.gold};color:${CLR.navy};font-weight:800;font-size:8.5px;
-        display:flex;align-items:center;justify-content:center;flex-shrink:0;">${num}</div>
+    <div style="display:flex;gap:5px;font-size:6.5px;line-height:1.28;padding:2.4px 0;border-bottom:1px dashed ${CLR.line};color:#262626;">
+      <div style="width:12.5px;height:12.5px;border-radius:50%;background:${CLR.gold};color:${CLR.navy};font-weight:800;font-size:6px;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.5px;">${num}</div>
       <div style="flex:1;">${text}</div>
     </div>`;
 
   const signBox = (title, roleLabel, roleValue, showStamp) => `
-    <div style="flex:1;border:1px solid ${CLR.line};border-radius:6px;background:#fff;position:relative;padding:20px 14px 14px;">
-      <div style="position:absolute;top:-13px;left:14px;background:${CLR.navy};color:${CLR.goldLight};font-size:11px;font-weight:700;
-        padding:4px 12px;border-radius:12px;">${title}</div>
-      <div style="margin-top:4px;font-size:10.5px;line-height:2.05;color:${CLR.text};">
+    <div style="flex:1;border:1px solid ${CLR.line};border-radius:6px;background:#fff;position:relative;padding:12px 10px 8px;">
+      <div style="position:absolute;top:-9px;left:10px;background:${CLR.navy};color:${CLR.goldLight};font-size:8px;font-weight:700;
+        padding:3px 10px;border-radius:10px;">${title}</div>
+      <div style="margin-top:2px;font-size:7.8px;line-height:1.7;color:${CLR.text};">
         <div>নাম &nbsp;: <span style="display:inline-block;width:60%;border-bottom:1px dotted #999;">&nbsp;</span></div>
         <div>${roleLabel} &nbsp;: <span style="display:inline-block;width:55%;border-bottom:1px dotted #999;">${roleValue || '&nbsp;'}</span></div>
-        <div>তারিখ &nbsp;: <span style="display:inline-block;width:45%;border-bottom:1px dotted #999;">&nbsp;</span></div>
-        <div>স্বাক্ষর &nbsp;: <span style="display:inline-block;width:45%;border-bottom:1px dotted #999;">&nbsp;</span></div>
+        <div>তারিখ ও স্বাক্ষর &nbsp;: <span style="display:inline-block;width:42%;border-bottom:1px dotted #999;">&nbsp;</span></div>
       </div>
       ${showStamp ? `
-      <div style="position:absolute;right:16px;bottom:14px;width:72px;height:72px;border-radius:50%;border:2px dashed ${CLR.navy};
-        opacity:.6;display:flex;align-items:center;justify-content:center;text-align:center;font-size:6.8px;font-weight:700;
-        color:${CLR.navy};line-height:1.3;transform:rotate(-8deg);">GOLDEN FUTURE<br>TOURS &amp; TRAVELS</div>` : ''}
+      <div style="position:absolute;right:10px;bottom:8px;width:46px;height:46px;border-radius:50%;border:1.6px dashed ${CLR.navy};
+        opacity:.6;display:flex;align-items:center;justify-content:center;text-align:center;font-size:5px;font-weight:700;
+        color:${CLR.navy};line-height:1.25;transform:rotate(-8deg);">GOLDEN FUTURE<br>TOURS &amp; TRAVELS</div>` : ''}
     </div>`;
 
   const footerBlock = `
-    <div style="margin-top:14px;background:${CLR.navy};color:#fff;border-radius:6px;padding:11px 20px;display:flex;
-      align-items:center;justify-content:space-between;gap:14px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:38px;height:38px;border-radius:50%;background:${CLR.navy2};border:2px solid ${CLR.gold};
+    <div style="margin-top:6px;background:${CLR.navy};color:#fff;border-radius:6px;padding:6px 16px;display:flex;
+      align-items:center;justify-content:space-between;gap:12px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:${CLR.navy2};border:1.6px solid ${CLR.gold};
           display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-          <img src="${COMPANY_LOGO_DATA_URI}" style="width:28px;height:28px;object-fit:contain;" />
+          <img src="${COMPANY_LOGO_DATA_URI}" style="width:20px;height:20px;object-fit:contain;" />
         </div>
         <div>
-          <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:13.5px;">GOLDEN FUTURE</div>
-          <div style="font-size:8.2px;letter-spacing:2px;color:${CLR.goldLight};">TOURS &amp; TRAVELS</div>
+          <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:10.5px;">GOLDEN FUTURE</div>
+          <div style="font-size:6.6px;letter-spacing:1.5px;color:${CLR.goldLight};">TOURS &amp; TRAVELS</div>
         </div>
       </div>
-      <div style="display:flex;gap:20px;font-size:9.8px;">
+      <div style="display:flex;gap:16px;font-size:7.6px;">
         <div><i class="fas fa-location-dot"></i> Head Office<br>${COMPANY_INFO.address}</div>
         <div><i class="fas fa-phone"></i> Hotline<br>${COMPANY_INFO.phone}</div>
       </div>
       ${qrDataUri ? `
-      <div style="width:48px;height:48px;background:#fff;border-radius:4px;padding:3px;flex-shrink:0;">
+      <div style="width:34px;height:34px;background:#fff;border-radius:4px;padding:2px;flex-shrink:0;">
         <img src="${qrDataUri}" style="width:100%;height:100%;" />
       </div>` : ''}
     </div>`;
 
-  /* ---- Page 1 এর কনটেন্ট: হেডার + টাইটেল + ৩টি তথ্য বক্স + পেমেন্ট টেবিল ---- */
+  /* ---- তথ্য বক্সের কন্টেন্ট ---- */
   const cf = fieldFactory();
   const customerFieldsHtml =
     cf('গ্রাহকের নাম', name) +
@@ -3065,104 +3058,92 @@ async function generateContractPdf(uid, overrideTerms){
     ff(dueLabelContract, '৳' + dueDisplayContract.toLocaleString('bn-BD'), { highlight: true }) +
     ff('সর্বশেষ পরিশোধ', lastPaymentDate) +
     ff('পরিশোধের নোট', lastPaymentMethod) +
-    `<div style="height:5px;background:${CLR.line};border-radius:3px;overflow:hidden;margin:6px 0 2px;">
+    `<div style="height:4px;background:${CLR.line};border-radius:2px;overflow:hidden;margin:4px 0 1px;">
       <div style="height:100%;width:${pct}%;background:${CLR.green};"></div>
     </div>`;
 
   const paymentTableBlock = `
-    <div style="border:1px solid ${CLR.line};border-radius:6px;overflow:hidden;background:#fff;margin-top:13px;">
-      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:12.5px;font-weight:700;padding:7px 14px;">
-        <i class="fas fa-credit-card" style="margin-right:5px;"></i>পেমেন্ট/লেনদেনের বিবরণ
+    <div style="border:1px solid ${CLR.line};border-radius:6px;overflow:hidden;background:#fff;margin-top:6px;">
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:9px;font-weight:700;padding:4px 10px;">
+        <i class="fas fa-credit-card" style="margin-right:4px;"></i>পেমেন্ট/লেনদেনের বিবরণ
       </div>
       <table style="width:100%;border-collapse:collapse;">
         <thead>
           <tr>
-            <th style="width:10%;background:${CLR.navy};color:${CLR.goldLight};padding:7px 8px;font-size:10.3px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">ক্রম</th>
-            <th style="width:20%;background:${CLR.navy};color:${CLR.goldLight};padding:7px 8px;font-size:10.3px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">তারিখ</th>
-            <th style="width:38%;background:${CLR.navy};color:${CLR.goldLight};padding:7px 8px;font-size:10.3px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">নোট</th>
-            <th style="width:32%;background:${CLR.navy};color:${CLR.goldLight};padding:7px 8px;font-size:10.3px;font-weight:700;">টাকার পরিমাণ (৳)</th>
+            <th style="width:10%;background:${CLR.navy};color:${CLR.goldLight};padding:4px 8px;font-size:7.6px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">ক্রম</th>
+            <th style="width:20%;background:${CLR.navy};color:${CLR.goldLight};padding:4px 8px;font-size:7.6px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">তারিখ</th>
+            <th style="width:38%;background:${CLR.navy};color:${CLR.goldLight};padding:4px 8px;font-size:7.6px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">নোট</th>
+            <th style="width:32%;background:${CLR.navy};color:${CLR.goldLight};padding:4px 8px;font-size:7.6px;font-weight:700;">টাকার পরিমাণ (৳)</th>
           </tr>
         </thead>
         <tbody>${paymentRowsHtml}</tbody>
         <tfoot>
           <tr>
-            <td colspan="3" style="text-align:right;padding:7px 8px;font-size:10.8px;font-weight:700;color:${CLR.navy};border-top:1px solid ${CLR.line};">সর্বমোট পরিশোধিত :</td>
-            <td style="padding:7px 8px;font-size:10.8px;font-weight:700;color:${CLR.navy};border-top:1px solid ${CLR.line};">৳${paid.toLocaleString('bn-BD')}</td>
+            <td colspan="3" style="text-align:right;padding:4px 8px;font-size:8px;font-weight:700;color:${CLR.navy};border-top:1px solid ${CLR.line};">সর্বমোট পরিশোধিত :</td>
+            <td style="padding:4px 8px;font-size:8px;font-weight:700;color:${CLR.navy};border-top:1px solid ${CLR.line};">৳${paid.toLocaleString('bn-BD')}</td>
           </tr>
         </tfoot>
       </table>
     </div>`;
 
-  const page1Content = `
-    ${pageTagBlock('Page 1/2')}
+  /* ---- শর্তাবলী ব্লক ---- */
+  const termsBlock = `
+    <div style="display:flex;justify-content:center;margin-top:7px;">
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:11px;font-weight:700;padding:3.5px 22px;
+        border:1.3px solid ${CLR.gold};border-radius:5px;letter-spacing:.6px;">শর্তাবলী</div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:4px;">
+      <div style="flex:1;">${leftTerms.map((t,i) => termRow(i+1, t)).join('')}</div>
+      <div style="flex:1;">${rightTerms.map((t,i) => termRow(halfTerms + i + 1, t)).join('')}
+        ${hiddenTermsCount ? `<div style="font-size:6.6px;color:${CLR.muted};margin-top:2px;">+ আরও ${hiddenTermsCount} টি শর্ত প্রযোজ্য (সম্পূর্ণ তালিকা অফিসে সংরক্ষিত)</div>` : ''}
+      </div>
+    </div>`;
+
+  const signatureBlock = `
+    <div style="display:flex;gap:10px;margin-top:7px;">
+      ${signBox('👤 কোম্পানির প্রতিনিধি', 'পদবি', '', true)}
+      ${signBox('👤 গ্রাহকের স্বাক্ষর', 'মোবাইল', phone, false)}
+    </div>`;
+
+  /* ---- সম্পূর্ণ কন্টেন্ট — একটাই পেজ (landscape A4) ---- */
+  const pageContent = `
     ${headerBlock}
-    ${titleBannerBlock}
-    ${contractMetaBlock}
+    ${titleRowBlock}
     ${introBlock}
-    <div style="display:flex;gap:11px;align-items:stretch;">
+    <div style="display:flex;gap:8px;align-items:stretch;">
       ${box('👤 গ্রাহকের তথ্য', customerFieldsHtml)}
       ${box('✈ ভ্রমণের তথ্য', travelFieldsHtml)}
       ${box('🏦 আর্থিক বিবরণ', financialFieldsHtml, true)}
     </div>
     ${paymentTableBlock}
-    <div style="margin-top:auto;text-align:center;font-size:9.3px;color:${CLR.muted};padding-top:12px;">
-      Golden Future Tours &amp; Travels — ${COMPANY_INFO.website}
-    </div>`;
-
-  /* ---- Page 2 এর কনটেন্ট: হেডার + শর্তাবলী + স্বাক্ষর বক্স + ফুটার ---- */
-  const page2Content = `
-    ${pageTagBlock('Page 2/2')}
-    ${headerBlock}
-    <div style="display:flex;justify-content:center;margin:16px 0 12px;">
-      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:19px;font-weight:700;padding:7px 40px;
-        border:2px solid ${CLR.gold};border-radius:6px;">শর্তাবলী</div>
-    </div>
-    <div style="display:flex;gap:22px;flex:1;">
-      <div style="flex:1;">${leftTerms.map((t,i) => termRow(i+1, t)).join('')}</div>
-      <div style="flex:1;">${rightTerms.map((t,i) => termRow(halfTerms + i + 1, t)).join('')}
-        ${hiddenTermsCount ? `<div style="font-size:9px;color:${CLR.muted};margin-top:4px;">+ আরও ${hiddenTermsCount} টি শর্ত প্রযোজ্য (সম্পূর্ণ তালিকা অফিসে সংরক্ষিত)</div>` : ''}
-      </div>
-    </div>
-    <div style="display:flex;gap:16px;margin-top:14px;">
-      ${signBox('👤 কোম্পানির প্রতিনিধি', 'পদবি', '', true)}
-      ${signBox('👤 গ্রাহকের স্বাক্ষর', 'মোবাইল', phone, false)}
-    </div>
+    ${termsBlock}
+    ${signatureBlock}
     ${footerBlock}`;
 
-  /* ================= ২ পেজের PDF (পোর্ট্রেট A4): Page 1 = চুক্তি তথ্য + পেমেন্ট, Page 2 = শর্তাবলী + স্বাক্ষর ================= */
-  const pageOuterCss = `position:fixed;left:-9999px;top:0;width:1000px;height:1414px;box-sizing:border-box;
+  /* ================= এক পেজের PDF (landscape A4) ================= */
+  const pageOuterCss = `position:fixed;left:-9999px;top:0;width:1123px;height:794px;box-sizing:border-box;
     background:${CLR.cream};font-family:"Noto Sans Bengali","Hind Siliguri",sans-serif;color:${CLR.text};padding:0;`;
-  const pageInnerCss = (extra) => `position:relative;height:100%;box-sizing:border-box;background:${CLR.cream};
-    border:2px solid ${CLR.gold};border-radius:4px;padding:22px 28px;display:flex;flex-direction:column;overflow:hidden;${extra||''}`;
+  const pageInnerCss = `position:relative;height:100%;box-sizing:border-box;background:${CLR.cream};
+    border:2px solid ${CLR.gold};border-radius:4px;padding:10px 22px;display:flex;flex-direction:column;
+    justify-content:space-between;overflow:hidden;`;
 
-  const page1 = document.createElement('div');
-  page1.style.cssText = pageOuterCss;
-  page1.innerHTML = `<div style="${pageInnerCss()}">${page1Content}</div>`;
+  const page = document.createElement('div');
+  page.style.cssText = pageOuterCss;
+  page.innerHTML = `<div style="${pageInnerCss}">${pageContent}</div>`;
 
-  const page2 = document.createElement('div');
-  page2.style.cssText = pageOuterCss;
-  page2.innerHTML = `<div style="${pageInnerCss()}">${page2Content}</div>`;
-
-  document.body.appendChild(page1);
-  document.body.appendChild(page2);
+  document.body.appendChild(page);
   try{
-    const canvas1 = await html2canvas(page1, { scale: 2, backgroundColor: CLR.cream });
-    const canvas2 = await html2canvas(page2, { scale: 2, backgroundColor: CLR.cream });
-    document.body.removeChild(page1);
-    document.body.removeChild(page2);
-    const img1 = canvas1.toDataURL('image/jpeg', 0.92);
-    const img2 = canvas2.toDataURL('image/jpeg', 0.92);
+    const canvas = await html2canvas(page, { scale: 2, backgroundColor: CLR.cream });
+    document.body.removeChild(page);
+    const img = canvas.toDataURL('image/jpeg', 0.92);
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'pt', 'a4');
+    const pdf = new jsPDF('l', 'pt', 'a4');
     const pw = pdf.internal.pageSize.getWidth();
     const ph = pdf.internal.pageSize.getHeight();
-    pdf.addImage(img1, 'JPEG', 0, 0, pw, ph);
-    pdf.addPage('a4', 'p');
-    pdf.addImage(img2, 'JPEG', 0, 0, pw, ph);
+    pdf.addImage(img, 'JPEG', 0, 0, pw, ph);
     pdf.save(`${name}-চুক্তিনামা.pdf`);
   }catch(err){
-    if(page1.parentNode) document.body.removeChild(page1);
-    if(page2.parentNode) document.body.removeChild(page2);
+    if(page.parentNode) document.body.removeChild(page);
     toast('চুক্তিনামা তৈরি করতে সমস্যা হয়েছে: ' + err.message);
   }
 }
