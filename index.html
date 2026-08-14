@@ -2912,7 +2912,9 @@ async function generateContractPdf(uid, overrideTerms){
     qrDataUri = await QRCode.toDataURL(qrUrl, { width: 160, margin: 1, color: { dark: CLR.navy, light: '#ffffff' } });
   }catch(err){ /* QR তৈরি না হলেও PDF তৈরি আটকাবে না */ }
 
-  /* ---- বিল্ডিং-ব্লক হেল্পার (কমপ্যাক্ট, এক-পেজ সংস্করণ) ---- */
+  /* ---- বিল্ডিং-ব্লক হেল্পার (কমপ্যাক্ট, এক-পেজ সংস্করণ) ----
+     হেডার আগের ডিজাইনেই (লোগো + গ্রাহকের ছবি + কোম্পানির নাম বামে, যোগাযোগের তথ্য ডানে) —
+     শুধু "চুক্তিনামা" শিরোনামটা এখন পুরো পেজের মাঝ বরাবর (সেন্টারে) বসানো হয়েছে। */
   const headerBlock = `
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:8px;border-bottom:2.4px solid ${CLR.gold};">
       <div style="display:flex;align-items:center;gap:10px;">
@@ -2941,15 +2943,13 @@ async function generateContractPdf(uid, overrideTerms){
     </div>`;
 
   const titleRowBlock = `
-    <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
-      <div style="width:124px;flex-shrink:0;"></div>
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;margin-top:6px;min-height:34px;">
       <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:16px;font-weight:700;padding:5px 26px;
         border:1.6px solid ${CLR.gold};border-radius:6px;letter-spacing:1.5px;">চুক্তিনামা</div>
-      <div style="flex:1;display:flex;justify-content:flex-end;">
-        <div style="border:1.2px solid ${CLR.gold};border-radius:6px;padding:4px 12px;font-size:8.4px;color:${CLR.navy};line-height:1.65;min-width:150px;">
-          <div><b>চুক্তি নং :</b> ${contractNo}</div>
-          <div><b>তারিখ :</b> ${today}</div>
-        </div>
+      <div style="position:absolute;right:0;top:50%;transform:translateY(-50%);border:1.2px solid ${CLR.gold};
+        border-radius:6px;padding:4px 12px;font-size:8.4px;color:${CLR.navy};line-height:1.65;min-width:150px;">
+        <div><b>চুক্তি নং :</b> ${contractNo}</div>
+        <div><b>তারিখ :</b> ${today}</div>
       </div>
     </div>`;
 
