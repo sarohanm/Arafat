@@ -2837,9 +2837,9 @@ async function generateContractPdf(uid, overrideTerms){
       if(photoSnap.exists()){ customerPhoto = photoSnap.val(); userPhotosCache[uid] = customerPhoto; }
     }catch(err){ /* ছবি না পেলেও PDF তৈরি আটকাবে না */ }
   }
-  /* "GOLDEN FUTURE" — অফিশিয়াল ডিজাইন, কিন্তু সম্পূর্ণটা এক পেজেই (landscape A4): নেভি/গোল্ড ফ্রেম,
-     লোগো-ব্যাজ হেডার, ৩টি তথ্য বক্স + পেমেন্ট টেবিল, শর্তাবলী (২ কলাম), স্বাক্ষর বক্স + সিলমোহর, ব্র্যান্ডেড ফুটার —
-     সবকিছু কমপ্যাক্ট সাইজে একই পৃষ্ঠায়। রঙ টোকেন: */
+  /* "GOLDEN FUTURE" — অফিশিয়াল ডিজাইন, কিন্তু সম্পূর্ণটা এক পেজেই (portrait A4, ফোনে সোজা ধরলে পুরো
+     স্ক্রিন ভরে দেখানোর জন্য): নেভি/গোল্ড ফ্রেম, লোগো-ব্যাজ হেডার, তথ্য বক্স (২ সারিতে) + পেমেন্ট টেবিল,
+     শর্তাবলী (২ কলাম), স্বাক্ষর বক্স + সিলমোহর, ব্র্যান্ডেড ফুটার — সবকিছু কমপ্যাক্ট সাইজে একই পৃষ্ঠায়। রঙ টোকেন: */
   const CLR = {
     navy: '#0f1c3f', navy2: '#152552', gold: '#c9a44c', goldLight: '#e8cf8a', cream: '#faf7f0',
     text: '#1c1c1c', muted: '#6b6b6b', line: '#d8cba7', green: '#178f52', red: '#c0392b'
@@ -2876,8 +2876,9 @@ async function generateContractPdf(uid, overrideTerms){
   const lastPaymentMethod = (lastPayment && lastPayment.note) ? lastPayment.note : '-';
   const today = new Date().toLocaleDateString('bn-BD');
   const contractNo = 'GF/CT/' + new Date().getFullYear() + '/' + String(uid).slice(-4).toUpperCase();
-  /* এক পেজেই আটকে রাখতে পেমেন্ট টেবিলে সর্বোচ্চ কয়েকটি সাম্প্রতিক কিস্তি দেখানো হয়, বাকিটা সারমর্ম হিসেবে */
-  const SHOWN_PAYMENT_ROWS = 3;
+  /* এক পেজেই আটকে রাখতে পেমেন্ট টেবিলে সর্বোচ্চ কয়েকটি সাম্প্রতিক কিস্তি দেখানো হয়, বাকিটা সারমর্ম হিসেবে
+     (পোর্ট্রেট লেআউটে উল্লম্বভাবে জায়গা বেশি থাকায় আগের চেয়ে কিছু বেশি সারি দেখানো যায়) */
+  const SHOWN_PAYMENT_ROWS = 5;
   const shownPayments = paidEntries.slice(-SHOWN_PAYMENT_ROWS);
   const extraPaymentCount = Math.max(0, paidEntries.length - SHOWN_PAYMENT_ROWS);
   const paymentRowsHtml = shownPayments.length ? shownPayments.map((p,i) => `
@@ -2896,8 +2897,8 @@ async function generateContractPdf(uid, overrideTerms){
   const customTerms = (overrideTerms && overrideTerms.length) ? overrideTerms
     : (vt && vt.contract_terms && vt.contract_terms.length) ? vt.contract_terms : null;
   const termsListFull = (customTerms && customTerms.length) ? customTerms : GLOBAL_DEFAULT_CONTRACT_TERMS;
-  /* সম্পূর্ণটা এক পেজে আটকে রাখতে সর্বোচ্চ ১৬টি শর্ত দেখানো হয় (২ কলামে ৮+৮) */
-  const MAX_TERMS_SHOWN = 16;
+  /* সম্পূর্ণটা এক পেজে আটকে রাখতে সর্বোচ্চ ১৮টি শর্ত দেখানো হয় (২ কলামে ৯+৯) */
+  const MAX_TERMS_SHOWN = 18;
   const termsList = termsListFull.slice(0, MAX_TERMS_SHOWN);
   const hiddenTermsCount = Math.max(0, termsListFull.length - MAX_TERMS_SHOWN);
   const halfTerms = Math.ceil(termsList.length / 2);
@@ -3051,14 +3052,22 @@ async function generateContractPdf(uid, overrideTerms){
     tf('ভিসার মেয়াদ', visaExpiryDate) +
     tf('ফ্লাইট তারিখ ও সময়', flightDateTimeStr);
 
+  /* পোর্ট্রেটে আর্থিক বিবরণ বক্সটা এখন পূর্ণ চওড়ায় (একাই এক সারিতে), তাই ফাঁকা জায়গা এড়াতে
+     ৫টা ফিল্ড ২ কলামে (৩+২) সাজানো হয়েছে, প্রগ্রেস বার নিচে পূর্ণ চওড়ায় */
   const ff = fieldFactory();
-  const financialFieldsHtml =
-    ff('মোট প্যাকেজ মূল্য', '৳' + fee.toLocaleString('bn-BD')) +
-    ff(`পরিশোধিত (${pct}%)`, '৳' + paid.toLocaleString('bn-BD')) +
-    ff(dueLabelContract, '৳' + dueDisplayContract.toLocaleString('bn-BD'), { highlight: true }) +
-    ff('সর্বশেষ পরিশোধ', lastPaymentDate) +
-    ff('পরিশোধের নোট', lastPaymentMethod) +
-    `<div style="height:4px;background:${CLR.line};border-radius:2px;overflow:hidden;margin:4px 0 1px;">
+  const financialFieldsHtml = `
+    <div style="display:flex;gap:18px;">
+      <div style="flex:1;">
+        ${ff('মোট প্যাকেজ মূল্য', '৳' + fee.toLocaleString('bn-BD'))}
+        ${ff(`পরিশোধিত (${pct}%)`, '৳' + paid.toLocaleString('bn-BD'))}
+        ${ff(dueLabelContract, '৳' + dueDisplayContract.toLocaleString('bn-BD'), { highlight: true })}
+      </div>
+      <div style="flex:1;">
+        ${ff('সর্বশেষ পরিশোধ', lastPaymentDate)}
+        ${ff('পরিশোধের নোট', lastPaymentMethod)}
+      </div>
+    </div>
+    <div style="height:4px;background:${CLR.line};border-radius:2px;overflow:hidden;margin:5px 0 1px;">
       <div style="height:100%;width:${pct}%;background:${CLR.green};"></div>
     </div>`;
 
@@ -3105,7 +3114,9 @@ async function generateContractPdf(uid, overrideTerms){
       ${signBox('👤 গ্রাহকের স্বাক্ষর', 'মোবাইল', phone, false)}
     </div>`;
 
-  /* ---- সম্পূর্ণ কন্টেন্ট — একটাই পেজ (landscape A4) ---- */
+  /* ---- সম্পূর্ণ কন্টেন্ট — একটাই পেজ (portrait A4) ----
+     ল্যান্ডস্কেপে যে ৩টা তথ্য বক্স পাশাপাশি এক সারিতে ছিল, পোর্ট্রেটে চওড়া কম থাকায় সেটা ২ সারিতে
+     ভাগ করা হয়েছে: উপরের সারিতে গ্রাহকের তথ্য + ভ্রমণের তথ্য পাশাপাশি, নিচের সারিতে আর্থিক বিবরণ পূর্ণ চওড়ায়। */
   const pageContent = `
     ${headerBlock}
     ${titleRowBlock}
@@ -3113,6 +3124,8 @@ async function generateContractPdf(uid, overrideTerms){
     <div style="display:flex;gap:8px;align-items:stretch;">
       ${box('👤 গ্রাহকের তথ্য', customerFieldsHtml)}
       ${box('✈ ভ্রমণের তথ্য', travelFieldsHtml)}
+    </div>
+    <div style="display:flex;gap:8px;align-items:stretch;margin-top:8px;">
       ${box('🏦 আর্থিক বিবরণ', financialFieldsHtml, true)}
     </div>
     ${paymentTableBlock}
@@ -3120,11 +3133,11 @@ async function generateContractPdf(uid, overrideTerms){
     ${signatureBlock}
     ${footerBlock}`;
 
-  /* ================= এক পেজের PDF (landscape A4) ================= */
-  const pageOuterCss = `position:fixed;left:-9999px;top:0;width:1123px;height:794px;box-sizing:border-box;
+  /* ================= এক পেজের PDF (portrait A4) ================= */
+  const pageOuterCss = `position:fixed;left:-9999px;top:0;width:794px;height:1123px;box-sizing:border-box;
     background:${CLR.cream};font-family:"Noto Sans Bengali","Hind Siliguri",sans-serif;color:${CLR.text};padding:0;`;
   const pageInnerCss = `position:relative;height:100%;box-sizing:border-box;background:${CLR.cream};
-    border:2px solid ${CLR.gold};border-radius:4px;padding:10px 22px;display:flex;flex-direction:column;
+    border:2px solid ${CLR.gold};border-radius:4px;padding:14px 20px;display:flex;flex-direction:column;
     justify-content:space-between;overflow:hidden;`;
 
   const page = document.createElement('div');
@@ -3137,7 +3150,7 @@ async function generateContractPdf(uid, overrideTerms){
     document.body.removeChild(page);
     const img = canvas.toDataURL('image/jpeg', 0.92);
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('l', 'pt', 'a4');
+    const pdf = new jsPDF('p', 'pt', 'a4');
     const pw = pdf.internal.pageSize.getWidth();
     const ph = pdf.internal.pageSize.getHeight();
     pdf.addImage(img, 'JPEG', 0, 0, pw, ph);
