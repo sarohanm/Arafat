@@ -2877,25 +2877,52 @@ async function generateContractPdf(uid, overrideTerms){
   const lastPaymentMethod = (lastPayment && lastPayment.note) ? lastPayment.note : '-';
   const today = new Date().toLocaleDateString('bn-BD');
   const contractNo = 'GF/CT/' + new Date().getFullYear() + '/' + String(uid).slice(-4).toUpperCase();
-  /* "পেমেন্ট/লেনদেনের বিবরণ" — শুধুমাত্র বাস্তবে রেকর্ড করা কিস্তিগুলোই সারি হিসেবে দেখানো হয়, কোনো ফাঁকা/হাতে-লেখার সারি নেই */
+  /* "পেমেন্ট/লেনদেনের বিবরণ" — flex-div ভিত্তিক টেবিল (এই ডকুমেন্টের বাকি সব সেকশনের মতো), যেহেতু html2canvas
+     আসল <table>/<tr>/<td> এলিমেন্ট এখানে ঠিকভাবে রেন্ডার করছিল না (খালি জায়গা দেখাচ্ছিল)।
+     শুধুমাত্র বাস্তবে রেকর্ড করা কিস্তিগুলোই সারি হিসেবে দেখানো হয়, কোনো ফাঁকা/হাতে-লেখার সারি নেই */
+  const PAY_COLS = [
+    { w: 8,  a: 'center' },  // ক্রমিক নং
+    { w: 13, a: 'left' },    // তারিখ
+    { w: 19, a: 'left' },    // বিবরণ
+    { w: 16, a: 'left' },    // টাকার পরিমাণ
+    { w: 16, a: 'left' },    // পরিশোধের পদ্ধতি
+    { w: 14, a: 'left' },    // রসিদ নং
+    { w: 14, a: 'left' }     // স্বাক্ষর
+  ];
+  const payCell = (text, i, extra = '') => `
+    <div style="width:${PAY_COLS[i].w}%;padding:6px 6px;font-size:8.6px;text-align:${PAY_COLS[i].a};
+      box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+      ${i < PAY_COLS.length - 1 ? `border-right:1px solid ${CLR.goldLight};` : ''}${extra}">${text}</div>`;
+  const paymentTableHeadHtml = `
+    <div style="display:flex;background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;">
+      ${payCell('ক্রমিক নং', 0, 'font-weight:700;text-align:center;border-color:rgba(255,255,255,.25);')}
+      ${payCell('তারিখ', 1, 'font-weight:700;border-color:rgba(255,255,255,.25);')}
+      ${payCell('বিবরণ', 2, 'font-weight:700;border-color:rgba(255,255,255,.25);')}
+      ${payCell('টাকার পরিমাণ (৳)', 3, 'font-weight:700;border-color:rgba(255,255,255,.25);')}
+      ${payCell('পরিশোধের পদ্ধতি', 4, 'font-weight:700;border-color:rgba(255,255,255,.25);')}
+      ${payCell('রসিদ নং', 5, 'font-weight:700;border-color:rgba(255,255,255,.25);')}
+      ${payCell('স্বাক্ষর', 6, 'font-weight:700;')}
+    </div>`;
   const paymentTableRowsHtml = paidEntries.length ? paidEntries.map((p, i) => {
-    const bg = i % 2 ? CLR.goldBg : '#fff';
-    return `<tr style="background:${bg};">
-        <td style="padding:5px 8px;font-size:9px;text-align:center;color:${CLR.muted};">${String(i + 1).padStart(2, '0')}</td>
-        <td style="padding:5px 8px;font-size:9px;">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
-        <td style="padding:5px 8px;font-size:9px;">${p.note || 'কিস্তি পরিশোধ'}</td>
-        <td style="padding:5px 8px;font-size:9px;font-weight:700;color:${CLR.green};">৳${(p.amount || 0).toLocaleString('bn-BD')}</td>
-        <td style="padding:5px 8px;font-size:9px;">${p.note || '-'}</td>
-        <td style="padding:5px 8px;font-size:9px;"></td>
-        <td style="padding:5px 8px;font-size:9px;"></td>
-      </tr>`;
-  }).join('') : `<tr><td colspan="7" style="padding:8px;font-size:9px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
+    return `<div style="display:flex;background:#fff;border-top:1px solid ${CLR.goldLight};">
+        ${payCell(String(i + 1).padStart(2, '0'), 0, `text-align:center;color:${CLR.muted};`)}
+        ${payCell(p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-', 1)}
+        ${payCell(p.note || 'কিস্তি পরিশোধ', 2)}
+        ${payCell('৳' + (p.amount || 0).toLocaleString('bn-BD'), 3, `font-weight:700;color:${CLR.green};`)}
+        ${payCell(p.note || '-', 4)}
+        ${payCell('', 5)}
+        ${payCell('', 6)}
+      </div>`;
+  }).join('') : `
+    <div style="display:flex;border-top:1px solid ${CLR.goldLight};background:#fff;">
+      <div style="flex:1;padding:8px;font-size:9px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</div>
+    </div>`;
   const paymentTableTotalRow = `
-    <tr style="background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;">
-      <td colspan="3" style="padding:5px 8px;font-size:9px;font-weight:800;text-align:right;">মোট</td>
-      <td style="padding:5px 8px;font-size:9px;font-weight:800;">${paid > 0 ? '৳' + paid.toLocaleString('bn-BD') : ''}</td>
-      <td colspan="3"></td>
-    </tr>`;
+    <div style="display:flex;background:#fff;border-top:1.2px solid ${CLR.gold};">
+      <div style="flex:1;padding:6px 10px;font-size:9.5px;font-weight:800;color:${CLR.navy};text-align:center;box-sizing:border-box;">
+        মোট&nbsp;&nbsp;:&nbsp;&nbsp;${paid > 0 ? '৳' + paid.toLocaleString('bn-BD') : '.........................'}&nbsp;&nbsp;টাকা
+      </div>
+    </div>`;
 
   /* "চুক্তিনামা PDF" বাটন থেকে override এলে সেটাই ব্যবহার হয়; override না থাকলে ভিসা অ্যাড/এডিট করার
      সময় লেখা vt.contract_terms, সেটাও না থাকলে গ্লোবাল ডিফল্ট শর্তাবলী */
@@ -3058,19 +3085,9 @@ async function generateContractPdf(uid, overrideTerms){
         </div>
       </div>
       <div style="border:1.2px solid ${CLR.goldLight};border-radius:0 7px 7px 7px;overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;">
-          <tr style="background:linear-gradient(135deg,${CLR.navy},${CLR.navy2});color:#fff;">
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">ক্রমিক নং</td>
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">তারিখ</td>
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">বিবরণ</td>
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">টাকার পরিমাণ (৳)</td>
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">পরিশোধের পদ্ধতি</td>
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">রসিদ নং</td>
-            <td style="padding:4px 8px;font-weight:700;font-size:8.5px;">স্বাক্ষর</td>
-          </tr>
-          ${paymentTableRowsHtml}
-          ${paymentTableTotalRow}
-        </table>
+        ${paymentTableHeadHtml}
+        ${paymentTableRowsHtml}
+        ${paymentTableTotalRow}
       </div>
 
       <div style="text-align:center;margin-top:9px;">${ribbon('শর্তাবলী', false)}</div>
