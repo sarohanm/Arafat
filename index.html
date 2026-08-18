@@ -1091,36 +1091,89 @@ const auth = firebase.auth();
 const db = firebase.database();
 
 /* ================= TOAST NOTIFICATIONS ================= */
-/* ================= QRCode লাইব্রেরি লোড নিশ্চিতকরণ =================
-   পেজ লোড হওয়ার সময় নেট স্লো/অস্থির থাকলে বা পিন করা ভার্সন CDN থেকে সরে গেলে qrcode.min.js
-   ডাউনলোড ব্যর্থ হতে পারে। তখন PDF জেনারেট করার ঠিক মুহূর্তে আবার লোড করার চেষ্টা হয় —
-   প্রথমে নির্দিষ্ট ভার্সন, সেটাও ব্যর্থ হলে jsDelivr-এর "latest" ভার্সন দিয়ে দ্বিতীয়বার চেষ্টা। */
-let _qrLoadPromise = null;
-function _loadScriptOnce(src, id){
+/* ================= এক্সটার্নাল লাইব্রেরি লোডার (Cache Storage API ভিত্তিক) =================
+   সাধারণ, পুনঃব্যবহারযোগ্য লোডার — যেকোনো এক্সটার্নাল CDN লাইব্রেরির জন্য ব্যবহার করা যায়।
+
+   কৌশল:
+   ১. প্রথমে ব্রাউজারের Cache Storage-এ (window.caches) খোঁজা হয় — আগে একবার সফলভাবে
+      ফেচ হয়ে থাকলে সেটা নেটওয়ার্ক ছাড়াই তাৎক্ষণিক পাওয়া যায় (localStorage-এর চেয়ে ভালো,
+      কারণ এতে সাইজ লিমিট নেই এবং বাইনারি/বড় ফাইলের জন্য ডিজাইন করা)।
+   ২. ক্যাশে না থাকলে একে একে কয়েকটা উৎস (লোকাল ভেন্ডর ফাইল থাকলে সেটা, তারপর একাধিক CDN)
+      থেকে fetch() করার চেষ্টা হয়। কোনো একটা সফল হলে Cache Storage-এ সেভ করে রাখা হয়,
+      পরের বার থেকে আর নেটওয়ার্কে যেতে হবে না।
+   ৩. সব উৎস ব্যর্থ হলে ফাংশন false রিটার্ন করে — কোনো এরর থ্রো করে না, যাতে অ্যাপের
+      বাকি অংশ ভেঙে না পড়ে। যে ফিচার লাইব্রেরিটা ব্যবহার করে (যেমন QR জেনারেশন), সেটা
+      নিজে false পেলে ইউজারকে বন্ধুত্বপূর্ণ মেসেজ দেখাবে, ক্র্যাশ করবে না।
+
+   হোস্টিং মাইগ্রেশন/ডোমেইন বদলের সময়: Cache Storage ডোমেইন-ভিত্তিক, তাই নতুন ডোমেইনে
+   প্রথমবার আবার নেট থেকে ফেচ করতে হবে (এটা ব্রাউজার সিকিউরিটির স্বাভাবিক নিয়ম, কোনো কোড
+   দিয়ে এড়ানো যায় না) — কিন্তু তারপর থেকে আবার ক্যাশ হয়ে যাবে। সবচেয়ে শক্তিশালী স্থায়ী
+   সমাধান হলো লাইব্রেরিটা সরাসরি HTML ফাইলের ভেতরেই ইনলাইন করে দেওয়া (নিচে নোট দেখুন)। */
+
+const _libCacheName = 'gft-external-libs-v1';
+
+async function _fetchAndCache(url){
+  try{
+    if('caches' in window){
+      const cache = await caches.open(_libCacheName);
+      const cached = await cache.match(url);
+      if(cached) return await cached.text();
+    }
+  }catch(e){ /* Cache Storage না থাকলে (পুরনো ব্রাউজার/প্রাইভেট মোড) নীরবে এড়িয়ে যাওয়া হয় */ }
+
+  try{
+    const res = await fetch(url, { mode: 'cors', cache: 'force-cache' });
+    if(!res.ok) return null;
+    const text = await res.text();
+    try{
+      if('caches' in window){
+        const cache = await caches.open(_libCacheName);
+        await cache.put(url, new Response(text, { headers: { 'Content-Type': 'application/javascript' } }));
+      }
+    }catch(e){ /* সেভ ব্যর্থ হলেও লাইব্রেরিটা এই সেশনে তো কাজ করবে, তাই এগিয়ে যাওয়া হয় */ }
+    return text;
+  }catch(e){
+    return null; // নেটওয়ার্ক ব্যর্থ — পরের উৎস চেষ্টা করা হবে
+  }
+}
+
+function _injectScriptText(text){
   return new Promise(resolve => {
-    const existing = document.getElementById(id);
-    if(existing) existing.remove();
-    const s = document.createElement('script');
-    s.id = id;
-    s.src = src;
-    s.onload = () => resolve(typeof QRCode !== 'undefined');
-    s.onerror = () => resolve(false);
-    setTimeout(() => resolve(typeof QRCode !== 'undefined'), 6000); // সেফটি টাইমআউট
-    document.head.appendChild(s);
+    try{
+      const blob = new Blob([text], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      const s = document.createElement('script');
+      s.src = blobUrl;
+      s.onload = () => { URL.revokeObjectURL(blobUrl); resolve(true); };
+      s.onerror = () => { URL.revokeObjectURL(blobUrl); resolve(false); };
+      document.head.appendChild(s);
+    }catch(e){ resolve(false); }
   });
 }
+
+/* ইতিমধ্যে-লোড আছে কিনা চেক করার জন্য globalCheckFn (যেমন: () => typeof QRCode !== 'undefined') */
+async function loadExternalLib(sources, globalCheckFn){
+  if(globalCheckFn()) return true;
+  for(const url of sources){
+    const text = await _fetchAndCache(url);
+    if(!text) continue;
+    const ok = await _injectScriptText(text);
+    if(ok && globalCheckFn()) return true;
+  }
+  return false;
+}
+
+/* ================= QRCode লাইব্রেরি ================= */
+let _qrLoadPromise = null;
 function ensureQRCodeLib(){
   if(typeof QRCode !== 'undefined') return Promise.resolve(true);
   if(_qrLoadPromise) return _qrLoadPromise;
-  _qrLoadPromise = (async () => {
-    // ১. প্রথমে নিজের হোস্টিং-এ রাখা লোকাল কপি ট্রাই করা হয় (CDN নির্ভরতা এড়াতে)
-    let ok = await _loadScriptOnce('./vendor/qrcode.min.js', 'qrcodeLibLocal');
-    // ২. লোকাল কপি না থাকলে/ব্যর্থ হলে CDN থেকে চেষ্টা
-    if(!ok) ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js', 'qrcodeLibScript');
-    if(!ok) ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js', 'qrcodeLibScriptFallback');
-    if(!ok) ok = await _loadScriptOnce('https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js', 'qrcodeLibUnpkg');
-    return ok;
-  })().finally(() => { _qrLoadPromise = null; });
+  _qrLoadPromise = loadExternalLib([
+    './vendor/qrcode.min.js', // লোকাল ভেন্ডর ফাইল থাকলে সবচেয়ে অগ্রাধিকার — নেটওয়ার্ক লাগে না
+    'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js',
+    'https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js',
+    'https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js'
+  ], () => typeof QRCode !== 'undefined').finally(() => { _qrLoadPromise = null; });
   return _qrLoadPromise;
 }
 function toast(msg, type){
