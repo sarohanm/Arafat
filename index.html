@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<meta name="googlebot" content="noindex, nofollow">
 <title>Golden Future Tours & Travels — Admin Panel</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -28,7 +30,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(typeof pdfjsLib !== 'undefined'){ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }</script>
 <!-- QRCode.js — চুক্তিনামা PDF-এর ফুটারে কোম্পানির ওয়েবসাইটের QR কোড দেখানোর জন্য -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 
 <style>
   :root{
@@ -502,7 +504,7 @@
       <div class="topbar"><h1>নোটিফিকেশন লগ</h1></div>
       <div class="card">
         <table>
-          <thead><tr><th>সময়</th><th>যাত্রী</th><th>নতুন স্টেজ</th><th>পরিবর্তনকারী</th></tr></thead>
+          <thead><tr><th>সময়</th><th>যাত্রী</th><th>নতুন স্টেজ</th><th>পরিবর্তনকারী</th><th>অ্যাকশন</th></tr></thead>
           <tbody id="logRows"></tbody>
         </table>
       </div>
@@ -651,7 +653,7 @@
           </div>
         </div>
         <input autocomplete="off" type="file" id="uPhoto" accept="image/*,application/pdf,.pdf,.doc,.docx,.jpg,.jpeg,.png" multiple onchange="handleUserPhotoSelect(event)" style="display:none;">
-        <input autocomplete="off" type="text" id="uFullName" placeholder="ইউজারের নাম" style="width:100%;max-width:260px;box-sizing:border-box;margin:8px auto 0;display:block;text-align:center;">
+        <input autocomplete="off" type="text" id="uFullName" placeholder="ইউজারের নাম *" style="width:100%;max-width:260px;box-sizing:border-box;margin:8px auto 0;display:block;text-align:center;">
       </div>
 
       <div class="formGrid" id="uFormGrid">
@@ -670,8 +672,8 @@
       <div id="customFieldsWrap"></div>
       <div id="uSellExtraWrap" style="display:none;margin-top:10px;">
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;">
-          <input autocomplete="off" type="text" id="uCustomerPhone" placeholder="পিতার নাম" style="width:100%;box-sizing:border-box;">
-          <input autocomplete="off" type="tel" id="uFatherPhone" placeholder="পিতার মোবাইল নম্বর" style="width:100%;box-sizing:border-box;">
+          <input autocomplete="off" type="text" id="uCustomerPhone" placeholder="পিতার নাম *" style="width:100%;box-sizing:border-box;">
+          <input autocomplete="off" type="tel" id="uFatherPhone" placeholder="পিতার মোবাইল নম্বর *" style="width:100%;box-sizing:border-box;">
         </div>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px;margin-top:10px;">
           <input autocomplete="off" type="number" id="uVisaPromiseDays" placeholder="প্রসেসিং সময়">
@@ -934,10 +936,10 @@
       <h3 style="margin-top:0;">ভিসা এডিট করুন</h3>
       <div class="formGrid">
         <div class="flex" style="gap:8px;flex-wrap:wrap;">
-          <input autocomplete="off" id="veName" placeholder="ভিসার ধরন" style="flex:1;min-width:120px;">
-          <input autocomplete="off" id="veFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
-          <input autocomplete="off" id="veCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
-          <input autocomplete="off" id="veQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="veName" placeholder="ভিসার ধরন *" style="flex:1;min-width:120px;">
+          <input autocomplete="off" id="veFee" type="number" placeholder="ভিসার মূল্য (৳) *" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="veCost" type="number" placeholder="ভিসা কিনার মূল্য (৳) *" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="veQuota" type="number" placeholder="টোটাল ভিসা *" style="flex:1;min-width:100px;">
         </div>
         <div class="flex" style="gap:8px;flex-wrap:wrap;">
           <div class="dateFieldWrap">
@@ -962,6 +964,19 @@
         </div>
       </div>
       <div style="margin-top:10px;"><button type="button" class="btn small" style="width:100%;" onclick="saveVisaEdit()">সেভ করুন</button></div>
+    </div>
+  </div>
+
+  <!-- LOG EDIT MODAL -->
+  <div class="modalOverlay" id="logEditModal">
+    <div class="modalBox">
+      <button class="close-x" onclick="closeLogEditModal()"><i class="fas fa-xmark"></i></button>
+      <h3 style="margin-top:0;">লগ এন্ট্রি এডিট করুন</h3>
+      <div class="formGrid">
+        <select id="leStage"></select>
+        <input autocomplete="off" id="leChangedBy" placeholder="পরিবর্তনকারী">
+      </div>
+      <div style="margin-top:10px;"><button type="button" class="btn small" style="width:100%;" onclick="saveLogEdit()">সেভ করুন</button></div>
     </div>
   </div>
 
@@ -1006,10 +1021,10 @@
         </select>
         <input autocomplete="off" id="cfOptions" style="display:none;">
         <div class="flex" id="cfVisaFeeQuotaRow" style="gap:8px;display:none;flex-wrap:wrap;">
-          <input autocomplete="off" id="cfVisaName" placeholder="ভিসার ধরন (যেমন: ওয়ার্কার ভিসা)" style="flex:1;min-width:120px;">
-          <input autocomplete="off" id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳)" style="flex:1;min-width:100px;">
-          <input autocomplete="off" id="cfVisaCost" type="number" placeholder="ভিসা কিনার মূল্য (৳)" style="flex:1;min-width:100px;">
-          <input autocomplete="off" id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="cfVisaName" placeholder="ভিসার ধরন (যেমন: ওয়ার্কার ভিসা) *" style="flex:1;min-width:120px;">
+          <input autocomplete="off" id="cfVisaFee" type="number" placeholder="ভিসার মূল্য (৳) *" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="cfVisaCost" type="number" placeholder="ভিসা কিনার মূল্য (৳) *" style="flex:1;min-width:100px;">
+          <input autocomplete="off" id="cfVisaQuota" type="number" placeholder="টোটাল ভিসা *" style="flex:1;min-width:100px;">
         </div>
         <div class="flex" id="cfVisaDateRow" style="gap:8px;display:none;flex-wrap:wrap;">
           <div class="dateFieldWrap">
@@ -1062,13 +1077,13 @@
    Golden Future Tours & Travels Firebase প্রজেক্ট।
 */
 const firebaseConfig = {
-  apiKey: "AIzaSyAgVJbrqR-B4zguaFKVCusNE1AqUF-kt-k",
-  authDomain: "talent-overseas-9db5f.firebaseapp.com",
-  databaseURL: "https://talent-overseas-9db5f-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "talent-overseas-9db5f",
-  storageBucket: "talent-overseas-9db5f.firebasestorage.app",
-  messagingSenderId: "19530408",
-  appId: "1:19530408:web:821285f55713eeb32d389d"
+  apiKey: "AIzaSyDpmIRBlDMeFz_fdYsLkj0vx5OtNshgkXM",
+  authDomain: "md-somrat-mondol.firebaseapp.com",
+  databaseURL: "https://md-somrat-mondol-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "md-somrat-mondol",
+  storageBucket: "md-somrat-mondol.firebasestorage.app",
+  messagingSenderId: "1046943146224",
+  appId: "1:1046943146224:web:5ffb7f34b0e2de4e94e235"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -1076,23 +1091,31 @@ const db = firebase.database();
 
 /* ================= TOAST NOTIFICATIONS ================= */
 /* ================= QRCode লাইব্রেরি লোড নিশ্চিতকরণ =================
-   পেজ লোড হওয়ার সময় নেট স্লো/অস্থির থাকলে CDN থেকে qrcode.min.js ডাউনলোড ব্যর্থ হতে পারে।
-   তখন PDF জেনারেট করার ঠিক মুহূর্তে আবার নতুন করে লোড করার চেষ্টা করা হয় (retry সহ)। */
+   পেজ লোড হওয়ার সময় নেট স্লো/অস্থির থাকলে বা পিন করা ভার্সন CDN থেকে সরে গেলে qrcode.min.js
+   ডাউনলোড ব্যর্থ হতে পারে। তখন PDF জেনারেট করার ঠিক মুহূর্তে আবার লোড করার চেষ্টা হয় —
+   প্রথমে নির্দিষ্ট ভার্সন, সেটাও ব্যর্থ হলে jsDelivr-এর "latest" ভার্সন দিয়ে দ্বিতীয়বার চেষ্টা। */
 let _qrLoadPromise = null;
-function ensureQRCodeLib(){
-  if(typeof QRCode !== 'undefined') return Promise.resolve(true);
-  if(_qrLoadPromise) return _qrLoadPromise;
-  _qrLoadPromise = new Promise(resolve => {
-    const existing = document.getElementById('qrcodeLibScript');
-    if(existing) existing.remove(); // আগের ব্যর্থ <script> ট্যাগ থাকলে সরিয়ে আবার চেষ্টা
+function _loadScriptOnce(src, id){
+  return new Promise(resolve => {
+    const existing = document.getElementById(id);
+    if(existing) existing.remove();
     const s = document.createElement('script');
-    s.id = 'qrcodeLibScript';
-    s.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+    s.id = id;
+    s.src = src;
     s.onload = () => resolve(typeof QRCode !== 'undefined');
     s.onerror = () => resolve(false);
     setTimeout(() => resolve(typeof QRCode !== 'undefined'), 6000); // সেফটি টাইমআউট
     document.head.appendChild(s);
-  }).finally(() => { _qrLoadPromise = null; });
+  });
+}
+function ensureQRCodeLib(){
+  if(typeof QRCode !== 'undefined') return Promise.resolve(true);
+  if(_qrLoadPromise) return _qrLoadPromise;
+  _qrLoadPromise = (async () => {
+    let ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js', 'qrcodeLibScript');
+    if(!ok) ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js', 'qrcodeLibScriptFallback');
+    return ok;
+  })().finally(() => { _qrLoadPromise = null; });
   return _qrLoadPromise;
 }
 function toast(msg, type){
@@ -1787,6 +1810,7 @@ function renderJourneys(){
         const uPhoneVal = getUserPhone(u);
         const uPhoneDigits = (uPhoneVal || '').replace(/[^0-9]/g, '');
         const uPhoneWithCC = uPhoneDigits ? (uPhoneDigits.startsWith('88') ? uPhoneDigits : ('88' + uPhoneDigits.replace(/^0/, ''))) : '';
+        const hasExpiredAlert = getExpiringItems({ [uid]: u }, 0).length > 0;
         return `
         <div class="accItem">
           <div class="accHead" onclick="toggleAccItem('j-${uid}')">
@@ -1814,6 +1838,7 @@ function renderJourneys(){
                 })()}</span>
               </div>
             </div>
+            ${hasExpiredAlert ? `<span title="কোনো ডকুমেন্ট/তথ্যের মেয়াদ শেষ হয়ে গেছে" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:rgba(255,93,115,.16);color:var(--fail);font-size:12px;flex-shrink:0;margin-right:2px;"><i class="fas fa-triangle-exclamation"></i></span>` : ''}
             <span id="chev-j-${uid}" class="chev-ico${openAccIds.has('j-'+uid) ? ' open' : ''}"><i class="fas fa-chevron-down"></i></span>
           </div>
           <div class="accBody" id="acc-j-${uid}" style="display:${openAccIds.has('j-'+uid) ? 'block' : 'none'};">
@@ -1909,6 +1934,37 @@ async function advanceStage(journeyId){
   await db.ref('status_logs').push({
     journey_id: journeyId, stage: toStage, changed_by: currentUser, created_at: Date.now()
   });
+  if(toStage === 'DEPARTED') checkVisaQuotaCompletion(journeyId);
+}
+
+/* ================= ভিসা কোটা অটো-ডিলিট =================
+   একটা ভিসার কোটার সবগুলো (quota সংখ্যক) যাত্রী যখন সত্যিকারভাবে "রওনা হয়েছে" (DEPARTED) স্টেজে
+   পৌঁছায় (শুধু বিক্রি হলেই নয়, শেষ জনের ফ্লাইট হওয়ার পরই), তখন visa_types নোডটা স্বয়ংক্রিয়ভাবে
+   ডিলিট হয়ে যায় — ফ্লাইটের পর ওই যাত্রীদের আর কন্ট্রাক্ট PDF লাগে না, তাই আলাদা কোনো স্ন্যাপশট
+   রাখার দরকার নেই; ড্যাশবোর্ডে যাত্রীদের নাম-ঠিকানা এমনিতেই থেকে যায়। */
+async function checkVisaQuotaCompletion(journeyId){
+  try{
+    const jSnap = await db.ref('journeys/' + journeyId).once('value');
+    const j = jSnap.val();
+    if(!j || j.current_stage !== 'DEPARTED') return;
+    const uSnap = await db.ref('users/' + j.user_id).once('value');
+    const u = uSnap.val();
+    const vid = u && u.visa_type_id;
+    if(!vid) return;
+    const vtSnap = await db.ref('visa_types/' + vid).once('value');
+    const vt = vtSnap.val();
+    if(!vt || !vt.quota) return;
+    const usersSnap = await db.ref('users').once('value');
+    const users = usersSnap.val() || {};
+    const matchingUids = Object.entries(users).filter(([, uu]) => uu.visa_type_id === vid).map(([uid]) => uid);
+    const journeysSnap = await db.ref('journeys').once('value');
+    const journeys = journeysSnap.val() || {};
+    const departedCount = Object.values(journeys).filter(jj => matchingUids.includes(jj.user_id) && jj.current_stage === 'DEPARTED').length;
+    if(departedCount >= vt.quota){
+      await db.ref('visa_types/' + vid).remove();
+      toast(`"${vt.name}" ভিসার সবগুলো কোটা (${vt.quota}টি) ফ্লাইট দিয়ে সম্পন্ন হয়ে গেছে — এই ভিসার তথ্য স্বয়ংক্রিয়ভাবে ডিলিট হয়ে গেছে।`, 'success');
+    }
+  }catch(err){ console.error('checkVisaQuotaCompletion error:', err); }
 }
 
 async function saveJourneyFinance(journeyId){
@@ -1966,11 +2022,14 @@ async function saveVisaPromise(journeyId){
 function renderPaymentSection(jid, j){
   const payments = j.payments || {};
   const losses = j.losses || {};
+  const expenses = j.expenses || {};
   const totalFee = j.agency_fee || 0;
   const entries = Object.entries(payments).sort((a,b) => (a[1].date||0) - (b[1].date||0));
   const lossEntries = Object.entries(losses).sort((a,b) => (a[1].date||0) - (b[1].date||0));
+  const expenseEntries = Object.entries(expenses).sort((a,b) => (a[1].date||0) - (b[1].date||0));
   const paid = entries.reduce((sum, [pid, p]) => sum + (p.amount || 0), 0);
   const totalLoss = lossEntries.reduce((sum, [lid, l]) => sum + (l.amount || 0), 0);
+  const totalExpense = expenseEntries.reduce((sum, [eid, e]) => sum + (e.amount || 0), 0);
   const due = Math.round(totalFee - paid);
   const rowsHtml = entries.length
     ? entries.map(([pid, p]) => `
@@ -1994,17 +2053,37 @@ function renderPaymentSection(jid, j){
         <button class="del" onclick="deleteLoss('${jid}','${lid}')"><i class="fas fa-xmark"></i></button>
       </div>`).join('')
     : '';
+  const expenseRowsHtml = (currentRole === 'admin' && expenseEntries.length)
+    ? `<div class="hint" style="margin:8px 0 2px;color:var(--gold);">প্রার্থীর কাজে খরচ</div>` + expenseEntries.map(([eid, e]) => `
+      <div class="fieldRow">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;">
+          <span><i class="fas fa-money-bill-wave" style="color:var(--gold);margin-right:4px;font-size:11px;"></i>৳${e.amount}</span>
+          ${e.date ? `<span class="fr-meta">${new Date(e.date).toLocaleDateString('bn-BD')}</span>` : ''}
+          ${e.note ? `<span class="fr-meta">· ${e.note}</span>` : ''}
+        </div>
+        <button class="del" onclick="deleteExpense('${jid}','${eid}')"><i class="fas fa-xmark"></i></button>
+      </div>`).join('')
+    : '';
   const pct = totalFee > 0 ? Math.min(100, Math.max(0, Math.round((paid/totalFee)*100))) : 0;
   const isOverpaid = due < 0;
   const dueLabel = isOverpaid ? 'অতিরিক্ত' : 'বাকি';
   const dueDisplay = isOverpaid ? Math.abs(due) : Math.max(0, due);
-  const journeyCost = journeyVisaTypeCost(j) + (j.cost_medical||0) + (j.cost_visa||0) + (j.cost_flight||0);
-  const netAmount = totalFee - journeyCost - totalLoss;
+  // এখানে "মোট খরচ" শূন্য থেকে শুরু হয়ে শুধু এই কিস্তি প্যানেলে যোগ করা ক্ষতি/খরচ এন্ট্রি দিয়েই বাড়ে —
+  // প্রিসেট ভিসা/মেডিকেল/ফ্লাইট বাজেট (journeyVisaTypeCost ইত্যাদি) এখানে যোগ হয় না, কারণ সেটা এখনো
+  // বাস্তবে খরচ হয়নি। (netOf() ফাংশনটা অপরিবর্তিত থাকছে — ড্যাশবোর্ড/পার্টনার শেয়ার/চার্ট/এক্সপোর্টের
+  // আসল ব্যবসায়িক লাভ-ক্ষতি হিসাব সেই প্রিসেট বাজেট-সহ ফুল কস্ট ধরেই চলবে, শুধু এই প্যানেলের প্রদর্শনটাই আলাদা।)
+  // লাভ/ক্ষতি "পরিশোধিত" (আসলে হাতে আসা টাকা) দিয়ে হিসাব হয়, "মোট ফি" (এখনো আদায় না হওয়া প্রতিশ্রুত
+  // টাকা) দিয়ে নয় — নাহলে ফি বাকি থাকা অবস্থাতেই বাস্তব ক্ষতি "ব্রেক-ইভেন/লাভ" হিসেবে ভুল দেখাত।
+  const spentSoFar = totalLoss + totalExpense;
+  const netAmount = paid - spentSoFar;
   return `
     <div class="accRow">
       <div class="accLabel" style="display:flex;align-items:center;justify-content:space-between;">
         <span><i class="fas fa-receipt" style="margin-right:4px;"></i>পেমেন্ট / কিস্তি</span>
-        <button class="del" style="padding:2px 4px;" onclick="sharePaymentStatus('${jid}')" title="শেয়ার করুন"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="13" height="13" fill="currentColor"><path d="M307 34.8c-11.5 5.1-19 16.6-19 29.2v64H176C78.8 128 0 206.8 0 304C0 417.3 81.5 467.9 100.2 478.1c2.5 1.4 5.3 1.9 8.1 1.9c10.9 0 19.7-8.9 19.7-19.7c0-7.5-4.3-14.4-9.8-19.5C108.8 431.9 96 414.4 96 384c0-53 43-96 96-96h96v64c0 12.6 7.4 24.1 19 29.2s25 3 34.4-5.4l160-144c6.7-6.1 10.6-14.7 10.6-23.8s-3.8-17.7-10.6-23.8l-160-144c-9.4-8.5-22.9-10.6-34.4-5.4z"/></svg></button>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="hint" style="margin:0;white-space:nowrap;">অগ্রগতি <b style="color:var(--text);">${pct}%</b></span>
+          <button class="del" style="padding:2px 4px;" onclick="sharePaymentStatus('${jid}')" title="শেয়ার করুন"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="13" height="13" fill="currentColor"><path d="M307 34.8c-11.5 5.1-19 16.6-19 29.2v64H176C78.8 128 0 206.8 0 304C0 417.3 81.5 467.9 100.2 478.1c2.5 1.4 5.3 1.9 8.1 1.9c10.9 0 19.7-8.9 19.7-19.7c0-7.5-4.3-14.4-9.8-19.5C108.8 431.9 96 414.4 96 384c0-53 43-96 96-96h96v64c0 12.6 7.4 24.1 19 29.2s25 3 34.4-5.4l160-144c6.7-6.1 10.6-14.7 10.6-23.8s-3.8-17.7-10.6-23.8l-160-144c-9.4-8.5-22.9-10.6-34.4-5.4z"/></svg></button>
+        </div>
       </div>
       <div class="payProgWrap">
         <div class="payProgOuter"><div class="payProgInner" style="width:${pct}%;"></div></div>
@@ -2012,20 +2091,21 @@ function renderPaymentSection(jid, j){
           <div class="ps-item"><span class="hint" style="margin:0;">মোট ফি</span><b title="${fmtTkFull(totalFee)}">${fmtTkCompact(totalFee)}</b></div>
           <div class="ps-item"><span class="hint" style="margin:0;">পরিশোধিত</span><b style="color:var(--ok);" title="${fmtTkFull(paid)}">${fmtTkCompact(paid)}</b></div>
           <div class="ps-item"><span class="hint" style="margin:0;">${dueLabel}</span><b style="color:${isOverpaid ? 'var(--ok)' : (due > 0 ? 'var(--fail)' : 'var(--ok)')};" title="${fmtTkFull(dueDisplay)}">${fmtTkCompact(dueDisplay)}</b></div>
+          <div class="ps-item"><span class="hint" style="margin:0;">মোট খরচ</span><b style="color:var(--gold);" title="${fmtTkFull(spentSoFar)}">${fmtTkCompact(spentSoFar)}</b></div>
           <div class="ps-item"><span class="hint" style="margin:0;">${netAmount < 0 ? 'ক্ষতি' : 'লাভ'}</span><b style="color:${netAmount < 0 ? 'var(--fail)' : 'var(--ok)'};" title="${fmtTkFull(Math.abs(netAmount))}">${fmtTkCompact(Math.abs(netAmount))}</b></div>
-          <div class="ps-item"><span class="hint" style="margin:0;">অগ্রগতি</span><b>${pct}%</b></div>
         </div>
       </div>
-      <div id="paymentList-${jid}">${rowsHtml}${lossRowsHtml}</div>
+      <div id="paymentList-${jid}">${rowsHtml}${lossRowsHtml}${expenseRowsHtml}</div>
       ${currentRole === 'admin' ? `
       <div style="display:flex;gap:6px;margin-top:8px;align-items:stretch;">
-        <input autocomplete="off" type="number" id="payAmt-${jid}" placeholder="পরিমাণ (৳)" style="flex:0 0 90px;min-width:0;">
-        <input autocomplete="off" type="text" id="payNote-${jid}" placeholder="নোট (ঐচ্ছিক)" style="flex:1;min-width:0;" oninput="checkAgencyLossTrigger('${jid}')">
+        <select id="payType-${jid}" style="flex:0 0 66px;min-width:0;padding:7px 2px 7px 6px;">
+          <option value="payment">পেমেন্ট</option>
+          <option value="loss">ক্ষতি</option>
+          <option value="expense">খরচ</option>
+        </select>
+        <input autocomplete="off" type="number" id="payAmt-${jid}" placeholder="পরিমাণ (৳)" style="flex:0 0 74px;min-width:0;">
+        <input autocomplete="off" type="text" id="payNote-${jid}" placeholder="নোট (ঐচ্ছিক)" style="flex:1.6;min-width:0;">
         <button class="btn small" style="width:44px;flex-shrink:0;padding:0;" onclick="addPayment('${jid}')" title="যোগ করুন"><i class="fas fa-check"></i></button>
-      </div>
-      <div id="payLossWrap-${jid}" style="display:none;margin-top:6px;gap:6px;flex-wrap:wrap;">
-        <div class="hint" style="margin:0;color:var(--fail);width:100%;"><i class="fas fa-triangle-exclamation"></i> উপরের পরিমাণটি ক্ষতি হিসেবে গণ্য হবে</div>
-        <input autocomplete="off" type="text" id="payLossNote-${jid}" placeholder="ক্ষতির বিবরণ (ঐচ্ছিক)" style="flex:1;min-width:120px;border-color:var(--fail);">
       </div>` : ''}
     </div>`;
 }
@@ -2068,66 +2148,54 @@ async function saveFlightDateAndClose(journeyId){
   const dateVal = dateInput ? dateInput.value : '';
   const timeVal = timeInput ? timeInput.value : '';
   if(!dateVal){ toast('ফ্লাইটের তারিখ দিন'); return; }
-  if(!(await customConfirm('ফ্লাইটের তারিখ ও সময় সেভ করে ফাইলটি ক্লোজ করতে চান? এতে সকল তথ্যসহ চুক্তিনামা পিডিএফ ডাউনলোড হয়ে যাবে।', {title:'ফাইল ক্লোজ করবেন?', okText:'হ্যাঁ, সেভ করে ক্লোজ করুন', icon:'fa-plane-departure'}))) return;
+  if(!(await customConfirm('ফ্লাইটের তারিখ ও সময় সেভ করে ফাইলটি ক্লোজ করতে চান? এতে গমনোত্তর দায়মুক্তি অঙ্গীকারনামা পিডিএফ ডাউনলোড হয়ে যাবে।', {title:'ফাইল ক্লোজ করবেন?', okText:'হ্যাঁ, সেভ করে ক্লোজ করুন', icon:'fa-plane-departure'}))) return;
   const flight_datetime = new Date(dateVal + 'T' + (timeVal || '00:00')).getTime();
   await db.ref('journeys/' + journeyId).update({ flight_datetime, current_stage: 'DEPARTED', updated_at: Date.now() });
   await db.ref('status_logs').push({
     journey_id: journeyId, stage: 'DEPARTED', changed_by: currentUser, created_at: Date.now()
   });
+  checkVisaQuotaCompletion(journeyId);
+  /* Firebase-এর রিয়েলটাইম লিসেনার (journeysCache) কখন রিফ্রেশ হবে তার নিশ্চয়তা নেই — তাই PDF-এ যেন
+     পুরনো (ফ্লাইটবিহীন) তথ্য না যায়, সে জন্য লোকাল ক্যাশ সাথে সাথেই আপডেট করে দেওয়া হচ্ছে */
+  if(journeysCache[journeyId]){
+    journeysCache[journeyId] = { ...journeysCache[journeyId], flight_datetime, current_stage: 'DEPARTED', updated_at: Date.now() };
+  }
   toast('ফ্লাইটের তারিখ সেভ হয়েছে এবং ফাইল ক্লোজ হয়েছে');
   const j = journeysCache[journeyId];
   const uid = j ? j.user_id : null;
   if(uid){
-    try{
-      const savedTerms = (j && j.contract_terms && j.contract_terms.length) ? j.contract_terms : null;
-      await generateContractPdf(uid, savedTerms);
-    }
-    catch(err){ toast('চুক্তিনামা ডাউনলোড করতে সমস্যা হয়েছে: ' + err.message); }
+    try{ await generateDepartureUndertakingPdf(uid); }
+    catch(err){ toast('অঙ্গীকারনামা ডাউনলোড করতে সমস্যা হয়েছে: ' + err.message); }
   }
   showTab('dashboard');
 }
 
-const AGENCY_LOSS_TRIGGERS = ['ট্যালেন্ট ওভারসিজ', 'talent overseas', 'কোম্পানি', 'company', 'ক্ষতি', 'loss'];
-function matchesLossTrigger(text){
-  const t = text.trim().toLowerCase();
-  return AGENCY_LOSS_TRIGGERS.some(k => t.includes(k.toLowerCase()));
-}
-function checkAgencyLossTrigger(journeyId){
-  const noteInput = document.getElementById('payNote-' + journeyId);
-  const wrap = document.getElementById('payLossWrap-' + journeyId);
-  if(!noteInput || !wrap) return;
-  const matched = matchesLossTrigger(noteInput.value);
-  wrap.style.display = matched ? 'flex' : 'none';
-  if(!matched){
-    const lossNoteInput = document.getElementById('payLossNote-' + journeyId);
-    if(lossNoteInput) lossNoteInput.value = '';
-  }
-}
-
 async function addPayment(journeyId){
   if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন কিস্তি যোগ করতে পারবেন।'); return; }
+  const typeInput = document.getElementById('payType-' + journeyId);
   const amtInput = document.getElementById('payAmt-' + journeyId);
   const noteInput = document.getElementById('payNote-' + journeyId);
-  const lossNoteInput = document.getElementById('payLossNote-' + journeyId);
   const amount = parseFloat(amtInput.value);
   const note = noteInput.value.trim();
-  const lossNote = lossNoteInput ? lossNoteInput.value.trim() : '';
-  const isLoss = matchesLossTrigger(note);
+  const type = typeInput ? typeInput.value : 'payment';
 
   if(!amount || amount <= 0){
     toast('সঠিক পরিমাণ লিখুন');
     return;
   }
-  if(isLoss){
+  if(type === 'loss'){
     // এজেন্সির কাজ করতে গিয়ে ব্যর্থ হয়ে যে ক্ষতি হয়েছে, তার হিসাব — এটা ক্লায়েন্টের পেমেন্ট না, তাই আলাদা নোডে রাখা হয়
-    await db.ref('journeys/' + journeyId + '/losses').push({ amount, note: lossNote || 'এজেন্সির কাজে ব্যর্থতাজনিত ক্ষতি', date: Date.now() });
+    await db.ref('journeys/' + journeyId + '/losses').push({ amount, note: note || 'এজেন্সির কাজে ব্যর্থতাজনিত ক্ষতি', date: Date.now() });
+  } else if(type === 'expense'){
+    // যাত্রীর কাজ (পাসপোর্ট/ভিসা/মেডিকেল/অন্যান্য প্রসেসিং) করাতে গিয়ে কখন কত টাকা খরচ হয়েছে, তার আলাদা হিসাব —
+    // cost_medical/cost_visa/cost_flight-এর মতো একবারের ফিক্সড হিসাব না, বরং সময়ে সময়ে যোগ হওয়া একাধিক খরচের তালিকা
+    await db.ref('journeys/' + journeyId + '/expenses').push({ amount, note: note || 'প্রার্থীর কাজে খরচ', date: Date.now() });
   } else {
     await db.ref('journeys/' + journeyId + '/payments').push({ amount, note, date: Date.now() });
   }
   amtInput.value = '';
   noteInput.value = '';
-  if(lossNoteInput) lossNoteInput.value = '';
-  checkAgencyLossTrigger(journeyId);
+  if(typeInput) typeInput.value = 'payment';
 }
 
 async function deletePayment(journeyId, paymentId){
@@ -2140,6 +2208,12 @@ async function deleteLoss(journeyId, lossId){
   if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন ক্ষতির হিসাব ডিলিট করতে পারবেন।'); return; }
   if(!(await customConfirm('এই ক্ষতির হিসাবটা মুছে ফেলতে চান?', {icon:'fa-trash-can'}))) return;
   await db.ref('journeys/' + journeyId + '/losses/' + lossId).remove();
+}
+
+async function deleteExpense(journeyId, expenseId){
+  if(currentRole !== 'admin'){ toast('শুধুমাত্র এডমিন খরচের হিসাব ডিলিট করতে পারবেন।'); return; }
+  if(!(await customConfirm('এই খরচের হিসাবটা মুছে ফেলতে চান?', {icon:'fa-trash-can'}))) return;
+  await db.ref('journeys/' + journeyId + '/expenses/' + expenseId).remove();
 }
 
 /* ================= USERS ================= */
@@ -2185,6 +2259,38 @@ function addUser(){
   const fatherPhoneEl = document.getElementById('uFatherPhone');
   const phone = phoneEl ? phoneEl.value.trim() : '';
   const father_phone = fatherPhoneEl ? fatherPhoneEl.value.trim() : '';
+
+  // === REQUIRED FIELD VALIDATION (NOT NULL) ===
+  // uFullName + সব BASE_CUSTOM_FIELDS (ফোন, NID, পাসপোর্ট, ঠিকানা...) + পিতার নাম/মোবাইল বাধ্যতামূলক।
+  // নোট, ডিপোজিট, প্রসেসিং সময়, ভিসার ধরন — এগুলো ইচ্ছাকৃতভাবে ঐচ্ছিক রাখা হয়েছে।
+  const requiredFieldChecks = [
+    { id: 'uFullName', val: full_name, label: 'ইউজারের নাম' },
+    { id: 'cf-cf_phone', val: (document.getElementById('cf-cf_phone') || {}).value, label: 'ফোন নম্বর' },
+    { id: 'cf-cf_nid', val: (document.getElementById('cf-cf_nid') || {}).value, label: 'NID' },
+    { id: 'cf-cf_passport', val: (document.getElementById('cf-cf_passport') || {}).value, label: 'পাসপোর্ট নম্বর' },
+    { id: 'cf-cf_village', val: (document.getElementById('cf-cf_village') || {}).value, label: 'গ্রাম' },
+    { id: 'cf-cf_thana', val: (document.getElementById('cf-cf_thana') || {}).value, label: 'থানা' },
+    { id: 'cf-cf_district', val: (document.getElementById('cf-cf_district') || {}).value, label: 'জেলা' },
+    { id: 'cf-cf_division', val: (document.getElementById('cf-cf_division') || {}).value, label: 'বিভাগ' },
+    { id: 'cf-cf_postal', val: (document.getElementById('cf-cf_postal') || {}).value, label: 'পোস্টাল কোড' },
+    { id: 'cf-cf_dob', val: (document.getElementById('cf-cf_dob') || {}).value, label: 'জন্ম তারিখ' },
+    { id: 'cf-cf_occupation', val: (document.getElementById('cf-cf_occupation') || {}).value, label: 'পেশা' },
+    { id: 'uCustomerPhone', val: phone, label: 'পিতার নাম' },
+    { id: 'uFatherPhone', val: father_phone, label: 'পিতার মোবাইল নম্বর' }
+  ];
+  for(const f of requiredFieldChecks){
+    if(!f.val || !String(f.val).trim()){
+      toast(`"${f.label}" ঘরটি পূরণ করা বাধ্যতামূলক`);
+      const el = document.getElementById(f.id);
+      if(el){
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.borderColor = 'var(--fail)';
+        setTimeout(() => { el.style.borderColor = ''; }, 2000);
+      }
+      return;
+    }
+  }
 
   if(editingUserUid){
     const updates = { country, visa_type_id, custom_data, agent_id, notes, full_name };
@@ -2310,30 +2416,93 @@ function getJourneyIdForUser(uid){
   const entry = Object.entries(journeysCache).find(([id, j]) => j.user_id === uid);
   return entry ? entry[0] : null;
 }
-function shareUserProgress(uid){
+async function shareUserProgress(uid){
   const u = (window._usersCache || {})[uid] || {};
   const j = getJourneyForUser(uid);
   const stageLabel = j ? (STAGE_LABEL[j.current_stage] || j.current_stage) : 'শুরু হয়নি';
   const flag = COUNTRY_FLAGS[u.country] || '🌍';
   const name = getUserName(u);
 
+  // ভিসা টাইপ ও এজেন্সি ফি
+  const vt = u.visa_type_id && visaTypes[u.visa_type_id] ? visaTypes[u.visa_type_id] : null;
+  const visaTypeName = vt ? vt.name : '-';
+  const agencyFee = j ? (j.agency_fee || 0) : 0;
+
+  // পেমেন্ট স্ট্যাটাস
+  const payments = j ? (j.payments || {}) : {};
+  const paid = Object.values(payments).reduce((sum, p) => sum + (p.amount || 0), 0);
+  const due = Math.round(agencyFee - paid);
+  const isOverpaid = due < 0;
+  const dueLabel = isOverpaid ? 'অতিরিক্ত পরিশোধিত' : 'বাকি';
+  const dueDisplay = isOverpaid ? Math.abs(due) : Math.max(0, due);
+
+  // গ্রাহকের ছবি (PDF-এর মতোই userPhotos নোড থেকে fallback ফেচ করা হয়)
+  let customerPhoto = u.photoBase64 || userPhotosCache[uid] || null;
+  if(!customerPhoto){
+    try{
+      const photoSnap = await db.ref('userPhotos/' + uid).once('value');
+      if(photoSnap.exists()){ customerPhoto = photoSnap.val(); userPhotosCache[uid] = customerPhoto; }
+    }catch(err){ /* ছবি না পেলেও কার্ড তৈরি আটকাবে না */ }
+  }
+
+  // চুক্তিনামা PDF-এর নেভি/গোল্ড/ক্রিম ডিজাইন-ভাষা অনুসরণ করেই এই শেয়ার-কার্ড তৈরি — একই CLR প্যালেট,
+  // একই লোগো-ব্যাজ হেডার স্টাইল, যাতে সব ডকুমেন্ট/কার্ডের ব্র্যান্ডিং একরকম দেখায়।
+  const SCLR = {
+    navy: '#0f1c3f', goldLight: '#e8cf8a', gold: '#c9a44c', cream: '#faf7f0',
+    text: '#1c1c1c', muted: '#6b6b6b', line: '#d8cba7', green: '#178f52', red: '#c0392b'
+  };
+  const infoRow = (label, value, valueColor) => `
+    <div style="display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed ${SCLR.line};">
+      <span style="color:${SCLR.muted};font-size:12.5px;">${label}</span>
+      <span style="color:${valueColor || SCLR.text};font-weight:700;font-size:13.5px;text-align:right;">${value}</span>
+    </div>`;
   const card = document.createElement('div');
-  card.style.cssText = 'position:fixed;left:-9999px;top:0;width:420px;padding:28px;background:#fff;font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;border-radius:16px;border:1px solid #e2ddd3;';
+  card.style.cssText = `position:fixed;left:-9999px;top:0;width:420px;background:${SCLR.cream};font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;border-radius:14px;border:1.5px solid ${SCLR.gold};overflow:hidden;`;
   card.innerHTML = `
-    <div style="font-size:12px;color:#9a8f7d;letter-spacing:1px;margin-bottom:14px;">ভিসার তথ্য</div>
-    <div style="font-size:22px;font-weight:800;color:#1a2233;margin-bottom:16px;">${name}</div>
-    <div style="display:flex;flex-direction:column;gap:10px;font-size:14px;color:#3a4453;">
-      <div><span style="color:#8a93a3;">দেশ:</span> ${flag} ${u.country || '-'}</div>
-      <div><span style="color:#8a93a3;">ফোন:</span> ${getUserPhone(u)}</div>
-      <div><span style="color:#8a93a3;">পাসপোর্ট:</span> ${getUserPassport(u)}</div>
-      <div><span style="color:#8a93a3;">বর্তমান অবস্থা:</span> ${stageLabel}</div>
-      ${j && j.flight_datetime ? `<div><span style="color:#8a93a3;">ফ্লাইট:</span> ${new Date(j.flight_datetime).toLocaleString('bn-BD')}</div>` : ''}
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 18px;background:${SCLR.navy};border-bottom:2.4px solid ${SCLR.gold};">
+      <div style="width:46px;height:46px;border-radius:9px;border:1.3px solid ${SCLR.gold};background:#f2f0ea;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+        <img src="${COMPANY_LOGO_DATA_URI}" style="width:82%;height:82%;object-fit:contain;" />
+      </div>
+      <div style="flex:1;text-align:center;">
+        <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:18px;color:${SCLR.gold};letter-spacing:.5px;line-height:1;">GOLDEN FUTURE</div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:8.5px;color:${SCLR.goldLight};letter-spacing:2.6px;margin-top:3px;">TOURS &amp; TRAVELS</div>
+        <div style="font-size:10.5px;color:${SCLR.gold};letter-spacing:1.5px;font-weight:700;margin-top:6px;">ভিসার তথ্য</div>
+      </div>
+      <div style="width:46px;height:46px;border-radius:9px;border:1.3px solid ${SCLR.gold};background:#f2f0ea;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+        ${customerPhoto
+          ? `<img src="${customerPhoto}" style="width:100%;height:100%;object-fit:cover;" />`
+          : `<i class="fas fa-user" style="color:#9a9a9a;font-size:18px;"></i>`}
+      </div>
     </div>
-    <div style="margin-top:20px;padding-top:14px;border-top:1px dashed #e2ddd3;font-size:11px;color:#b3ab9e;">Golden Future Tours & Travels</div>
+    <div style="padding:20px 22px 22px;">
+      <div style="font-size:21px;font-weight:800;color:${SCLR.navy};margin-bottom:16px;text-align:center;">${name}</div>
+      <div>
+        ${infoRow('দেশ', `${flag} ${u.country || '-'}`)}
+        ${infoRow('ফোন', getUserPhone(u))}
+        ${infoRow('পাসপোর্ট', getUserPassport(u))}
+        ${infoRow('ভিসা টাইপ', visaTypeName)}
+        ${infoRow('বর্তমান অবস্থা', stageLabel)}
+        ${j && j.flight_datetime ? infoRow('ফ্লাইট', new Date(j.flight_datetime).toLocaleString('bn-BD')) : ''}
+      </div>
+      <div style="margin-top:14px;background:${SCLR.navy};border-radius:8px;padding:12px 16px;">
+        ${infoRow('এজেন্সি ফি', `৳${agencyFee.toLocaleString('bn-BD')}`, '#fff')}
+        <div style="display:flex;justify-content:space-between;gap:14px;padding:8px 0;">
+          <span style="color:${SCLR.goldLight};font-size:12.5px;">পরিশোধিত</span>
+          <span style="color:${SCLR.green};font-weight:700;font-size:13.5px;">৳${paid.toLocaleString('bn-BD')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:14px;padding-top:8px;border-top:1px dashed rgba(232,207,138,.35);">
+          <span style="color:${SCLR.goldLight};font-size:12.5px;">${dueLabel}</span>
+          <span style="color:${isOverpaid ? SCLR.green : SCLR.red};font-weight:800;font-size:14.5px;">৳${dueDisplay.toLocaleString('bn-BD')}</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 22px;background:${SCLR.navy};color:${SCLR.goldLight};font-size:10px;text-align:center;letter-spacing:.5px;">
+      Golden Future Tours &amp; Travels &nbsp;•&nbsp; ${COMPANY_INFO.phone}
+    </div>
   `;
   document.body.appendChild(card);
 
-  html2canvas(card, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+  html2canvas(card, { scale: 2, backgroundColor: SCLR.cream }).then(canvas => {
     document.body.removeChild(card);
     canvas.toBlob(async (blob) => {
       if(!blob){ toast('ছবি তৈরি করা যায়নি।'); return; }
@@ -2868,6 +3037,66 @@ async function confirmGenerateContractPdf(){
   catch(err){ toast('চুক্তিনামা তৈরি করতে সমস্যা হয়েছে: ' + err.message); }
 }
 
+/* ভিসা টাইপের "বিস্তারিত তথ্য" (vt.details) থেকে "লেবেল: মান" ফরম্যাটের লাইন খুঁজে সেই মানটা বের করে —
+   যেমন details-এ "কোম্পানি: সিডার গ্রুপ" লেখা থাকলে extractDetailValue(details, ['কোম্পানি']) → "সিডার গ্রুপ" */
+function extractDetailValue(details, keywords){
+  if(!details || !details.length) return '';
+  for(const line of details){
+    const idx = line.search(COLON_RE);
+    if(idx === -1) continue;
+    const label = line.slice(0, idx).trim().toLowerCase();
+    if(keywords.some(k => label.includes(k))) return line.slice(idx + 1).trim();
+  }
+  return '';
+}
+
+/* ভিসার details-এর প্রথম লাইনটা যদি "লেবেল: ভ্যালু" ফরম্যাটে না থাকে (যেমন "বাসার আল মাদান কোম্পানি"),
+   সেটাই আসলে টাইটেল/হেডিং হিসেবে ভিসা এডিটে (veTitle) সংরক্ষিত হয় — কোম্পানির নাম বের করার সময়
+   "কোম্পানি: X" লাইন না পেলে এই টাইটেলটাই ফলব্যাক হিসেবে ব্যবহার করা হয় */
+function getVisaTitleLine(details){
+  if(!details || !details.length) return '';
+  const first = details[0];
+  return (first.search(COLON_RE) === -1) ? first.trim() : '';
+}
+
+/* কার্ডের কন্টেন্ট (যেমন অনেকগুলো পেমেন্ট কিস্তি থাকলে) স্বাভাবিক উচ্চতার চেয়ে বেশি হয়ে গেলে পুরো
+   কার্ডটা সমান অনুপাতে ছোট করে (transform: scale) A4 ল্যান্ডস্কেপ পেজের ভেতরে সম্পূর্ণটা ফিট করানো হয় —
+   এতে কোনো অংশ কেটে যায় না বা নিচের অংশ হারিয়ে যায় না, প্রয়োজনে ফন্ট/স্পেসিং সমান অনুপাতে একটু ছোট
+   দেখায়। কন্টেন্ট এমনিতেই এক পেজে ধরে গেলে (naturalH <= pageH) কোনো স্কেল হয় না (scale = 1)। */
+function fitFrameToPage(outerEl, innerEl, pageW, pageH){
+  /* আগে শুধু scaleY (উলম্ব দিকে) কমপ্রেস করা হতো — এতে অক্ষর/লাইনগুলো উলম্বভাবে চ্যাপ্টা/সংকুচিত
+     হয়ে একটার সাথে আরেকটা চেপে বসার মতো দেখাতো (readability নষ্ট হতো)। এখন বদলে সমানুপাতিক
+     (uniform, X ও Y একই হারে) স্কেল ব্যবহার করা হচ্ছে যাতে টেক্সট স্বাভাবিক আকৃতি বজায় রাখে —
+     আর স্কেল করার আগেই বক্সের প্রস্থ বাড়িয়ে দেওয়া হয় (pageW / scale) যাতে স্কেল করার পর সেটা
+     ঠিক আবার পুরো pageW জুড়েই বসে (কাটিং লাইনের সাথে অ্যালাইনমেন্টও ঠিক থাকে)। */
+  innerEl.style.position = 'absolute';
+  innerEl.style.top = '0';
+  innerEl.style.left = '0';
+  innerEl.style.transformOrigin = 'top left';
+  innerEl.style.transform = 'none';
+  innerEl.style.width = pageW + 'px';
+
+  let naturalH = innerEl.scrollHeight;
+  let scale = naturalH > pageH ? (pageH / naturalH) : 1;
+
+  if(scale < 1){
+    // প্রস্থ চওড়া করে দেওয়ায় লেখা কম লাইনে wrap হতে পারে, তাই চওড়া প্রস্থে আবার উচ্চতা মেপে
+    // scale-টা আরও নির্ভুলভাবে হিসাব করা হচ্ছে
+    const widenedW = pageW / scale;
+    innerEl.style.width = widenedW + 'px';
+    naturalH = innerEl.scrollHeight;
+    scale = pageH / naturalH;
+    innerEl.style.width = (pageW / scale) + 'px';
+  }
+
+  innerEl.style.transform = `scale(${scale})`;
+  outerEl.style.position = 'relative';
+  outerEl.style.width = pageW + 'px';
+  outerEl.style.height = pageH + 'px';
+  outerEl.style.overflow = 'hidden';
+  return scale;
+}
+
 async function generateContractPdf(uid, overrideTerms){
   const u = (window._usersCache || {})[uid] || {};
   const j = getJourneyForUser(uid);
@@ -2924,10 +3153,8 @@ async function generateContractPdf(uid, overrideTerms){
   const lastPaymentMethod = (lastPayment && lastPayment.note) ? lastPayment.note : '-';
   const today = new Date().toLocaleDateString('bn-BD');
   const contractNo = 'GF/CT/' + new Date().getFullYear() + '/' + String(uid).slice(-4).toUpperCase();
-  /* এক পেজেই আটকে রাখতে পেমেন্ট টেবিলে সর্বোচ্চ কয়েকটি সাম্প্রতিক কিস্তি দেখানো হয়, বাকিটা সারমর্ম হিসেবে */
-  const SHOWN_PAYMENT_ROWS = 3;
-  const shownPayments = paidEntries.slice(-SHOWN_PAYMENT_ROWS);
-  const extraPaymentCount = Math.max(0, paidEntries.length - SHOWN_PAYMENT_ROWS);
+  /* সবগুলো কিস্তি দেখানো হয় — কোনো লিমিট নেই */
+  const shownPayments = paidEntries;
   const paymentRowsHtml = shownPayments.length ? shownPayments.map((p,i) => `
       <tr style="background:${i % 2 ? '#faf3e0' : '#fff'};">
         <td style="padding:4px 8px;text-align:center;font-size:8.4px;color:${CLR.muted};border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${i+1}</td>
@@ -3016,9 +3243,9 @@ async function generateContractPdf(uid, overrideTerms){
       const labelColor = opts.highlight ? CLR.red : CLR.navy;
       const valueColor = opts.highlight ? CLR.red : CLR.text;
       return `
-        <div style="display:flex;align-items:baseline;gap:5px;font-size:7.7px;margin:3px 0;">
+        <div style="display:flex;align-items:center;gap:5px;font-size:7.7px;margin:3px 0;">
           <span style="width:11px;height:11px;border-radius:50%;background:${CLR.gold};color:${CLR.navy};font-size:6.2px;
-            font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;">${n}</span>
+            font-weight:800;line-height:11px;text-align:center;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;box-sizing:border-box;">${n}</span>
           <span style="white-space:nowrap;font-weight:600;color:${labelColor};">${label}</span>
           <span style="flex:1;border-bottom:1px dotted #bbb;height:7px;"></span>
           <span style="font-weight:700;color:${valueColor};white-space:nowrap;text-align:right;max-width:52%;overflow:hidden;text-overflow:ellipsis;">${value || '-'}</span>
@@ -3058,27 +3285,16 @@ async function generateContractPdf(uid, overrideTerms){
         color:${CLR.navy};line-height:1.25;transform:rotate(-8deg);">GOLDEN FUTURE<br>TOURS &amp; TRAVELS</div>` : ''}
     </div>`;
 
-  const footerBlock = `
-    <div style="margin-top:6px;background:${CLR.navy};color:#fff;border-radius:6px;padding:6px 16px;display:flex;
-      align-items:center;gap:12px;">
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <div style="width:28px;height:28px;border-radius:50%;background:${CLR.navy2};border:1.6px solid ${CLR.gold};
-          display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-          <img src="${COMPANY_LOGO_DATA_URI}" style="width:20px;height:20px;object-fit:contain;" />
-        </div>
-        <div>
-          <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:10.5px;">GOLDEN FUTURE</div>
-          <div style="font-size:6.6px;letter-spacing:1.5px;color:${CLR.goldLight};">TOURS &amp; TRAVELS</div>
-        </div>
+  const footerBlock = (copyLabel) => `
+    <div style="margin-top:auto;background:${CLR.navy};color:#fff;border-radius:6px;padding:6px 16px;display:flex;
+      align-items:center;flex-shrink:0;">
+      <div style="flex:0 0 140px;">
+        <div style="font-size:9px;font-weight:800;color:${CLR.gold};letter-spacing:.5px;">${copyLabel}</div>
       </div>
-      <div style="flex:1;display:flex;justify-content:center;font-size:7.6px;">
-        <div style="text-align:center;"><i class="fas fa-location-dot"></i> Head Office<br>${COMPANY_INFO.address}</div>
+      <div style="flex:1;display:flex;justify-content:center;">
+        ${qrDataUri ? `<img src="${qrDataUri}" style="width:44px;height:44px;background:#fff;border-radius:4px;padding:2px;display:block;" />` : ''}
       </div>
-      <div style="text-align:center;font-size:7.6px;flex-shrink:0;"><i class="fas fa-phone"></i> Hotline<br>${COMPANY_INFO.phone}</div>
-      ${qrDataUri ? `
-      <div style="width:44px;height:44px;background:#fff;border-radius:4px;padding:2px;flex-shrink:0;">
-        <img src="${qrDataUri}" style="width:100%;height:100%;display:block;" />
-      </div>` : ''}
+      <div style="text-align:right;font-size:7.6px;flex:0 0 140px;"><i class="fas fa-phone"></i> Hotline<br>${COMPANY_INFO.phone}</div>
     </div>`;
 
   /* ---- তথ্য বক্সের কন্টেন্ট ---- */
@@ -3092,14 +3308,28 @@ async function generateContractPdf(uid, overrideTerms){
     cf('জন্ম তারিখ', dob) +
     cf('বর্তমান ঠিকানা', addressLine);
 
+  const companyName = extractDetailValue(vtForInfo && vtForInfo.details, ['কোম্পানি', 'company']) || getVisaTitleLine(vtForInfo && vtForInfo.details) || '-';
+  const salaryInfo = extractDetailValue(vtForInfo && vtForInfo.details, ['বেতন', 'salary']) || '-';
+  const dutyInfo = extractDetailValue(vtForInfo && vtForInfo.details, ['ডিউটি', 'duty']) || '-';
+  const contractInfo = extractDetailValue(vtForInfo && vtForInfo.details, ['কন্ট্রাক্ট', 'চুক্তি', 'contract']) || '-';
+
+
+  /* কোম্পানির নাম আলাদা একটা হাইলাইটেড ব্যাজ হিসেবেও দেখানো হয় (অ্যাপে "ভিসার তথ্য" কার্ডে যেভাবে
+     টাইটেল হিসেবে বক্সে দেখানো হয়, ঠিক সেই স্টাইলে) — companyName পাওয়া না গেলে ব্যাজটা দেখানো হয় না */
+  const companyNameBadge = (companyName && companyName !== '-') ? `
+    <div style="display:flex;justify-content:center;margin-top:5px;">
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:12.5px;font-weight:800;padding:4px 20px;
+        border:1.4px solid ${CLR.gold};border-radius:6px;letter-spacing:.4px;text-align:center;">${companyName}</div>
+    </div>` : '';
   const tf = fieldFactory();
   const travelFieldsHtml =
     tf('গন্তব্য দেশ', `${flag} ${country}`) +
     tf('ভিসার ধরন', visaTypeName) +
     tf('বর্তমান ধাপ', stageLabel) +
-    tf('ভিসা ইস্যু তারিখ', visaIssueDate) +
-    tf('ভিসার মেয়াদ', visaExpiryDate) +
-    tf('ফ্লাইট তারিখ ও সময়', flightDateTimeStr);
+    tf('কোম্পানির নাম', companyName) +
+    tf('বেতন', salaryInfo) +
+    tf('ডিউটি', dutyInfo) +
+    tf('কন্ট্রাক্ট', contractInfo);
 
   const ff = fieldFactory();
   const financialFieldsHtml =
@@ -3136,6 +3366,7 @@ async function generateContractPdf(uid, overrideTerms){
       <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:11px;font-weight:700;padding:3.5px 22px;
         border:1.3px solid ${CLR.gold};border-radius:5px;letter-spacing:.6px;">শর্তাবলী</div>
     </div>
+    ${introBlock}
     <div style="display:flex;gap:16px;margin-top:4px;">
       <div style="flex:1;">${leftTerms.map((t,i) => termRow(i+1, t)).join('')}</div>
       <div style="flex:1;">${rightTerms.map((t,i) => termRow(halfTerms + i + 1, t)).join('')}
@@ -3153,7 +3384,383 @@ async function generateContractPdf(uid, overrideTerms){
   const pageContent = `
     ${headerBlock}
     ${titleRowBlock}
+    <div style="display:flex;gap:8px;align-items:stretch;">
+      ${box('👤 গ্রাহকের তথ্য', customerFieldsHtml)}
+      ${box('✈ ভ্রমণের তথ্য', travelFieldsHtml)}
+      ${box('🏦 আর্থিক বিবরণ', financialFieldsHtml, true)}
+    </div>
+    ${paymentTableBlock}
+    ${termsBlock}
+    ${signatureBlock}`;
+
+  /* ================= প্রিন্ট-ভিত্তিক (ভেক্টর টেক্সট) আউটপুট =================
+     আগে html2canvas দিয়ে HTML-কে ছবি বানিয়ে jsPDF-এ বসানো হতো — এতে বাংলা টেক্সট সঠিকভাবে
+     রেন্ডার হতো (ব্রাউজারের শেপিং ইঞ্জিন ব্যবহার করে) কিন্তু PDF-টা আসলে একটা রাস্টার ছবি হয়ে
+     যেতো, ফলে বেশি জুম করলে ঝাপসা/পিক্সেলেটেড দেখাতো এবং টেক্সট সিলেক্ট/সার্চ করা যেতো না।
+
+     এখন ব্রাউজারের নিজস্ব Print (window.print → "Save as PDF") ব্যবহার করা হচ্ছে — এটা ব্রাউজারের
+     আসল টেক্সট-রেন্ডারিং ইঞ্জিন দিয়েই পেজ আঁকে, তাই বাংলা যুক্তাক্ষর/কার ঠিকমতো শেপ হয়ে আসল
+     ভেক্টর টেক্সট হিসেবে PDF-এ বসে — সিলেক্টেবল, সার্চেবল, এবং যত জুমই করা হোক শার্প থাকে।
+     ট্রেড-অফ: ইউজারকে ব্রাউজারের প্রিন্ট ডায়ালগে নিজে "Save as PDF" বেছে Save করতে হয়,
+     এক-ক্লিকে অটো-ডাউনলোড সম্ভব না (এটা ব্রাউজার সিকিউরিটির কারণে — কোনো ওয়েবসাইট সরাসরি
+     ইউজারের ডিস্কে ফাইল সেভ করতে পারে না)। */
+
+  /* আগে ল্যান্ডস্কেপ A4-এ দুইটা কপি (কাস্টমার+কোম্পানি) পাশাপাশি অর্ধেক-অর্ধেক উচ্চতায় বসানো হতো —
+     কিন্তু Android-এর সিস্টেম প্রিন্ট ডায়ালগ প্রায়ই @page landscape মানে না, নিজে থেকে Portrait
+     ডিফল্ট করে দেয়, ফলে ল্যান্ডস্কেপ কনটেন্ট পোর্ট্রেট পেজে জোর করে বসতে গিয়ে নিচের অংশ (শর্তাবলী
+     ও ফুটার) কেটে যেতো। এখন প্রতিটা কপি নিজেই একটা পূর্ণ পোর্ট্রেট A4 পেজ — ইউজার প্রিন্ট ডায়ালগে
+     যে অরিয়েন্টেশনই বেছে নিক (বা ডিফল্ট যাই থাকুক), লেআউট সবসময় ঠিকভাবে ফিট করবে */
+  const FULL_W = 794, FULL_H = 1123; // 210mm × 297mm পোর্ট্রেট A4 (96dpi সমতুল্য px)
+
+  const copyCss = `width:${FULL_W}px;height:${FULL_H}px;box-sizing:border-box;background:${CLR.cream};
+    font-family:"Noto Sans Bengali","Hind Siliguri",sans-serif;color:${CLR.text};overflow:hidden;
+    page-break-after:always;break-after:page;`;
+  const copyInnerCss = `box-sizing:border-box;background:${CLR.cream};border:2px solid ${CLR.gold};
+    border-radius:4px;padding:14px 20px;display:flex;flex-direction:column;justify-content:flex-start;
+    height:100%;width:100%;transform-origin:top left;`;
+
+  /* প্রিন্ট-অনলি এরিয়া — এটা মূল ডকুমেন্টেই একটা লুকানো <div>, শুধু প্রিন্ট করার সময় দেখা যায়
+     (@media print দিয়ে বাকি সব পেজ লুকিয়ে শুধু এই অংশটাই প্রিন্ট হয়) — window.open() ব্যবহার
+     করা হয়নি যাতে পপ-আপ ব্লকার বা আলাদা ট্যাবে ফন্ট/স্টাইল লোড হওয়ার ঝুঁকি এড়ানো যায় */
+  let printArea = document.getElementById('contractPrintArea');
+  if(!printArea){
+    printArea = document.createElement('div');
+    printArea.id = 'contractPrintArea';
+    document.body.appendChild(printArea);
+    const style = document.createElement('style');
+    style.id = 'contractPrintStyle';
+    style.textContent = `
+      #contractPrintArea{ display:none; }
+      @media print{
+        body > *:not(#contractPrintArea){ display:none !important; }
+        #contractPrintArea{ display:block !important; }
+        @page{ size:A4 portrait; margin:0; }
+        html, body{ margin:0 !important; padding:0 !important; }
+      }`;
+    document.head.appendChild(style);
+  }
+
+  printArea.innerHTML = `
+    <div style="${copyCss}"><div class="cpInner" style="${copyInnerCss}">${pageContent}${footerBlock('কাস্টমার কপি')}</div></div>
+    <div style="${copyCss}"><div class="cpInner" style="${copyInnerCss}">${pageContent}${footerBlock('কোম্পানি কপি')}</div></div>`;
+
+  try{
+    const waitImgs = (root) => {
+      const imgs = Array.from(root.querySelectorAll('img'));
+      return Promise.all(imgs.map(im => {
+        if(im.complete && im.naturalWidth > 0) return Promise.resolve();
+        return new Promise(res => {
+          im.addEventListener('load', res, { once: true });
+          im.addEventListener('error', res, { once: true });
+          setTimeout(res, 1500);
+        });
+      }));
+    };
+    await waitImgs(printArea);
+    await new Promise(res => setTimeout(res, 50));
+
+    /* কনটেন্ট (যেমন অনেক কিস্তি/শর্ত) বরাদ্দকৃত অর্ধেক-পেজ উচ্চতার বেশি হয়ে গেলে পুরো কার্ডটা
+       সমানুপাতিকভাবে (uniform scale) ছোট করে ফিট করানো হয় — এই transform প্রিন্টেও vector আকারেই
+       সংরক্ষিত থাকে (রাস্টারাইজ হয় না), তাই জুমে শার্পনেস নষ্ট হয় না */
+    printArea.querySelectorAll('.cpInner').forEach(inner => {
+      fitFrameToPage(inner.parentElement, inner, FULL_W, FULL_H);
+      inner.style.position = 'static';
+      inner.style.transformOrigin = 'top left';
+    });
+
+    toast('প্রিন্ট ডায়ালগ খুলছে — Destination-এ "Save as PDF" বেছে নিন', 'info');
+    await new Promise(res => setTimeout(res, 300));
+    const cleanup = () => { printArea.innerHTML = ''; window.removeEventListener('afterprint', cleanup); };
+    window.addEventListener('afterprint', cleanup);
+    window.print();
+  }catch(err){
+    toast('চুক্তিনামা তৈরি করতে সমস্যা হয়েছে: ' + err.message);
+  }
+}
+
+/* ================= বিদেশ গমনোত্তর দায়মুক্তি ও শর্তাবলী সংক্রান্ত অঙ্গীকারনামা =================
+   ফ্লাইটের তারিখ ও সময় সেট করে ফাইল ক্লোজ করার সময় এই আলাদা ডকুমেন্টটি ডাউনলোড হয় — সাধারণ
+   "চুক্তিনামা" (ভিসা প্রক্রিয়াকরণ চুক্তি) থেকে সম্পূর্ণ ভিন্ন একটি অঙ্গীকারনামা, যেখানে যাত্রী স্বীকার
+   করেন যে তিনি স্বেচ্ছায় ভিসা অনুযায়ী বিদেশ গমন করছেন এবং গমনোত্তর যাবতীয় দায় নিজে বহন করবেন।
+   মূল চুক্তিনামার মতোই এখানেও ২টা পূর্ণ পোর্ট্রেট A4 পেজ — কাস্টমার কপি ও কোম্পানি কপি। ================= */
+async function generateDepartureUndertakingPdf(uid){
+  const u = (window._usersCache || {})[uid] || {};
+  const j = getJourneyForUser(uid);
+  const name = getUserName(u);
+  const phone = getUserPhone(u) || '-';
+  const passport = getUserPassport(u);
+  const nid = getUserField(u, 'nid', ['nid','জাতীয় পরিচয়পত্র','এনআইডি']) || '-';
+  const address = getUserField(u, 'address', ['ঠিকানা','address']) || '-';
+  const cd = u.custom_data || {};
+  /* গ্রাহকের ছবি — মূল চুক্তিনামার মতোই userPhotos/{uid} নোডে (নতুন) বা u.photoBase64 তে (পুরনো ডেটা) সংরক্ষিত থাকে */
+  let customerPhoto = u.photoBase64 || userPhotosCache[uid] || null;
+  if(!customerPhoto){
+    try{
+      const photoSnap = await db.ref('userPhotos/' + uid).once('value');
+      if(photoSnap.exists()){ customerPhoto = photoSnap.val(); userPhotosCache[uid] = customerPhoto; }
+    }catch(err){ /* ছবি না পেলেও PDF তৈরি আটকাবে না */ }
+  }
+
+  /* মূল "চুক্তিনামা" PDF-এর সাথে হুবহু মেলানো ডিজাইন ও কাঠামো — একই রঙ-প্যালেট, হেডার, তথ্য বক্স,
+     পেমেন্ট টেবিল, শর্তাবলী ও ফুটার — শুধু শিরোনাম/ঘোষণা/শর্তাবলী/স্বাক্ষর অংশের কন্টেন্ট আলাদা */
+  const CLR = {
+    navy: '#0f1c3f', navy2: '#152552', gold: '#c9a44c', goldLight: '#e8cf8a', cream: '#faf7f0',
+    text: '#1c1c1c', muted: '#6b6b6b', line: '#d8cba7', green: '#178f52', red: '#c0392b'
+  };
+  const fatherName = u.phone || '-'; // মিশ্র নামকরণ: u.phone ফিল্ডে আসলে গ্রাহকের পিতার নাম সংরক্ষিত হয়
+  const dob = cd.cf_dob ? new Date(cd.cf_dob).toLocaleDateString('bn-BD') : '-';
+  const addressFields = [
+    { label: 'গ্রাম', val: cd.cf_village },
+    { label: 'থানা', val: cd.cf_thana },
+    { label: 'জেলা', val: cd.cf_district },
+    { label: 'বিভাগ', val: cd.cf_division },
+    { label: 'পোস্টাল কোড', val: cd.cf_postal }
+  ].filter(f => f.val);
+  const addressLine = addressFields.length ? addressFields.map(f => f.val).join(', ') : address;
+  const country = u.country || '-';
+  const flag = COUNTRY_FLAGS[u.country] || '';
+  const visaTypeName = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id].name : '-';
+  const vtForInfo = (u.visa_type_id && visaTypes[u.visa_type_id]) ? visaTypes[u.visa_type_id] : null;
+  const stageLabel = j ? (STAGE_LABEL[j.current_stage] || j.current_stage || '-') : '-';
+  const fee = j ? (j.agency_fee || 0) : 0;
+  const payments = j ? (j.payments || {}) : {};
+  const paidEntries = Object.values(payments).sort((a,b) => (a.date||0) - (b.date||0));
+  const paid = paidEntries.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const due = fee - paid;
+  const isOverpaidContract = due < 0;
+  const dueLabelContract = isOverpaidContract ? 'অতিরিক্ত পরিশোধ' : 'বাকি';
+  const dueDisplayContract = isOverpaidContract ? Math.abs(due) : Math.max(0, due);
+  const pct = fee > 0 ? Math.min(100, Math.max(0, Math.round((paid/fee)*100))) : 0;
+  const lastPayment = paidEntries.length ? paidEntries[paidEntries.length - 1] : null;
+  const lastPaymentDate = (lastPayment && lastPayment.date) ? new Date(lastPayment.date).toLocaleDateString('bn-BD') : '-';
+  const lastPaymentMethod = (lastPayment && lastPayment.note) ? lastPayment.note : '-';
+  const today = new Date().toLocaleDateString('bn-BD');
+  const docNo = 'GF/UT/' + new Date().getFullYear() + '/' + String(uid).slice(-4).toUpperCase();
+  const shownPayments = paidEntries;
+  const paymentRowsHtml = shownPayments.length ? shownPayments.map((p,i) => `
+      <tr style="background:${i % 2 ? '#faf3e0' : '#fff'};">
+        <td style="padding:4px 8px;text-align:center;font-size:8.4px;color:${CLR.muted};border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${i+1}</td>
+        <td style="padding:4px 8px;text-align:center;font-size:8.4px;border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${p.date ? new Date(p.date).toLocaleDateString('bn-BD') : '-'}</td>
+        <td style="padding:4px 8px;text-align:center;font-size:8.4px;color:${CLR.muted};border-top:1px solid ${CLR.line};border-right:1px solid ${CLR.line};">${p.note || '-'}</td>
+        <td style="padding:4px 8px;text-align:center;font-size:8.4px;font-weight:700;color:${CLR.green};border-top:1px solid ${CLR.line};">৳${(p.amount || 0).toLocaleString('bn-BD')}</td>
+      </tr>`).join('')
+    : `<tr><td colspan="4" style="padding:8px;font-size:8.4px;color:${CLR.muted};text-align:center;">এখনো কোনো কিস্তি পরিশোধ করা হয়নি।</td></tr>`;
+
+  const UNDERTAKING_TERMS = [
+    { t: 'কর্মসংস্থানে যোগদান ও শর্তাবলী', b: 'যাত্রী ভিসায় উল্লেখিত নির্ধারিত বিদেশি কোম্পানি বা নিয়োগকর্তার অধীনে এবং সংশ্লিষ্ট পদের বিপরীতে নির্ধারিত শর্তাধীনে কর্মে যোগদান করবেন। বেতন, কর্মঘণ্টা, বাৎসরিক ছুটি ও অন্যান্য চাকরির শর্ত সংশ্লিষ্ট দেশের শ্রম আইন ও নিয়োগকর্তার অভ্যন্তরীণ নীতি অনুযায়ী পরিচালিত হবে; এ বিষয়ে এজেন্সি কোনো ধরনের আর্থিক বা কাঠামোগত নিশ্চয়তা প্রদান করে না।' },
+    { t: 'কর্মস্থল পরিবর্তন ও নিষেধাজ্ঞা', b: 'বিদেশে গমনের পর ভিসায় উল্লেখিত নির্দিষ্ট নিয়োগকর্তা বা কর্মস্থলের বাইরে ভিন্ন কোনো স্থানে চাকরি পরিবর্তন করা বা চুক্তিবহির্ভূত বেআইনি কাজে লিপ্ত হওয়া সম্পূর্ণ নিষিদ্ধ। এর ব্যত্যয়ে ভিসা বাতিল, জরিমানা বা কোনো আইনি জটিলতা সৃষ্টি হলে তার সম্পূর্ণ দায়ভার যাত্রীর নিজের ওপর বর্তাবে, যার জন্য এজেন্সি কোনোভাবেই দায়ী থাকবে না।' },
+    { t: 'ভিসার মেয়াদ ও অবৈধ অবস্থান (Overstay)', b: 'ভিসার মেয়াদ উত্তীর্ণ হওয়ার পূর্বেই যাত্রীকে আবশ্যিকভাবে নিজ খরচে দেশে প্রত্যাবর্তন করতে হবে অথবা নিয়মানুযায়ী সংশ্লিষ্ট কর্তৃপক্ষের মাধ্যমে ভিসার মেয়াদ নবায়ন করতে হবে। নির্ধারিত মেয়াদের অতিরিক্ত সময় বিদেশে অবস্থান (Overstay) করার ফলে সৃষ্ট কোনো আর্থিক জরিমানা, আইনি জটিলতা বা দেশীয়/আন্তর্জাতিক কালো তালিকাভুক্তির (Blacklist) দায় সম্পূর্ণভাবে যাত্রীর।' },
+    { t: 'স্থানীয় আইনকানুন ও নিয়মাবলী পালন', b: 'বিদেশে অবস্থানকালীন সময়ে সংশ্লিষ্ট দেশের প্রচলিত রাষ্ট্রীয় আইন-কানুন, কর্মক্ষেত্রের নিরাপত্তা বিধিমালা এবং সামাজিক রীতিনীতি কঠোরভাবে মেনে চলা যাত্রীর একান্ত ব্যক্তিগত দায়িত্ব। আইন লঙ্ঘনের দায়ে কোনো প্রশাসনিক শাস্তি, জেল বা জরিমানা হলে তার দায় এজেন্সির ওপর বর্তাবে না।' },
+    { t: 'কর্ম পরিবেশ ও অন্যান্য অসন্তুষ্টি নিরসন', b: 'বিদেশে পৌঁছানোর পর প্রাপ্ত কর্মপরিবেশ, বেতন-ভাতা, আবাসন বা অন্যান্য সুযোগ-সুবিধা সংক্রান্ত কোনো অসন্তুষ্টি বা বিরোধ দেখা দিলে তা সরাসরি সংশ্লিষ্ট নিয়োগকর্তার সাথে কিংবা প্রযোজ্য ক্ষেত্রে সংশ্লিষ্ট দেশের বাংলাদেশ দূতাবাসের মাধ্যমে সমাধান করতে হবে। এক্ষেত্রে এজেন্সির ভূমিকা কেবলমাত্র প্রাথমিক প্রসেসিং সংক্রান্ত সহায়তা পর্যন্ত সীমাবদ্ধ ছিল এবং বর্তমানে সমাপ্ত।' },
+    { t: 'অনিবার্য পরিস্থিতি (Force Majeure)', b: 'যুদ্ধ, বিশ্ব মহামারী, প্রাকৃতিক দুর্যোগ, রাজনৈতিক অস্থিরতা, দূতাবাস বা সীমান্ত বন্ধ থাকা কিংবা বিমান চলাচল স্থগিতাদেশের মতো কোনো অনিবার্য বা অপ্রত্যাশিত পরিস্থিতির কারণে বিদেশ যাত্রা বিলম্বিত হলে বা বিদেশে কোনো সংকট তৈরি হলে এজেন্সি আইনগতভাবে দায়বদ্ধ থাকবে না।' },
+    { t: 'ব্যক্তিগত নথিপত্র ও তথ্যের গোপনীয়তা', b: 'যাত্রীর পাসপোর্ট, ভিসা, মেডিকেল রিপোর্ট এবং অন্যান্য ব্যক্তিগত বা গোপনীয় নথিপত্র শুধুমাত্র সংশ্লিষ্ট ভিসা প্রক্রিয়াকরণ এবং আইনগত অনুমোদনের উদ্দেশ্যে ব্যবহৃত হয়েছে। রাষ্ট্রীয় বা দূতাবাস সংক্রান্ত বাধ্যবাধকতা ব্যতিরেকে অন্য কোনো অননুমোদিত তৃতীয় পক্ষের নিকট এই তথ্য প্রকাশের কারণে কোনো ক্ষতি সাধিত হলে এজেন্সি দায়ী থাকবে না।' },
+    { t: 'স্বেচ্ছায় প্রস্থান ও তথ্য যাচাই', b: 'যাত্রী এই মর্মে সুনির্দিষ্টভাবে ঘোষণা করছেন যে, নিয়োগকর্তা, বেতন কাঠামো ও কর্মস্থল সংক্রান্ত যাবতীয় তথ্য স্বয়ংক্রিয়ভাবে ও পুঙ্খানুপুঙ্খরূপে যাচাই করেই তিনি সম্পূর্ণ স্বেচ্ছায় এই ভিসায় গমনে সম্মত হয়েছেন। ভবিষ্যতে কর্মস্থল বা কাজের ধরন নিয়ে কোনো ধরনের ভুল বোঝাবুঝি বা অসন্তোষ সৃষ্টি হলে তিনি এজেন্সির বিরুদ্ধে কোনো প্রকার আইনগত ব্যবস্থা গ্রহণ করবেন না।' },
+    { t: 'আইনি এখতিয়ার (Jurisdiction)', b: 'এই অঙ্গীকারনামার শর্তাবলী বা এর ব্যাখ্যা সংক্রান্ত বিষয়ে কোনো ধরনের বিরোধ বা মতানৈক্য দেখা দিলে তা কেবল বাংলাদেশের প্রচলিত আইনের সীমার মধ্যে এবং স্থানীয় উপযুক্ত আদালতের এখতিয়ারভুক্ত হবে।' },
+    { t: 'চূড়ান্ত সম্মতি ও স্বাক্ষর', b: 'উভয় পক্ষ এই অঙ্গীকারনামার প্রতিটি ধারা পুঙ্খানুপুঙ্খভাবে পাঠ করিয়াছি, এর মর্মার্থ সম্পূর্ণ উপলব্ধি করিয়াছি এবং স্বেচ্ছায়, সজ্ঞানে ও সুস্থ মস্তিষ্কে এই দলিলে নিজ স্বাক্ষর প্রদান করিলাম।' }
+  ];
+  const halfT = Math.ceil(UNDERTAKING_TERMS.length / 2);
+  const leftTerms = UNDERTAKING_TERMS.slice(0, halfT);
+  const rightTerms = UNDERTAKING_TERMS.slice(halfT);
+
+  /* ওয়েবসাইটের QR কোড — মূল চুক্তিনামার মতোই ফুটারে দেখানো হবে */
+  let qrDataUri = '';
+  try{
+    const qrUrl = COMPANY_INFO.website.startsWith('http') ? COMPANY_INFO.website : ('https://' + COMPANY_INFO.website);
+    const qrReady = await ensureQRCodeLib();
+    if(!qrReady) throw new Error('QRCode লাইব্রেরি লোড হয়নি (ইন্টারনেট সংযোগ যাচাই করুন)');
+    qrDataUri = await QRCode.toDataURL(qrUrl, { width: 160, margin: 1, color: { dark: CLR.navy, light: '#ffffff' } });
+  }catch(err){ console.warn('QR কোড তৈরি করা যায়নি:', err); }
+
+  /* ---- বিল্ডিং-ব্লক (মূল চুক্তিনামার হেডার/বক্স/ফুটারের সাথে হুবহু মেলানো) ---- */
+  const headerBlock = `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 14px;border-bottom:2.4px solid ${CLR.gold};
+      background:${CLR.navy};border-radius:8px 8px 0 0;">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;">
+        <div style="width:52px;height:52px;border-radius:10px;border:1.3px solid ${CLR.gold};background:#f2f0ea;display:flex;
+          align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          <img src="${COMPANY_LOGO_DATA_URI}" style="width:82%;height:82%;object-fit:contain;" />
+        </div>
+        <div style="width:52px;height:52px;border-radius:10px;border:1.3px solid ${CLR.gold};background:#f2f0ea;
+          display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          ${customerPhoto
+            ? `<img src="${customerPhoto}" style="width:100%;height:100%;object-fit:cover;" />`
+            : `<i class="fas fa-user" style="color:#9a9a9a;font-size:18px;"></i>`}
+        </div>
+      </div>
+      <div style="flex-shrink:0;text-align:center;">
+        <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:21px;color:${CLR.gold};letter-spacing:.6px;line-height:1;">GOLDEN FUTURE</div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:9.6px;color:${CLR.goldLight};letter-spacing:3px;margin-top:3px;">TOURS &amp; TRAVELS</div>
+        <div style="margin-top:3px;font-size:8.4px;color:${CLR.goldLight};font-weight:600;">${COMPANY_INFO.tagline}</div>
+      </div>
+      <div style="font-size:8px;color:${CLR.goldLight};line-height:1.6;text-align:right;flex:1;">
+        <div>${COMPANY_INFO.phone} ☎</div>
+        <div>${COMPANY_INFO.email} ✉</div>
+        <div>${COMPANY_INFO.website} 🌐</div>
+        <div style="max-width:230px;margin-left:auto;">${COMPANY_INFO.address} 📍</div>
+      </div>
+    </div>`;
+
+  const titleRowBlock = `
+    <div style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+      <div style="flex:1;"></div>
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:14px;font-weight:700;padding:5px 22px;
+        border:1.6px solid ${CLR.gold};border-radius:6px;letter-spacing:1px;flex-shrink:0;white-space:nowrap;">দায়মুক্তি অঙ্গীকারনামা</div>
+      <div style="flex:1;display:flex;justify-content:flex-end;">
+        <div style="border:1.2px solid ${CLR.gold};border-radius:6px;padding:4px 12px;font-size:8.4px;color:${CLR.navy};line-height:1.65;min-width:150px;">
+          <div><b>দলিল নং :</b> ${docNo}</div>
+          <div><b>তারিখ :</b> ${today}</div>
+        </div>
+      </div>
+    </div>`;
+
+  const introBlock = `
+    <div style="background:#fff;border:1px solid ${CLR.line};border-radius:6px;padding:5px 12px;font-size:8.2px;
+      line-height:1.5;margin:6px 0;color:#2a2a2a;text-align:center;">
+      আমি, জনাব/বেগম <b style="color:${CLR.navy};">${name}</b>, পিতা/স্বামী: <b style="color:${CLR.navy};">${fatherName}</b>,
+      পাসপোর্ট নম্বর: <b style="color:${CLR.navy};">${passport}</b>, এই মর্মে সুস্থ শরীরে ও সজ্ঞানে স্বেচ্ছায় ঘোষণা করছি যে,
+      আমার অনুকূলে ইস্যুকৃত ভিসা ও প্রয়োজনীয় ভ্রমণ সংক্রান্ত নথিপত্র চূড়ান্ত হওয়ার পর আমি বিদেশ গমনের সিদ্ধান্ত গ্রহণ করেছি
+      এবং নিম্নোক্ত শর্তাবলী মেনে চলতে আইনগতভাবে বাধ্য থাকব।
+    </div>`;
+
+  const fieldFactory = () => {
+    let n = 0;
+    return (label, value, opts = {}) => {
+      n++;
+      const labelColor = opts.highlight ? CLR.red : CLR.navy;
+      const valueColor = opts.highlight ? CLR.red : CLR.text;
+      return `
+        <div style="display:flex;align-items:center;gap:5px;font-size:7.7px;margin:3px 0;">
+          <span style="width:11px;height:11px;border-radius:50%;background:${CLR.gold};color:${CLR.navy};font-size:6.2px;
+            font-weight:800;line-height:11px;text-align:center;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;box-sizing:border-box;">${n}</span>
+          <span style="white-space:nowrap;font-weight:600;color:${labelColor};">${label}</span>
+          <span style="flex:1;border-bottom:1px dotted #bbb;height:7px;"></span>
+          <span style="font-weight:700;color:${valueColor};white-space:nowrap;text-align:right;max-width:52%;overflow:hidden;text-overflow:ellipsis;">${value || '-'}</span>
+        </div>`;
+    };
+  };
+
+  const box = (headerLabel, bodyHtml, showTotalRow) => `
+    <div style="flex:1;border:1px solid ${CLR.line};border-radius:6px;background:#fff;overflow:hidden;display:flex;flex-direction:column;">
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:9px;font-weight:700;padding:4px 9px;">${headerLabel}</div>
+      <div style="padding:5px 9px;flex:1;">${bodyHtml}</div>
+      ${showTotalRow ? `
+      <div style="background:${CLR.navy};color:#fff;font-weight:700;font-size:8px;padding:4px 9px;display:flex;justify-content:space-between;">
+        <span>মোট পরিশোধিত টাকা</span><span style="color:${CLR.goldLight};">৳${paid.toLocaleString('bn-BD')}</span>
+      </div>` : ''}
+    </div>`;
+
+  const termRow = (num, text) => `
+    <div style="display:flex;gap:5px;font-size:6.5px;line-height:1.28;padding:2.4px 0;border-bottom:1px dashed ${CLR.line};color:#262626;">
+      <div style="width:12.5px;height:12.5px;border-radius:50%;background:${CLR.gold};color:${CLR.navy};font-weight:800;font-size:6px;
+        display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:.5px;">${num}</div>
+      <div style="flex:1;">${text}</div>
+    </div>`;
+
+  const signBox = (title, roleLabel, roleValue, showStamp) => `
+    <div style="flex:1;border:1px solid ${CLR.line};border-radius:6px;background:#fff;position:relative;padding:12px 10px 8px;">
+      <div style="position:absolute;top:-9px;left:10px;background:${CLR.navy};color:${CLR.goldLight};font-size:8px;font-weight:700;
+        padding:3px 10px;border-radius:10px;">${title}</div>
+      <div style="margin-top:2px;font-size:7.8px;line-height:1.7;color:${CLR.text};">
+        <div>নাম &nbsp;: <span style="display:inline-block;width:60%;border-bottom:1px dotted #999;">&nbsp;</span></div>
+        <div>${roleLabel} &nbsp;: <span style="display:inline-block;width:55%;border-bottom:1px dotted #999;">${roleValue || '&nbsp;'}</span></div>
+        <div>তারিখ ও স্বাক্ষর &nbsp;: <span style="display:inline-block;width:42%;border-bottom:1px dotted #999;">&nbsp;</span></div>
+      </div>
+      ${showStamp ? `
+      <div style="position:absolute;right:10px;bottom:8px;width:46px;height:46px;border-radius:50%;border:1.6px dashed ${CLR.navy};
+        opacity:.6;display:flex;align-items:center;justify-content:center;text-align:center;font-size:5px;font-weight:700;
+        color:${CLR.navy};line-height:1.25;transform:rotate(-8deg);">GOLDEN FUTURE<br>TOURS &amp; TRAVELS</div>` : ''}
+    </div>`;
+
+  const footerBlock = (copyLabel) => `
+    <div style="margin-top:6px;background:${CLR.navy};color:#fff;border-radius:6px;padding:6px 16px;display:flex;
+      align-items:center;">
+      <div style="flex:0 0 140px;">
+        <div style="font-size:9px;font-weight:800;color:${CLR.gold};letter-spacing:.5px;">${copyLabel}</div>
+      </div>
+      <div style="flex:1;display:flex;justify-content:center;">
+        ${qrDataUri ? `<img src="${qrDataUri}" style="width:44px;height:44px;background:#fff;border-radius:4px;padding:2px;display:block;" />` : ''}
+      </div>
+      <div style="text-align:right;font-size:7.6px;flex:0 0 140px;"><i class="fas fa-phone"></i> Hotline<br>${COMPANY_INFO.phone}</div>
+    </div>`;
+
+  /* ---- তথ্য বক্সের কন্টেন্ট (মূল চুক্তিনামার মতোই) ---- */
+  const cf = fieldFactory();
+  const customerFieldsHtml =
+    cf('গ্রাহকের নাম', name) +
+    cf('পিতার/স্বামীর নাম', fatherName) +
+    cf('মোবাইল নং', phone) +
+    cf('পাসপোর্ট নং', passport) +
+    cf('NID নং', nid) +
+    cf('জন্ম তারিখ', dob) +
+    cf('বর্তমান ঠিকানা', addressLine);
+
+  const companyName = extractDetailValue(vtForInfo && vtForInfo.details, ['কোম্পানি', 'company']) || getVisaTitleLine(vtForInfo && vtForInfo.details) || '-';
+  const salaryInfo = extractDetailValue(vtForInfo && vtForInfo.details, ['বেতন', 'salary']) || '-';
+  const dutyInfo = extractDetailValue(vtForInfo && vtForInfo.details, ['ডিউটি', 'duty']) || '-';
+  const contractInfo = extractDetailValue(vtForInfo && vtForInfo.details, ['কন্ট্রাক্ট', 'চুক্তি', 'contract']) || '-';
+
+  const tf = fieldFactory();
+  const travelFieldsHtml =
+    tf('গন্তব্য দেশ', `${flag} ${country}`) +
+    tf('ভিসার ধরন', visaTypeName) +
+    tf('বর্তমান ধাপ', stageLabel) +
+    tf('কোম্পানির নাম', companyName) +
+    tf('বেতন', salaryInfo) +
+    tf('ডিউটি', dutyInfo) +
+    tf('কন্ট্রাক্ট', contractInfo);
+
+  const ff = fieldFactory();
+  const financialFieldsHtml =
+    ff('মোট প্যাকেজ মূল্য', '৳' + fee.toLocaleString('bn-BD')) +
+    ff(`পরিশোধিত (${pct}%)`, '৳' + paid.toLocaleString('bn-BD')) +
+    ff(dueLabelContract, '৳' + dueDisplayContract.toLocaleString('bn-BD'), { highlight: true }) +
+    ff('সর্বশেষ পরিশোধ', lastPaymentDate) +
+    ff('পরিশোধের নোট', lastPaymentMethod) +
+    `<div style="height:4px;background:${CLR.line};border-radius:2px;overflow:hidden;margin:4px 0 1px;">
+      <div style="height:100%;width:${pct}%;background:${CLR.green};"></div>
+    </div>`;
+
+  const paymentTableBlock = `
+    <div style="border:1px solid ${CLR.line};border-radius:6px;overflow:hidden;background:#fff;margin-top:6px;">
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:9px;font-weight:700;padding:4px 10px;">
+        <i class="fas fa-credit-card" style="margin-right:4px;"></i>পেমেন্ট/লেনদেনের বিবরণ
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr>
+            <th style="width:10%;background:${CLR.navy};color:${CLR.gold};padding:4px 8px;font-size:7.6px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">ক্রম</th>
+            <th style="width:20%;background:${CLR.navy};color:${CLR.gold};padding:4px 8px;font-size:7.6px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">তারিখ</th>
+            <th style="width:38%;background:${CLR.navy};color:${CLR.gold};padding:4px 8px;font-size:7.6px;font-weight:700;border-right:1px solid rgba(255,255,255,.15);">নোট</th>
+            <th style="width:32%;background:${CLR.navy};color:${CLR.gold};padding:4px 8px;font-size:7.6px;font-weight:700;">টাকার পরিমাণ (৳)</th>
+          </tr>
+        </thead>
+        <tbody>${paymentRowsHtml}</tbody>
+      </table>
+    </div>`;
+
+  /* ---- শর্তাবলী ব্লক (মূল চুক্তিনামার মতোই ডিজাইন, নতুন ১০টি দায়মুক্তি শর্ত) ---- */
+  const termsBlock = `
+    <div style="display:flex;justify-content:center;margin-top:7px;">
+      <div style="background:${CLR.navy};color:${CLR.goldLight};font-size:11px;font-weight:700;padding:3.5px 22px;
+        border:1.3px solid ${CLR.gold};border-radius:5px;letter-spacing:.6px;">শর্তাবলী</div>
+    </div>
     ${introBlock}
+    <div style="display:flex;gap:16px;margin-top:4px;">
+      <div style="flex:1;">${leftTerms.map((term,i) => termRow(i+1, `<b style="color:${CLR.navy};">${term.t}:</b> ${term.b}`)).join('')}</div>
+      <div style="flex:1;">${rightTerms.map((term,i) => termRow(halfT + i + 1, `<b style="color:${CLR.navy};">${term.t}:</b> ${term.b}`)).join('')}</div>
+    </div>`;
+
+  const signatureBlock = `
+    <div style="display:flex;gap:10px;margin-top:7px;">
+      ${signBox('👤 এজেন্সি প্রতিনিধি', 'পদবি', '', true)}
+      ${signBox('👤 যাত্রীর স্বাক্ষর', 'পাসপোর্ট নং', passport, false)}
+    </div>`;
+
+  /* ---- সম্পূর্ণ কন্টেন্ট — কাস্টমার কপি + কোম্পানি কপি, দুইটাই আলাদা পূর্ণ পোর্ট্রেট A4 পেজ,
+     মূল চুক্তিনামার কাঠামোর সাথে হুবহু মেলানো ---- */
+  const pageContent = (copyLabel) => `
+    ${headerBlock}
+    ${titleRowBlock}
     <div style="display:flex;gap:8px;align-items:stretch;">
       ${box('👤 গ্রাহকের তথ্য', customerFieldsHtml)}
       ${box('✈ ভ্রমণের তথ্য', travelFieldsHtml)}
@@ -3162,67 +3769,59 @@ async function generateContractPdf(uid, overrideTerms){
     ${paymentTableBlock}
     ${termsBlock}
     ${signatureBlock}
-    ${footerBlock}`;
+    ${footerBlock(copyLabel)}`;
 
-  /* ================= ২টা আলাদা পেজ — পেজ ১: কাস্টমার কপি, পেজ ২: কোম্পানি কপি ================= */
-  const copyLabelTag = (text) => `
-    <div style="position:absolute;top:-11px;right:18px;background:${CLR.navy};color:${CLR.goldLight};font-size:9px;
-      font-weight:700;padding:3px 12px;border-radius:5px;border:1px solid ${CLR.gold};letter-spacing:.5px;z-index:5;">${text}</div>`;
-
-  const pageOuterCss = `position:fixed;left:-9999px;top:0;width:1123px;box-sizing:border-box;
+  const PAGE_W = 794, PAGE_H = 1123; // 210mm × 297mm পোর্ট্রেট A4 (96dpi সমতুল্য px)
+  const pageOuterCss = `position:fixed;left:-9999px;top:0;width:${PAGE_W}px;height:${PAGE_H}px;overflow:hidden;box-sizing:border-box;
     background:${CLR.cream};font-family:"Noto Sans Bengali","Hind Siliguri",sans-serif;color:${CLR.text};padding:0;`;
-  const pageInnerCss = `position:relative;height:794px;box-sizing:border-box;background:${CLR.cream};
-    border:2px solid ${CLR.gold};border-radius:4px;padding:10px 22px;display:flex;flex-direction:column;
-    justify-content:space-between;overflow:hidden;`;
+  const pageInnerCss = `box-sizing:border-box;background:${CLR.cream};
+    border:2px solid ${CLR.gold};border-radius:4px;padding:14px 20px;display:flex;flex-direction:column;min-height:${PAGE_H}px;`;
 
-  const pageCustomer = document.createElement('div');
-  pageCustomer.style.cssText = pageOuterCss;
-  pageCustomer.innerHTML = `<div style="${pageInnerCss}">${copyLabelTag('গ্রাহকের কপি')}${pageContent}</div>`;
-
-  const pageCompany = document.createElement('div');
-  pageCompany.style.cssText = pageOuterCss;
-  pageCompany.innerHTML = `<div style="${pageInnerCss}">${copyLabelTag('কোম্পানির কপি')}${pageContent}</div>`;
-
-  document.body.appendChild(pageCustomer);
-  document.body.appendChild(pageCompany);
-  try{
-    /* সব ছবি (লোগো, কাস্টমার ছবি, QR কোড ইত্যাদি) সম্পূর্ণ লোড/ডিকোড না হওয়া পর্যন্ত অপেক্ষা —
-       নাহলে html2canvas মাঝে মাঝে ছবি আঁকার আগেই স্ক্রিনশট নিয়ে নেয়, ফলে QR কোড ফাঁকা দেখায় */
-    const waitImgs = (root) => {
-      const imgs = Array.from(root.querySelectorAll('img'));
-      return Promise.all(imgs.map(im => {
+  /* একটা কপি (কাস্টমার/কোম্পানি) render করে html2canvas দিয়ে ক্যানভাস বানিয়ে ফেরত দেয় */
+  const renderCopyCanvas = async (copyLabel) => {
+    const page = document.createElement('div');
+    page.style.cssText = pageOuterCss;
+    page.innerHTML = `<div style="${pageInnerCss}">${pageContent(copyLabel)}</div>`;
+    document.body.appendChild(page);
+    try{
+      const imgs = Array.from(page.querySelectorAll('img'));
+      await Promise.all(imgs.map(im => {
         if(im.complete && im.naturalWidth > 0) return Promise.resolve();
         return new Promise(res => {
           im.addEventListener('load', res, { once: true });
           im.addEventListener('error', res, { once: true });
-          setTimeout(res, 1500); // সেফটি টাইমআউট
+          setTimeout(res, 1500);
         });
       }));
-    };
-    await Promise.all([waitImgs(pageCustomer), waitImgs(pageCompany)]);
-    await new Promise(res => setTimeout(res, 50)); // এক্সট্রা পেইন্ট ফ্রেম
+      await new Promise(res => setTimeout(res, 50));
 
-    const [canvasCustomer, canvasCompany] = await Promise.all([
-      html2canvas(pageCustomer, { scale: 2, backgroundColor: CLR.cream }),
-      html2canvas(pageCompany, { scale: 2, backgroundColor: CLR.cream })
-    ]);
-    document.body.removeChild(pageCustomer);
-    document.body.removeChild(pageCompany);
+      /* কন্টেন্ট (যেমন অনেকগুলো পেমেন্ট কিস্তি) এক পেজের বেশি হয়ে গেলে পুরো কার্ডটা ছোট করে ফিট করানো হয় */
+      fitFrameToPage(page, page.firstElementChild, PAGE_W, PAGE_H);
+
+      return await html2canvas(page, { scale: 2, backgroundColor: CLR.cream });
+    } finally {
+      document.body.removeChild(page);
+    }
+  };
+
+  try{
+    const customerCanvas = await renderCopyCanvas('কাস্টমার কপি');
+    const companyCanvas = await renderCopyCanvas('কোম্পানি কপি');
 
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('l', 'pt', 'a4'); // ল্যান্ডস্কেপ — কন্টেন্টের অনুপাতের সাথে মিলিয়ে
-    const pw = pdf.internal.pageSize.getWidth();
-    const ph = pdf.internal.pageSize.getHeight();
+    /* PDF পেজের সাইজ সরাসরি পোর্ট্রেট pt মান দিয়ে বসানো হচ্ছে (দেখুন উপরের generateContractPdf
+       ফাংশনের একই মন্তব্য — 'a4' প্রিসেট + getWidth()/getHeight() কিছু ক্ষেত্রে ছবি পুরো পেজ না ভরার
+       সমস্যা করছিল) */
+    const PDF_W = 595.28, PDF_H = 841.89;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: [PDF_W, PDF_H] });
 
-    pdf.addImage(canvasCustomer.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pw, ph);
-    pdf.addPage();
-    pdf.addImage(canvasCompany.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pw, ph);
+    pdf.addImage(customerCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PDF_W, PDF_H);
+    pdf.addPage([PDF_W, PDF_H], 'portrait');
+    pdf.addImage(companyCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PDF_W, PDF_H);
 
-    pdf.save(`${name}-চুক্তিনামা.pdf`);
+    pdf.save(`${name}-দায়মুক্তি-অঙ্গীকারনামা.pdf`);
   }catch(err){
-    if(pageCustomer.parentNode) document.body.removeChild(pageCustomer);
-    if(pageCompany.parentNode) document.body.removeChild(pageCompany);
-    toast('চুক্তিনামা তৈরি করতে সমস্যা হয়েছে: ' + err.message);
+    toast('অঙ্গীকারনামা তৈরি করতে সমস্যা হয়েছে: ' + err.message);
   }
 }
 
@@ -4569,9 +5168,27 @@ function saveVisaEdit(){
   if(!editingVisaId) return;
   const name = document.getElementById('veName').value.trim();
   if(!name){ toast('ভিসার নাম দিন'); return; }
-  const fee = parseInt(document.getElementById('veFee').value) || 0;
-  const cost = parseInt(document.getElementById('veCost').value) || 0;
-  const quota = parseInt(document.getElementById('veQuota').value) || 0;
+  const feeRaw = document.getElementById('veFee').value;
+  const costRaw = document.getElementById('veCost').value;
+  const quotaRaw = document.getElementById('veQuota').value;
+  if(feeRaw === '' || isNaN(parseInt(feeRaw)) || parseInt(feeRaw) <= 0){
+    toast('ভিসার মূল্য (৳) পূরণ করা বাধ্যতামূলক — ০ দিয়ে সেভ করা যাবে না।');
+    document.getElementById('veFee').focus();
+    return;
+  }
+  if(costRaw === '' || isNaN(parseInt(costRaw)) || parseInt(costRaw) <= 0){
+    toast('ভিসা কিনার মূল্য (৳) পূরণ করা বাধ্যতামূলক — ০ দিয়ে সেভ করা যাবে না।');
+    document.getElementById('veCost').focus();
+    return;
+  }
+  if(quotaRaw === '' || isNaN(parseInt(quotaRaw)) || parseInt(quotaRaw) <= 0){
+    toast('টোটাল ভিসা (কোটা) পূরণ করা বাধ্যতামূলক — ০ দিয়ে সেভ করা যাবে না।');
+    document.getElementById('veQuota').focus();
+    return;
+  }
+  const fee = parseInt(feeRaw);
+  const cost = parseInt(costRaw);
+  const quota = parseInt(quotaRaw);
   const isAgencyVisa = !!(visaTypes[editingVisaId] && visaTypes[editingVisaId].agency_name);
   if(!isAgencyVisa){
     const check = visaReserveCheck(quota, cost, editingVisaId);
@@ -4625,7 +5242,21 @@ function renderVisaInfoList(){
       const visaUserIds = userEntries.filter(([uid, u]) => u.country === country && u.visa_type_id === v.vid).map(([uid]) => uid);
       const active = journeyList.filter(j => visaUserIds.includes(j.user_id) && j.current_stage !== 'DEPARTED' && j.current_stage !== 'MEDICAL_FAILED').length;
       const departed = journeyList.filter(j => visaUserIds.includes(j.user_id) && j.current_stage === 'DEPARTED').length;
-      const shareText = `${flag} ${country}\nভিসার ধরন: ${v.name}${v.fee ? ` (৳${v.fee.toLocaleString('bn-BD')})` : ''}\nমোট ভিসা: ${v.quota}\nচলমান প্রসেসিং: ${active}`;
+      const detailsLines = (v.details || []).slice();
+      let titleLine = '';
+      if(detailsLines.length && detailsLines[0].search(COLON_RE) === -1){
+        titleLine = detailsLines.shift();
+      }
+      const shareTextParts = [
+        `${flag} ${country}`,
+        `ভিসার মূল্য${v.fee ? `: ৳${v.fee.toLocaleString('bn-BD')}` : ': নির্ধারিত হয়নি'}`,
+        '',
+      ];
+      if(titleLine) shareTextParts.push(titleLine, '');
+      shareTextParts.push(`ভিসা : ${v.name}`);
+      if(detailsLines.length) shareTextParts.push(...detailsLines);
+      shareTextParts.push('', `মোট ভিসা: ${v.quota || 0}`, `চলমান প্রসেসিং: ${active}`, `সম্পন্ন: ${departed}`);
+      const shareText = shareTextParts.join('\n');
       return `
       <div class="visaCard">
         <div class="vc-head">
@@ -4644,7 +5275,7 @@ function renderVisaInfoList(){
               ? `<button type="button" class="icon-btn gold" title="ভিসা বিক্রি করুন" onclick='openAddUserModal(${JSON.stringify(country)}, ${JSON.stringify(v.vid)})'><span>বিক্রি</span><i class="fas fa-plane-departure" style="font-size:12px;color:#c9932c;"></i></button>`
               : `<button type="button" class="icon-btn gold" title="মেসেজ পাঠান" onclick='openVisaMessageModal(${JSON.stringify(country)}, ${JSON.stringify(v.vid)}, ${JSON.stringify(v.name)})'><span>মেসেজ</span><i class="fas fa-comment-dots" style="font-size:12px;color:#c9932c;"></i></button>`
             }
-            <button type="button" class="icon-btn" title="শেয়ার করুন" onclick='shareVisaInfo(${JSON.stringify(shareText).replace(/'/g, "&#39;")})'><span>শেয়ার</span><i class="fas fa-share"></i></button>
+            <button type="button" class="icon-btn" title="শেয়ার করুন" onclick='shareVisaTypeCard(${JSON.stringify(country).replace(/'/g, "&#39;")}, ${JSON.stringify(flag).replace(/'/g, "&#39;")}, ${JSON.stringify(v).replace(/'/g, "&#39;")}, ${active}, ${departed})'><span>শেয়ার</span><i class="fas fa-share"></i></button>
           </div>
         </div>
       </div>`;
@@ -4658,6 +5289,105 @@ function showVisaCharges(country, visas){
   toast(`${flag} ${country} — ভিসার মূল্য\n\n${lines}`);
 }
 
+async function shareVisaTypeCard(country, flag, v, active, departed){
+  const detailsLines = (v.details || []).slice();
+  let titleLine = '';
+  if(detailsLines.length && detailsLines[0].search(COLON_RE) === -1){
+    titleLine = detailsLines.shift();
+  }
+  // চুক্তিনামা PDF-এর ফুটারের মতোই কোম্পানির ওয়েবসাইটের QR কোড হেডারে দেখানো হবে
+  let qrDataUri = '';
+  try{
+    const qrUrl = COMPANY_INFO.website.startsWith('http') ? COMPANY_INFO.website : ('https://' + COMPANY_INFO.website);
+    const qrReady = await ensureQRCodeLib();
+    if(qrReady) qrDataUri = await QRCode.toDataURL(qrUrl, { width: 160, margin: 1, color: { dark: '#0f1c3f', light: '#ffffff' } });
+  }catch(err){ console.warn('QR কোড তৈরি করা যায়নি:', err); /* QR তৈরি না হলেও কার্ড তৈরি আটকাবে না */ }
+  // চুক্তিনামা PDF ও অন্যান্য শেয়ার-কার্ডের মতো একই নেভি/গোল্ড/ক্রিম ব্র্যান্ডিং ব্যবহার করে ছবি তৈরি হয়
+  const SCLR = {
+    navy: '#0f1c3f', goldLight: '#e8cf8a', gold: '#c9a44c', cream: '#faf7f0',
+    text: '#1c1c1c', muted: '#6b6b6b', line: '#d8cba7', green: '#178f52', red: '#c0392b'
+  };
+  const detailRow = (line) => {
+    const idx = line.search(COLON_RE);
+    if(idx === -1){
+      return `<div style="padding:8px 0;border-bottom:1px dashed ${SCLR.line};font-weight:700;font-size:13px;color:${SCLR.navy};">${line}</div>`;
+    }
+    const key = line.slice(0, idx);
+    const rest = line.slice(idx + 1).trim();
+    return `
+      <div style="display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed ${SCLR.line};">
+        <span style="color:${SCLR.muted};font-size:12.5px;">${key}</span>
+        <span style="color:${SCLR.text};font-weight:700;font-size:13.5px;text-align:right;">${rest}</span>
+      </div>`;
+  };
+  const statBox = (label, value, valueColor) => `
+    <div style="flex:1;min-width:0;text-align:center;">
+      <div style="font-size:10px;color:${SCLR.muted};margin-bottom:3px;white-space:nowrap;">${label}</div>
+      <div style="font-size:16px;font-weight:800;color:${valueColor || SCLR.text};white-space:nowrap;">${value}</div>
+    </div>`;
+
+  const card = document.createElement('div');
+  card.style.cssText = `position:fixed;left:-9999px;top:0;width:440px;background:${SCLR.cream};font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;border-radius:14px;border:1.5px solid ${SCLR.gold};overflow:hidden;`;
+  card.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 18px;background:${SCLR.navy};border-bottom:2.4px solid ${SCLR.gold};">
+      <div style="width:46px;height:46px;border-radius:9px;border:1.3px solid ${SCLR.gold};background:#f2f0ea;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+        <img src="${COMPANY_LOGO_DATA_URI}" style="width:82%;height:82%;object-fit:contain;" />
+      </div>
+      <div style="flex:1;text-align:center;">
+        <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:18px;color:${SCLR.gold};letter-spacing:.5px;line-height:1;">GOLDEN FUTURE</div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:8.5px;color:${SCLR.goldLight};letter-spacing:2.6px;margin-top:3px;">TOURS &amp; TRAVELS</div>
+      </div>
+      <div style="width:46px;height:46px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:3px;">
+        ${qrDataUri ? `<img src="${qrDataUri}" style="width:100%;height:100%;object-fit:contain;" />` : ''}
+      </div>
+    </div>
+    <div style="padding:20px 22px 22px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-size:16px;font-weight:800;color:${SCLR.navy};">${flag} ${country}</div>
+        <div style="font-size:11px;color:${SCLR.navy};background:${SCLR.goldLight};padding:5px 10px;border-radius:20px;font-weight:700;white-space:nowrap;">
+          ভিসার মূল্য${v.fee ? `: ৳${v.fee.toLocaleString('bn-BD')}` : ': নির্ধারিত হয়নি'}
+        </div>
+      </div>
+      ${titleLine ? `<div style="font-size:19px;font-weight:800;color:${SCLR.navy};text-align:center;margin-bottom:14px;">${titleLine}</div>` : ''}
+
+      <div style="background:#fff;border:1px solid ${SCLR.line};border-radius:8px;padding:2px 14px;">
+        ${detailRow(`ভিসা : ${v.name || '-'}`)}
+        ${detailsLines.map(detailRow).join('')}
+      </div>
+
+      <div style="display:flex;gap:8px;background:${SCLR.navy};border-radius:8px;padding:12px 10px;margin-top:14px;">
+        ${statBox('ভিসা', v.quota || 0, '#fff')}
+        ${statBox('প্রসেসিং', active, SCLR.goldLight)}
+        ${statBox('সম্পন্ন', departed, SCLR.green)}
+      </div>
+    </div>
+    <div style="padding:10px 22px;background:${SCLR.navy};color:${SCLR.goldLight};font-size:10px;text-align:center;letter-spacing:.5px;">
+      Golden Future Tours &amp; Travels &nbsp;•&nbsp; ${COMPANY_INFO.phone}
+    </div>
+  `;
+  document.body.appendChild(card);
+
+  html2canvas(card, { scale: 2, backgroundColor: SCLR.cream }).then(canvas => {
+    document.body.removeChild(card);
+    canvas.toBlob(async (blob) => {
+      if(!blob){ toast('ছবি তৈরি করা যায়নি।'); return; }
+      const file = new File([blob], `${country}-${v.name || 'visa'}.png`, { type: 'image/png' });
+      if(navigator.canShare && navigator.canShare({ files: [file] })){
+        try{ await navigator.share({ files: [file], title: 'ভিসার তথ্য', text: `${flag} ${country} — ${v.name || ''}` }); }
+        catch(e){ /* user cancelled */ }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = file.name; a.click();
+        URL.revokeObjectURL(url);
+        toast('ছবি ডাউনলোড হয়েছে, এখন যেকোনো জায়গায় শেয়ার করতে পারবেন।');
+      }
+    }, 'image/png');
+  }).catch(err => {
+    if(card.parentNode) document.body.removeChild(card);
+    toast('ছবি তৈরি করতে সমস্যা হয়েছে: ' + err.message);
+  });
+}
 function shareVisaInfo(text){
   if(navigator.share){
     navigator.share({ title: 'ভিসার তথ্য', text }).catch(() => {});
@@ -4669,16 +5399,124 @@ function shareVisaInfo(text){
 }
 
 function sharePaymentStatus(jid){
-  db.ref('journeys/' + jid).once('value').then(snap => {
+  db.ref('journeys/' + jid).once('value').then(async snap => {
     const j = snap.val() || {};
     const totalFee = j.agency_fee || 0;
     const payments = j.payments || {};
-    const paid = Object.values(payments).reduce((sum, p) => sum + (p.amount || 0), 0);
+    const losses = j.losses || {};
+    const expenses = j.expenses || {};
+    const entries = Object.values(payments).sort((a,b) => (a.date||0) - (b.date||0));
+    const paid = entries.reduce((sum, p) => sum + (p.amount || 0), 0);
+    const totalLoss = Object.values(losses).reduce((sum, l) => sum + (l.amount || 0), 0);
+    const totalExpense = Object.values(expenses).reduce((sum, e) => sum + (e.amount || 0), 0);
+    const spentSoFar = totalLoss + totalExpense;
+    const netAmount = paid - spentSoFar;
     const due = totalFee - paid;
+    const isOverpaid = due < 0;
+    const dueLabel = isOverpaid ? 'অতিরিক্ত পরিশোধিত' : 'বাকি';
+    const dueDisplay = isOverpaid ? Math.abs(due) : Math.max(0, due);
     const pct = totalFee > 0 ? Math.min(100, Math.max(0, Math.round((paid/totalFee)*100))) : 0;
-    const dueLine = due < 0 ? `অতিরিক্ত পরিশোধ: ৳${Math.abs(due).toLocaleString('bn-BD')}` : `বাকি: ৳${Math.max(0, due).toLocaleString('bn-BD')}`;
-    const text = `পেমেন্ট / কিস্তি\n\nমোট ফি: ৳${totalFee.toLocaleString('bn-BD')}\nপরিশোধিত: ৳${paid.toLocaleString('bn-BD')}\n${dueLine}\nঅগ্রগতি: ${pct}%`;
-    shareVisaInfo(text);
+
+    // যাত্রীর নাম ও ছবি
+    let name = '';
+    let customerPhoto = null;
+    if(j.user_id){
+      const uSnap = await db.ref('users/' + j.user_id).once('value');
+      const u = uSnap.val() || {};
+      name = getUserName(u);
+      customerPhoto = u.photoBase64 || userPhotosCache[j.user_id] || null;
+      if(!customerPhoto){
+        try{
+          const photoSnap = await db.ref('userPhotos/' + j.user_id).once('value');
+          if(photoSnap.exists()){ customerPhoto = photoSnap.val(); userPhotosCache[j.user_id] = customerPhoto; }
+        }catch(err){ /* ছবি না পেলেও কার্ড তৈরি আটকাবে না */ }
+      }
+    }
+
+    // চুক্তিনামা PDF ও ভিসার তথ্য শেয়ার-কার্ডের মতো একই নেভি/গোল্ড/ক্রিম ব্র্যান্ডিং ব্যবহার করে ছবি তৈরি হয়
+    const SCLR = {
+      navy: '#0f1c3f', goldLight: '#e8cf8a', gold: '#c9a44c', cream: '#faf7f0',
+      text: '#1c1c1c', muted: '#6b6b6b', line: '#d8cba7', green: '#178f52', red: '#c0392b'
+    };
+    const statBox = (label, value, valueColor) => `
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;color:${SCLR.muted};margin-bottom:3px;white-space:nowrap;">${label}</div>
+        <div style="font-size:14px;font-weight:800;color:${valueColor || SCLR.text};white-space:nowrap;">${value}</div>
+      </div>`;
+    const installmentRowsHtml = entries.length
+      ? entries.map((p, i) => `
+        <div style="display:flex;align-items:center;gap:8px;padding:9px 0;${i < entries.length-1 ? `border-bottom:1px dashed ${SCLR.line};` : ''}">
+          <span style="width:18px;height:18px;border-radius:50%;background:${SCLR.green};color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">&#10003;</span>
+          <span style="font-weight:700;font-size:13px;color:${SCLR.navy};">৳${(p.amount||0).toLocaleString('bn-BD')}</span>
+          ${p.date ? `<span style="font-size:11px;color:${SCLR.muted};">${new Date(p.date).toLocaleDateString('bn-BD')}</span>` : ''}
+          ${p.note ? `<span style="font-size:11px;color:${SCLR.muted};">· ${p.note}</span>` : ''}
+        </div>`).join('')
+      : `<div style="padding:10px 0;font-size:12.5px;color:${SCLR.muted};text-align:center;">এখনো কোনো কিস্তি যোগ করা হয়নি।</div>`;
+
+    const card = document.createElement('div');
+    card.style.cssText = `position:fixed;left:-9999px;top:0;width:440px;background:${SCLR.cream};font-family:"Hind Siliguri","Noto Sans Bengali",sans-serif;border-radius:14px;border:1.5px solid ${SCLR.gold};overflow:hidden;`;
+    card.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 18px;background:${SCLR.navy};border-bottom:2.4px solid ${SCLR.gold};">
+        <div style="width:46px;height:46px;border-radius:9px;border:1.3px solid ${SCLR.gold};background:#f2f0ea;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          <img src="${COMPANY_LOGO_DATA_URI}" style="width:82%;height:82%;object-fit:contain;" />
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-family:'Playfair Display',serif;font-weight:800;font-size:18px;color:${SCLR.gold};letter-spacing:.5px;line-height:1;">GOLDEN FUTURE</div>
+          <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:8.5px;color:${SCLR.goldLight};letter-spacing:2.6px;margin-top:3px;">TOURS &amp; TRAVELS</div>
+          <div style="font-size:10.5px;color:${SCLR.gold};letter-spacing:1.5px;font-weight:700;margin-top:6px;">পেমেন্ট / কিস্তি</div>
+        </div>
+        <div style="width:46px;height:46px;border-radius:9px;border:1.3px solid ${SCLR.gold};background:#f2f0ea;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;">
+          ${customerPhoto
+            ? `<img src="${customerPhoto}" style="width:100%;height:100%;object-fit:cover;" />`
+            : `<i class="fas fa-user" style="color:#9a9a9a;font-size:18px;"></i>`}
+        </div>
+      </div>
+      <div style="padding:20px 22px 22px;">
+        <div style="font-size:20px;font-weight:800;color:${SCLR.navy};margin-bottom:16px;text-align:center;">${name || 'গ্রাহক'}</div>
+
+        <div style="height:8px;border-radius:4px;background:${SCLR.line};overflow:hidden;margin-bottom:6px;">
+          <div style="height:100%;width:${pct}%;background:${SCLR.green};border-radius:4px;"></div>
+        </div>
+        <div style="font-size:11px;color:${SCLR.muted};margin-bottom:16px;">অগ্রগতি ${pct}%</div>
+
+        <div style="display:flex;gap:10px;background:#fff;border:1px solid ${SCLR.line};border-radius:8px;padding:12px 14px;flex-wrap:wrap;">
+          ${statBox('মোট ফি', `৳${totalFee.toLocaleString('bn-BD')}`)}
+          ${statBox('পরিশোধিত', `৳${paid.toLocaleString('bn-BD')}`, SCLR.green)}
+          ${statBox(dueLabel, `৳${dueDisplay.toLocaleString('bn-BD')}`, isOverpaid ? SCLR.green : SCLR.red)}
+          ${statBox(netAmount < 0 ? 'ক্ষতি' : 'লাভ', `৳${Math.abs(netAmount).toLocaleString('bn-BD')}`, netAmount < 0 ? SCLR.red : SCLR.green)}
+        </div>
+
+        <div style="margin-top:16px;font-size:11px;color:${SCLR.gold};letter-spacing:1px;font-weight:700;">কিস্তির বিবরণ</div>
+        <div style="margin-top:4px;background:#fff;border:1px solid ${SCLR.line};border-radius:8px;padding:0 14px;">
+          ${installmentRowsHtml}
+        </div>
+      </div>
+      <div style="padding:10px 22px;background:${SCLR.navy};color:${SCLR.goldLight};font-size:10px;text-align:center;letter-spacing:.5px;">
+        Golden Future Tours &amp; Travels &nbsp;•&nbsp; ${COMPANY_INFO.phone}
+      </div>
+    `;
+    document.body.appendChild(card);
+
+    html2canvas(card, { scale: 2, backgroundColor: SCLR.cream }).then(canvas => {
+      document.body.removeChild(card);
+      canvas.toBlob(async (blob) => {
+        if(!blob){ toast('ছবি তৈরি করা যায়নি।'); return; }
+        const file = new File([blob], `${name || 'payment'}-kisti.png`, { type: 'image/png' });
+        if(navigator.canShare && navigator.canShare({ files: [file] })){
+          try{ await navigator.share({ files: [file], title: 'পেমেন্ট / কিস্তি', text: name }); }
+          catch(e){ /* user cancelled */ }
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = file.name; a.click();
+          URL.revokeObjectURL(url);
+          toast('ছবি ডাউনলোড হয়েছে, এখন যেকোনো জায়গায় শেয়ার করতে পারবেন।');
+        }
+      }, 'image/png');
+    }).catch(err => {
+      if(card.parentNode) document.body.removeChild(card);
+      toast('ছবি তৈরি করতে সমস্যা হয়েছে: ' + err.message);
+    });
   });
 }
 
@@ -4735,6 +5573,8 @@ const BASE_CUSTOM_FIELDS = {
   cf_dob:        { label: 'জন্ম তারিখ',       type: 'date' },
   cf_occupation: { label: 'আপনার পেশা',       type: 'text' }
 };
+// ভিসা বিক্রি ফর্মে কোন BASE_CUSTOM_FIELDS বাধ্যতামূলক তা এখানে — শুধু প্লেসহোল্ডারে * দেখানোর জন্য।
+const REQUIRED_CUSTOM_FIELD_IDS = new Set(['cf_phone','cf_nid','cf_passport','cf_village','cf_thana','cf_district','cf_division','cf_postal','cf_dob','cf_occupation']);
 let customFields = { ...BASE_CUSTOM_FIELDS };
 
 function loadCustomFields(){
@@ -5691,9 +6531,27 @@ function addCustomField(){
   if(!country){ toast('ভিসার ধরন যোগ করতে একটা নির্দিষ্ট দেশ নির্বাচন করুন (সকল দেশের জন্য প্রযোজ্য দিয়ে হবে না)।'); return; }
   const name = document.getElementById('cfVisaName').value.trim();
   if(!name){ toast('ভিসার নাম দিন।'); return; }
-  const fee = parseInt(document.getElementById('cfVisaFee').value) || 0;
-  const cost = parseInt(document.getElementById('cfVisaCost').value) || 0;
-  const quota = parseInt(document.getElementById('cfVisaQuota').value) || 0;
+  const feeRaw = document.getElementById('cfVisaFee').value;
+  const costRaw = document.getElementById('cfVisaCost').value;
+  const quotaRaw = document.getElementById('cfVisaQuota').value;
+  if(feeRaw === '' || isNaN(parseInt(feeRaw)) || parseInt(feeRaw) <= 0){
+    toast('ভিসার মূল্য (৳) পূরণ করা বাধ্যতামূলক — ০ দিয়ে সেভ করা যাবে না।');
+    document.getElementById('cfVisaFee').focus();
+    return;
+  }
+  if(costRaw === '' || isNaN(parseInt(costRaw)) || parseInt(costRaw) <= 0){
+    toast('ভিসা কিনার মূল্য (৳) পূরণ করা বাধ্যতামূলক — ০ দিয়ে সেভ করা যাবে না।');
+    document.getElementById('cfVisaCost').focus();
+    return;
+  }
+  if(quotaRaw === '' || isNaN(parseInt(quotaRaw)) || parseInt(quotaRaw) <= 0){
+    toast('টোটাল ভিসা (কোটা) পূরণ করা বাধ্যতামূলক — ০ দিয়ে সেভ করা যাবে না।');
+    document.getElementById('cfVisaQuota').focus();
+    return;
+  }
+  const fee = parseInt(feeRaw);
+  const cost = parseInt(costRaw);
+  const quota = parseInt(quotaRaw);
   const agencyName = document.getElementById('cfAgencyName').value.trim();
   if(!agencyName){
     const check = visaReserveCheck(quota, cost, null);
@@ -5755,20 +6613,21 @@ function renderCustomFieldInputs(prefill){
   wrap.innerHTML = '<div class="customFieldsGrid">' +
     entries.map(([fid, f]) => {
       const val = prefill[fid] || '';
+      const displayLabel = REQUIRED_CUSTOM_FIELD_IDS.has(fid) ? f.label + ' *' : f.label;
       if(f.type === 'dropdown'){
         const opts = (f.options || []).map(o => `<option value="${o}" ${o === val ? 'selected' : ''}>${o}</option>`).join('');
-        return `<select id="cf-${fid}"><option value="">${f.label}</option>${opts}</select>`;
+        return `<select id="cf-${fid}"><option value="">${displayLabel}</option>${opts}</select>`;
       }
       if(f.type === 'description'){
-        return `<textarea autocomplete="off" id="cf-${fid}" rows="2" placeholder="${f.label}" style="width:100%;">${val}</textarea>`;
+        return `<textarea autocomplete="off" id="cf-${fid}" rows="2" placeholder="${displayLabel}" style="width:100%;">${val}</textarea>`;
       }
       if(f.type === 'date'){
         return `<div style="position:relative;">
-          <span id="cf-${fid}-ph" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:#8a93a3;pointer-events:none;${val ? 'display:none;' : ''}">${f.label}</span>
+          <span id="cf-${fid}-ph" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:13px;color:#8a93a3;pointer-events:none;${val ? 'display:none;' : ''}">${displayLabel}</span>
           <input autocomplete="off" id="cf-${fid}" type="date" value="${val}" style="width:100%;box-sizing:border-box;" oninput="document.getElementById('cf-${fid}-ph').style.display=this.value?'none':'block'" onfocus="document.getElementById('cf-${fid}-ph').style.display='none'" onblur="document.getElementById('cf-${fid}-ph').style.display=this.value?'none':'block'">
         </div>`;
       }
-      return `<input autocomplete="off" id="cf-${fid}" type="${f.type === 'number' ? 'number' : 'text'}" ${f.inputmode ? `inputmode="${f.inputmode}"` : ''} placeholder="${f.label}" value="${val}">`;
+      return `<input autocomplete="off" id="cf-${fid}" type="${f.type === 'number' ? 'number' : 'text'}" ${f.inputmode ? `inputmode="${f.inputmode}"` : ''} placeholder="${displayLabel}" value="${val}">`;
     }).join('') + '</div>';
 }
 
@@ -5789,10 +6648,46 @@ function loadLogs(){
         <td data-label="যাত্রী">${userLabel}</td>
         <td data-label="নতুন স্টেজ">${stageLabel}</td>
         <td data-label="পরিবর্তনকারী">${n.changed_by || '-'}</td>
+        <td data-label="অ্যাকশন">
+          <div class="flex" style="gap:6px;">
+            <button class="btn small" style="padding:4px 8px;" onclick="openEditLogModal('${id}')" title="এডিট"><i class="fas fa-pen"></i></button>
+            <button class="btn small danger" style="padding:4px 8px;" onclick="deleteLogEntry('${id}')" title="ডিলিট"><i class="fas fa-trash"></i></button>
+          </div>
+        </td>
       </tr>`;
     }).join('');
-    document.getElementById('logRows').innerHTML = rows || '<tr><td colspan="4" class="hint">কোনো লগ নেই</td></tr>';
+    document.getElementById('logRows').innerHTML = rows || '<tr><td colspan="5" class="hint">কোনো লগ নেই</td></tr>';
   });
+}
+
+/* ===== লগ এডিট / ডিলিট ===== */
+let editingLogId = null;
+function openEditLogModal(id){
+  const n = (dashNotifs || {})[id];
+  if(!n) return;
+  editingLogId = id;
+  const stageOpts = Object.entries(STAGE_LABEL).map(([k,v]) => `<option value="${k}" ${k === n.stage ? 'selected' : ''}>${v}</option>`).join('');
+  document.getElementById('leStage').innerHTML = stageOpts;
+  document.getElementById('leChangedBy').value = n.changed_by || '';
+  document.getElementById('logEditModal').classList.add('active');
+}
+function closeLogEditModal(){
+  document.getElementById('logEditModal').classList.remove('active');
+  editingLogId = null;
+}
+function saveLogEdit(){
+  if(!editingLogId) return;
+  const stage = document.getElementById('leStage').value;
+  const changedBy = document.getElementById('leChangedBy').value.trim();
+  db.ref('status_logs/' + editingLogId).update({ stage, changed_by: changedBy || null })
+    .then(() => { toast('লগ এন্ট্রি আপডেট হয়েছে', 'success'); closeLogEditModal(); })
+    .catch(err => { toast('আপডেট ব্যর্থ: ' + err.message); console.error(err); });
+}
+async function deleteLogEntry(id){
+  if(!(await customConfirm('এই লগ এন্ট্রিটা মুছে ফেলতে চান?', {title:'নিশ্চিত?', icon:'fa-trash-can'}))) return;
+  db.ref('status_logs/' + id).remove()
+    .then(() => toast('লগ এন্ট্রি ডিলিট হয়েছে', 'success'))
+    .catch(err => { toast('ডিলিট ব্যর্থ: ' + err.message); console.error(err); });
 }
 
 
@@ -6264,7 +7159,8 @@ function netOf(j){
   const fee = j.agency_fee || 0;
   const rawCost = journeyVisaTypeCost(j) + (j.cost_medical||0) + (j.cost_visa||0) + (j.cost_flight||0);
   const losses = Object.values(j.losses || {}).reduce((s, l) => s + (l.amount || 0), 0);
-  return { net: fee - rawCost - losses, cost: rawCost + losses, rawCost, fee, losses };
+  const expenses = Object.values(j.expenses || {}).reduce((s, e) => s + (e.amount || 0), 0);
+  return { net: fee - rawCost - losses - expenses, cost: rawCost + losses + expenses, rawCost, fee, losses, expenses };
 }
 
 // "রিয়েল" (realized) লাভ/ক্ষতি — এখনো চলমান (active) জার্নির প্রত্যাশিত লাভ এখানে গণনা হয় না, কারণ সেই
