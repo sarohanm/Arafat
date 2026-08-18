@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
 <meta name="googlebot" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✈️</text></svg>">
 <title>Golden Future Tours & Travels — Admin Panel</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -1112,8 +1113,12 @@ function ensureQRCodeLib(){
   if(typeof QRCode !== 'undefined') return Promise.resolve(true);
   if(_qrLoadPromise) return _qrLoadPromise;
   _qrLoadPromise = (async () => {
-    let ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js', 'qrcodeLibScript');
+    // ১. প্রথমে নিজের হোস্টিং-এ রাখা লোকাল কপি ট্রাই করা হয় (CDN নির্ভরতা এড়াতে)
+    let ok = await _loadScriptOnce('./vendor/qrcode.min.js', 'qrcodeLibLocal');
+    // ২. লোকাল কপি না থাকলে/ব্যর্থ হলে CDN থেকে চেষ্টা
+    if(!ok) ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js', 'qrcodeLibScript');
     if(!ok) ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js', 'qrcodeLibScriptFallback');
+    if(!ok) ok = await _loadScriptOnce('https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js', 'qrcodeLibUnpkg');
     return ok;
   })().finally(() => { _qrLoadPromise = null; });
   return _qrLoadPromise;
