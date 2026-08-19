@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
 <meta name="googlebot" content="noindex, nofollow">
-<title>Golden Future Tours & Travels — Admin Panel</title>
+<title>Golden Future Tours & Travels</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23ffc978' d='M480 192H365.71L260.61 8.06A16.014 16.014 0 0 0 246.71 0h-65.5c-10.63 0-18.3 10.17-15.38 20.39L214.86 192H112l-43.2-57.6c-3.02-4.03-7.77-6.4-12.8-6.4H16.01C5.6 128-2.04 137.78.49 147.88L32 256 .49 364.12C-2.04 374.22 5.6 384 16.01 384H56c5.04 0 9.78-2.37 12.8-6.4L112 320h102.86l-49.03 171.6c-2.92 10.22 4.75 20.4 15.38 20.4h65.5c5.74 0 11.04-3.08 13.89-8.06L365.71 320H480c35.35 0 96-28.65 96-64s-60.65-64-96-64z'/%3E%3C/svg%3E">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
   integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
@@ -22,16 +23,15 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <!-- face-api.js for face verification (same pattern as Friend's House) -->
-<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <!-- Chart.js for dashboard chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>if(typeof pdfjsLib !== 'undefined'){ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }</script>
-<!-- QRCode.js — চুক্তিনামা PDF-এর ফুটারে কোম্পানির ওয়েবসাইটের QR কোড দেখানোর জন্য
-     (ইচ্ছাকৃতভাবে defer/eager script tag বাদ দেওয়া হয়েছে; এটা এখন শুধুই runtime-এ
-     ensureQRCodeLib() দিয়ে multi-CDN fallback সহ লোড হয়, নিচে দেখুন।) -->
+<!-- QRCode.js — চুক্তিনামা PDF-এর ফুটারে কোম্পানির ওয়েবসাইটের QR কোড দেখানোর জন্য -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
 
 <style>
   :root{
@@ -1086,6 +1086,14 @@ const firebaseConfig = {
   messagingSenderId: "1046943146224",
   appId: "1:1046943146224:web:5ffb7f34b0e2de4e94e235"
 };
+if(typeof firebase === 'undefined'){
+  document.getElementById('loginScreen').innerHTML =
+    '<div class="loginBox" style="text-align:center;">'
+    + '<h1 style="justify-content:center;">নেটওয়ার্ক সমস্যা</h1>'
+    + '<p class="sub" style="margin:0;">প্রয়োজনীয় লাইব্রেরি লোড হয়নি। ইন্টারনেট সংযোগ যাচাই করে পেজটি রিলোড করুন।</p>'
+    + '</div>';
+  throw new Error('Firebase SDK লোড হয়নি — নেটওয়ার্ক/CDN সমস্যা');
+}
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
@@ -1115,8 +1123,6 @@ function ensureQRCodeLib(){
   _qrLoadPromise = (async () => {
     let ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js', 'qrcodeLibScript');
     if(!ok) ok = await _loadScriptOnce('https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js', 'qrcodeLibScriptFallback');
-    if(!ok) ok = await _loadScriptOnce('https://unpkg.com/qrcode@1.5.4/build/qrcode.min.js', 'qrcodeLibScriptUnpkg');
-    if(!ok) ok = await _loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.min.js', 'qrcodeLibScriptCdnjs');
     return ok;
   })().finally(() => { _qrLoadPromise = null; });
   return _qrLoadPromise;
@@ -1430,6 +1436,15 @@ function startCamera(){
   const msg = document.getElementById('faceStatusBar');
   msg.style.color = "#f2e9d8";
   msg.textContent = "ক্যামেরা চালু হচ্ছে...";
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    // ক্যামেরা API পাওয়া যায়নি (যেমন: ফাইল ম্যানেজার থেকে সরাসরি ফাইল খুললে,
+    // বা http:// এর মতো নিরাপদ নয় এমন উৎস থেকে লোড হলে ব্রাউজার এই API লুকিয়ে রাখে)
+    const failMsg = document.getElementById('loginMsg');
+    failMsg.style.color = "var(--fail)";
+    failMsg.textContent = "ক্যামেরা এখানে ব্যবহার করা যাচ্ছে না। ইমেইল-পাসওয়ার্ড দিয়ে লগইন করুন।";
+    showPassStep();
+    return;
+  }
   navigator.mediaDevices.getUserMedia({video:{width:280,height:210}})
     .then(stream => {
       video.srcObject = stream;
@@ -1500,6 +1515,9 @@ startCamera();
 let modelsLoaded = false;
 async function loadModels(){
   if(modelsLoaded) return;
+  if(typeof faceapi === 'undefined'){
+    throw new Error("ফেস শনাক্তকরণ লাইব্রেরি লোড হয়নি (ইন্টারনেট সংযোগ যাচাই করুন)।");
+  }
   const MODEL_URL = "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js/weights";
   const CACHE_NAME = "face-api-models-v1";
   const originalFetch = window.fetch;
@@ -1634,6 +1652,10 @@ async function runFaceScan(){
 function startSettingsCamera(){
   const video = document.getElementById('settingsVideo');
   video.style.display = 'block';
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    document.getElementById('settingsFaceMsg').textContent = "ক্যামেরা এখানে ব্যবহার করা যাচ্ছে না।";
+    return;
+  }
   navigator.mediaDevices.getUserMedia({video:{width:280,height:210}})
     .then(stream => { video.srcObject = stream; })
     .catch(() => { document.getElementById('settingsFaceMsg').textContent = "ক্যামেরা এক্সেস দিতে হবে।"; });
@@ -2505,6 +2527,11 @@ async function shareUserProgress(uid){
   `;
   document.body.appendChild(card);
 
+  if(typeof html2canvas === 'undefined'){
+    document.body.removeChild(card);
+    toast('ছবি তৈরি করার লাইব্রেরি লোড হয়নি, ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন।');
+    return;
+  }
   html2canvas(card, { scale: 2, backgroundColor: SCLR.cream }).then(canvas => {
     document.body.removeChild(card);
     canvas.toBlob(async (blob) => {
@@ -5370,6 +5397,11 @@ async function shareVisaTypeCard(country, flag, v, active, departed){
   `;
   document.body.appendChild(card);
 
+  if(typeof html2canvas === 'undefined'){
+    document.body.removeChild(card);
+    toast('ছবি তৈরি করার লাইব্রেরি লোড হয়নি, ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন।');
+    return;
+  }
   html2canvas(card, { scale: 2, backgroundColor: SCLR.cream }).then(canvas => {
     document.body.removeChild(card);
     canvas.toBlob(async (blob) => {
@@ -5500,6 +5532,11 @@ function sharePaymentStatus(jid){
     `;
     document.body.appendChild(card);
 
+    if(typeof html2canvas === 'undefined'){
+      document.body.removeChild(card);
+      toast('ছবি তৈরি করার লাইব্রেরি লোড হয়নি, ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন।');
+      return;
+    }
     html2canvas(card, { scale: 2, backgroundColor: SCLR.cream }).then(canvas => {
       document.body.removeChild(card);
       canvas.toBlob(async (blob) => {
