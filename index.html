@@ -40,17 +40,46 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.9/vfs_fonts.js"></script>
 <script>
 // pdfMake ডিফল্টভাবে বাংলা সাপোর্ট করে না — তাই Noto Sans Bengali (স্ট্যাটিক TTF) রেজিস্টার করা হচ্ছে।
-// pdfMake নিজে থেকেই প্রয়োজনমতো এই URL থেকে ফন্ট ফাইল fetch করে নেবে (jsDelivr CORS-friendly)।
-if (typeof pdfMake !== "undefined") {
-  var BN_FONT_BASE = "https://cdn.jsdelivr.net/gh/openmaptiles/fonts@master/noto-sans/";
-  pdfMake.fonts = {
-    Bengali: {
-      normal: BN_FONT_BASE + "NotoSansBengali-Regular.ttf",
-      bold: BN_FONT_BASE + "NotoSansBengali-Bold.ttf",
-      italics: BN_FONT_BASE + "NotoSansBengali-Regular.ttf",
-      bolditalics: BN_FONT_BASE + "NotoSansBengali-Bold.ttf"
+// আগে pdfMake নিজে থেকে রানটাইমে URL থেকে ফন্ট fetch করত — নেটওয়ার্ক একটু ধীর/অস্থির হলে
+// bold ফন্ট চুপচাপ লোড ফেইল করে PDF-এ বোল্ড টেক্সট খালি বক্স (▯▯▯) হয়ে যেত।
+// তাই এখন ফন্ট একবার fetch করে base64 আকারে pdfMake.vfs-এ এমবেড করে ক্যাশ করা হয়,
+// এবং লোড ব্যর্থ হলে PDF জেনারেট না করে স্পষ্ট এরর দেখানো হয়।
+var _bnFontReadyPromise = null;
+function _arrayBufferToBase64(buffer){
+  var binary = "", bytes = new Uint8Array(buffer), chunk = 0x8000;
+  for (var i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+function ensureBengaliFontEmbedded(){
+  if (typeof pdfMake === "undefined") return Promise.reject(new Error("pdfMake লোড হয়নি"));
+  if (_bnFontReadyPromise) return _bnFontReadyPromise;
+  var base = "https://cdn.jsdelivr.net/gh/openmaptiles/fonts@master/noto-sans/";
+  var fileNames = ["NotoSansBengali-Regular.ttf", "NotoSansBengali-Bold.ttf"];
+  _bnFontReadyPromise = (async function(){
+    pdfMake.vfs = pdfMake.vfs || {};
+    for (var i = 0; i < fileNames.length; i++) {
+      var name = fileNames[i];
+      if (pdfMake.vfs[name]) continue;
+      var res = await fetch(base + name);
+      if (!res.ok) throw new Error("ফন্ট ফাইল লোড করা যায়নি (" + name + ")");
+      var buf = await res.arrayBuffer();
+      pdfMake.vfs[name] = _arrayBufferToBase64(buf);
     }
-  };
+    pdfMake.fonts = { Bengali: {
+      normal: "NotoSansBengali-Regular.ttf",
+      bold: "NotoSansBengali-Bold.ttf",
+      italics: "NotoSansBengali-Regular.ttf",
+      bolditalics: "NotoSansBengali-Bold.ttf"
+    }};
+  })();
+  _bnFontReadyPromise.catch(function(){ _bnFontReadyPromise = null; });
+  return _bnFontReadyPromise;
+}
+if (typeof pdfMake !== "undefined") {
+  // পেজ লোডের সাথে সাথেই ব্যাকগ্রাউন্ডে প্রি-লোড শুরু হয় যাতে প্রথমবার ডাউনলোডেও দেরি না হয়।
+  ensureBengaliFontEmbedded().catch(function(){});
 }
 </script>
 
@@ -1095,6 +1124,7 @@ function buildContractCopyContent(C, copyLabel){
 }
 async function generateContractPdf(e,t){const n=(window._usersCache||{})[e]||{},a=getJourneyForUser(e),o=getUserName(n),s=getUserPhone(n)||"-",i=getUserPassport(n),c=getUserField(n,"nid",["nid","জাতীয় পরিচয়পত্র","এনআইডি"])||"-",r=getUserField(n,"address",["ঠিকানা","address"])||"-",d=n.custom_data||{};let u=n.photoBase64||userPhotosCache[e]||null;if(!u)try{const I=await db.ref("userPhotos/"+e).once("value");I.exists()&&(u=I.val(),userPhotosCache[e]=u)}catch{}const l={navy:"#0f1c3f",navy2:"#152552",gold:"#c9a44c",goldLight:"#e8cf8a",cream:"#faf7f0",text:"#1c1c1c",muted:"#6b6b6b",line:"#d8cba7",green:"#178f52",red:"#c0392b"},p=n.phone||"-",f=d.cf_dob?new Date(d.cf_dob).toLocaleDateString("bn-BD"):"-",m=[{label:"গ্রাম",val:d.cf_village},{label:"থানা",val:d.cf_thana},{label:"জেলা",val:d.cf_district},{label:"বিভাগ",val:d.cf_division},{label:"পোস্টাল কোড",val:d.cf_postal}].filter(I=>I.val),h=m.length?m.map(I=>I.val).join(", "):r,g=n.country||"-",w=COUNTRY_FLAGS[n.country]||"",E=n.visa_type_id&&visaTypes[n.visa_type_id]?visaTypes[n.visa_type_id].name:"-",v=n.visa_type_id&&visaTypes[n.visa_type_id]?visaTypes[n.visa_type_id]:null,y=v&&v.issue_date?new Date(v.issue_date).toLocaleDateString("bn-BD"):"-",L=v&&v.expiry_date?new Date(v.expiry_date).toLocaleDateString("bn-BD"):"-",b=a&&a.flight_datetime?new Date(a.flight_datetime).toLocaleString("bn-BD"):"এখনো নির্ধারিত হয়নি",x=a&&(STAGE_LABEL[a.current_stage]||a.current_stage)||"-",A=a&&a.agency_fee||0,Cc=a?a.payments||{}:{},S=Object.values(Cc).sort((I,M)=>(I.date||0)-(M.date||0)),R=S.reduce((I,M)=>I+(M.amount||0),0),z=A-R,P=z<0,k=P?"অতিরিক্ত পরিশোধ":"বাকি",U=P?Math.abs(z):Math.max(0,z),Y=A>0?Math.min(100,Math.max(0,Math.round(R/A*100))):0,F=S.length?S[S.length-1]:null,$=F&&F.date?new Date(F.date).toLocaleDateString("bn-BD"):"-",_=F&&F.note?F.note:"-",O=new Date().toLocaleDateString("bn-BD"),B="GF/CT/"+new Date().getFullYear()+"/"+String(e).slice(-4).toUpperCase(),q=n.visa_type_id&&visaTypes[n.visa_type_id]?visaTypes[n.visa_type_id]:null,se=t&&t.length?t:q&&q.contract_terms&&q.contract_terms.length?q.contract_terms:null,ie=se&&se.length?se:GLOBAL_DEFAULT_CONTRACT_TERMS,H=16,J=ie.slice(0,H),le=Math.max(0,ie.length-H),re=Math.ceil(J.length/2),ge=J.slice(0,re),be=J.slice(re);let G="";try{const I=COMPANY_INFO.website.startsWith("http")?COMPANY_INFO.website:"https://"+COMPANY_INFO.website;if(!await ensureQRCodeLib())throw new Error("QRCode লাইব্রেরি লোড হয়নি (ইন্টারনেট সংযোগ যাচাই করুন)");G=await QRCode.toDataURL(I,{width:160,margin:1,color:{dark:l.navy,light:"#ffffff"}})}catch(I){console.warn("QR কোড তৈরি করা যায়নি:",I)}
   if(typeof pdfMake==="undefined"){toast("PDF লাইব্রেরি (pdfMake) লোড হয়নি — ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন","error");return}
+  try{ await ensureBengaliFontEmbedded(); }catch(fontErr){ toast("বাংলা ফন্ট লোড করতে সমস্যা হয়েছে — ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন","error"); return; }
   const ce=extractDetailValue(v&&v.details,["কোম্পানি","company"])||getVisaTitleLine(v&&v.details)||"-",Be=extractDetailValue(v&&v.details,["বেতন","salary"])||"-",ve=extractDetailValue(v&&v.details,["ডিউটি","duty"])||"-",he=extractDetailValue(v&&v.details,["কন্ট্রাক্ট","চুক্তি","contract"])||"-";
   const ctx={logoDataUri:COMPANY_LOGO_DATA_URI,photoDataUri:u,companyInfo:COMPANY_INFO,contractNo:B,today:O,customerName:o,fatherName:p,phone:s,passport:i,nid:c,dob:f,address:h,country:g,flag:w,visaName:E,stageLabel:x,companyName:ce,salary:Be,duty:ve,contract:he,totalFee:A.toLocaleString("bn-BD"),totalPaid:R.toLocaleString("bn-BD"),paidPercent:Y,dueLabel:k,dueAmount:U.toLocaleString("bn-BD"),lastPaymentDate:$,lastPaymentNote:_,payments:S.map(function(pmt){return{dateStr:pmt.date?new Date(pmt.date).toLocaleDateString("bn-BD"):"-",note:pmt.note||"-",amountStr:(pmt.amount||0).toLocaleString("bn-BD")}}),termsCol1:ge,termsCol2:be,remainingTermsCount:le,qrDataUri:G};
   try{
