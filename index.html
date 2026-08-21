@@ -40,46 +40,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.9/vfs_fonts.js"></script>
 <script>
 // pdfMake ডিফল্টভাবে বাংলা সাপোর্ট করে না — তাই Noto Sans Bengali (স্ট্যাটিক TTF) রেজিস্টার করা হচ্ছে।
-// আগে pdfMake নিজে থেকে রানটাইমে URL থেকে ফন্ট fetch করত — নেটওয়ার্ক একটু ধীর/অস্থির হলে
-// bold ফন্ট চুপচাপ লোড ফেইল করে PDF-এ বোল্ড টেক্সট খালি বক্স (▯▯▯) হয়ে যেত।
-// তাই এখন ফন্ট একবার fetch করে base64 আকারে pdfMake.vfs-এ এমবেড করে ক্যাশ করা হয়,
-// এবং লোড ব্যর্থ হলে PDF জেনারেট না করে স্পষ্ট এরর দেখানো হয়।
-var _bnFontReadyPromise = null;
-function _arrayBufferToBase64(buffer){
-  var binary = "", bytes = new Uint8Array(buffer), chunk = 0x8000;
-  for (var i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
-}
-function ensureBengaliFontEmbedded(){
-  if (typeof pdfMake === "undefined") return Promise.reject(new Error("pdfMake লোড হয়নি"));
-  if (_bnFontReadyPromise) return _bnFontReadyPromise;
-  var base = "https://cdn.jsdelivr.net/gh/openmaptiles/fonts@master/noto-sans/";
-  var fileNames = ["NotoSansBengali-Regular.ttf", "NotoSansBengali-Bold.ttf"];
-  _bnFontReadyPromise = (async function(){
-    pdfMake.vfs = pdfMake.vfs || {};
-    for (var i = 0; i < fileNames.length; i++) {
-      var name = fileNames[i];
-      if (pdfMake.vfs[name]) continue;
-      var res = await fetch(base + name);
-      if (!res.ok) throw new Error("ফন্ট ফাইল লোড করা যায়নি (" + name + ")");
-      var buf = await res.arrayBuffer();
-      pdfMake.vfs[name] = _arrayBufferToBase64(buf);
-    }
-    pdfMake.fonts = { Bengali: {
-      normal: "NotoSansBengali-Regular.ttf",
-      bold: "NotoSansBengali-Bold.ttf",
-      italics: "NotoSansBengali-Regular.ttf",
-      bolditalics: "NotoSansBengali-Bold.ttf"
-    }};
-  })();
-  _bnFontReadyPromise.catch(function(){ _bnFontReadyPromise = null; });
-  return _bnFontReadyPromise;
-}
+// pdfMake নিজে থেকেই প্রয়োজনমতো এই URL থেকে ফন্ট ফাইল fetch করে নেবে (jsDelivr CORS-friendly)।
 if (typeof pdfMake !== "undefined") {
-  // পেজ লোডের সাথে সাথেই ব্যাকগ্রাউন্ডে প্রি-লোড শুরু হয় যাতে প্রথমবার ডাউনলোডেও দেরি না হয়।
-  ensureBengaliFontEmbedded().catch(function(){});
+  var BN_FONT_BASE = "https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/hindsiliguri/";
+  pdfMake.fonts = {
+    Bengali: {
+      normal: BN_FONT_BASE + "HindSiliguri-Regular.ttf",
+      bold: BN_FONT_BASE + "HindSiliguri-Bold.ttf",
+      italics: BN_FONT_BASE + "HindSiliguri-Regular.ttf",
+      bolditalics: BN_FONT_BASE + "HindSiliguri-Bold.ttf"
+    }
+  };
 }
 </script>
 
@@ -984,10 +955,10 @@ const firebaseConfig={apiKey:"AIzaSyDpmIRBlDMeFz_fdYsLkj0vx5OtNshgkXM",authDomai
         @page{ size:A4 portrait; margin:0; }
         html, body{ margin:0 !important; padding:0 !important; }
       }`,document.head.appendChild(i)}const s=`width:794px;height:1123px;box-sizing:border-box;background:#faf7f0;
-    font-family:sans-serif;display:flex;align-items:center;justify-content:center;`;o.innerHTML=`<div style="${s}"><div class="cpCardInner" style="box-sizing:border-box;">${e}</div></div>`;try{await(d=>{const u=Array.from(d.querySelectorAll("img"));return Promise.all(u.map(l=>l.complete&&l.naturalWidth>0?Promise.resolve():new Promise(p=>{l.addEventListener("load",p,{once:!0}),l.addEventListener("error",p,{once:!0}),setTimeout(p,1500)})))})(o),await new Promise(d=>setTimeout(d,50));const c=o.querySelector(".cpCardInner");c&&c.scrollHeight>1123&&(fitFrameToPage(c.parentElement,c,794,1123),c.style.position="static",c.style.transformOrigin="top left"),toast('\u09AA\u09CD\u09B0\u09BF\u09A8\u09CD\u099F \u09A1\u09BE\u09AF\u09BC\u09BE\u09B2\u0997 \u0996\u09C1\u09B2\u099B\u09C7 \u2014 Destination-\u098F "Save as PDF" \u09AC\u09C7\u099B\u09C7 \u09A8\u09BF\u09A8',"info"),await (document.fonts&&document.fonts.ready?document.fonts.ready.catch(()=>{}):Promise.resolve()),await new Promise(d=>requestAnimationFrame(()=>requestAnimationFrame(d))),await new Promise(d=>setTimeout(d,600));const r=()=>{o.innerHTML="",window.removeEventListener("afterprint",r)};window.addEventListener("afterprint",r),window.print()}catch(i){toast((t||"\u0995\u09BE\u09B0\u09CD\u09A1")+" \u09AA\u09CD\u09B0\u09BF\u09A8\u09CD\u099F \u0995\u09B0\u09A4\u09C7 \u09B8\u09AE\u09B8\u09CD\u09AF\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7: "+i.message)}}function pdfmakeBox(title, rows){
-  var bodyRows = rows.map(function(r){
+    font-family:sans-serif;display:flex;align-items:center;justify-content:center;`;o.innerHTML=`<div style="${s}"><div class="cpCardInner" style="box-sizing:border-box;">${e}</div></div>`;try{await(d=>{const u=Array.from(d.querySelectorAll("img"));return Promise.all(u.map(l=>l.complete&&l.naturalWidth>0?Promise.resolve():new Promise(p=>{l.addEventListener("load",p,{once:!0}),l.addEventListener("error",p,{once:!0}),setTimeout(p,1500)})))})(o),await new Promise(d=>setTimeout(d,50));const c=o.querySelector(".cpCardInner");c&&c.scrollHeight>1123&&(fitFrameToPage(c.parentElement,c,794,1123),c.style.position="static",c.style.transformOrigin="top left"),toast('\u09AA\u09CD\u09B0\u09BF\u09A8\u09CD\u099F \u09A1\u09BE\u09AF\u09BC\u09BE\u09B2\u0997 \u0996\u09C1\u09B2\u099B\u09C7 \u2014 Destination-\u098F "Save as PDF" \u09AC\u09C7\u099B\u09C7 \u09A8\u09BF\u09A8',"info"),await (document.fonts&&document.fonts.ready?document.fonts.ready.catch(()=>{}):Promise.resolve()),await new Promise(d=>requestAnimationFrame(()=>requestAnimationFrame(d))),await new Promise(d=>setTimeout(d,600));const r=()=>{o.innerHTML="",window.removeEventListener("afterprint",r)};window.addEventListener("afterprint",r),window.print()}catch(i){toast((t||"\u0995\u09BE\u09B0\u09CD\u09A1")+" \u09AA\u09CD\u09B0\u09BF\u09A8\u09CD\u099F \u0995\u09B0\u09A4\u09C7 \u09B8\u09AE\u09B8\u09CD\u09AF\u09BE \u09B9\u09AF\u09BC\u09C7\u099B\u09C7: "+i.message)}}function pdfmakeBox(title, rows, icon){
+  var bodyRows = rows.map(function(r, idx){
     return [
-      { text:r[0], fontSize:7.8, bold:true, color:r[2]?'#c0392b':'#0f1c3f' },
+      { text:(idx+1)+'. '+r[0], fontSize:7.8, bold:true, color:r[2]?'#c0392b':'#0f1c3f' },
       { text:(r[1]==null||r[1]===''?'-':(''+r[1])), fontSize:7.8, alignment:'right', color:r[2]?'#c0392b':'#1c1c1c' }
     ];
   });
@@ -999,39 +970,39 @@ const firebaseConfig={apiKey:"AIzaSyDpmIRBlDMeFz_fdYsLkj0vx5OtNshgkXM",authDomai
   }};
   return {
     table:{ widths:['*'], body:[
-      [ { text:title, fillColor:'#0f1c3f', color:'#e8cf8a', bold:true, fontSize:9, margin:[6,3,6,3] } ],
+      [ { text:(icon?icon+' ':'')+title, fillColor:'#0f1c3f', color:'#e8cf8a', bold:true, fontSize:8.5, margin:[6,3,6,3] } ],
       [ Object.assign({ margin:[6,4,6,4] }, innerTable) ]
     ]},
     layout:{ hLineWidth:function(){return 1;}, vLineWidth:function(){return 1;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';}, paddingLeft:function(){return 0;}, paddingRight:function(){return 0;}, paddingTop:function(){return 0;}, paddingBottom:function(){return 0;} }
   };
 }
-function pdfmakeSigBox(title, mobileLabel, mobileVal){
+function pdfmakeSigBox(title, mobileLabel, mobileVal, icon){
   return {
     table:{ widths:['*'], body:[[ { margin:[8,10,8,8], stack:[
-      { text:title, fontSize:8, color:'#0f1c3f', bold:true, margin:[0,0,0,6] },
-      { text:'নাম : ______________________________', fontSize:7.4, margin:[0,2,0,2] },
-      { text:mobileLabel+' : '+(mobileVal||'______________'), fontSize:7.4, margin:[0,2,0,2] },
-      { text:'তারিখ ও স্বাক্ষর : ______________________', fontSize:7.4, margin:[0,2,0,2] }
+      { text:(icon?icon+' ':'')+title, fontSize:7.6, color:'#0f1c3f', bold:true, margin:[0,0,0,6] },
+      { text:'নাম : ______________________________', fontSize:7.2, margin:[0,2,0,2] },
+      { text:mobileLabel+' : '+(mobileVal||'______________'), fontSize:7.2, margin:[0,2,0,2] },
+      { text:'তারিখ ও স্বাক্ষর : ______________________', fontSize:7.2, margin:[0,2,0,2] }
     ]}]]},
-    layout:{ hLineWidth:function(){return 1;}, vLineWidth:function(){return 1;}, hLineColor:function(){return '#d8cba7';}, vLineColor:function(){return '#d8cba7';} }
+    layout:{ hLineWidth:function(){return 0.7;}, vLineWidth:function(){return 0.7;}, hLineColor:function(){return '#d8cba7';}, vLineColor:function(){return '#d8cba7';} }
   };
 }
 function buildContractCopyContent(C, copyLabel){
   var header = {
     margin:[0,0,0,4],
-    table:{ widths:[38,38,'*',150], body:[[
-      { table:{ widths:['*'], body:[[ C.logoDataUri ? { image:C.logoDataUri, width:28, height:28, fillColor:'#f2f0ea', margin:[3,3,3,3] } : { text:'', fillColor:'#f2f0ea' } ]] }, layout:{ hLineWidth:function(){return 1.1;}, vLineWidth:function(){return 1.1;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} }, margin:[3,3,0,3] },
-      { table:{ widths:['*'], body:[[ C.photoDataUri ? { image:C.photoDataUri, width:28, height:28, fillColor:'#f2f0ea', margin:[3,3,3,3] } : { text:'', fillColor:'#f2f0ea' } ]] }, layout:{ hLineWidth:function(){return 1.1;}, vLineWidth:function(){return 1.1;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} }, margin:[3,3,0,3] },
+    table:{ widths:[40,40,'*',150], body:[[
+      C.logoDataUri ? { image:C.logoDataUri, width:34, height:34, fillColor:'#0f1c3f', margin:[3,3,0,3] } : { text:'', fillColor:'#0f1c3f' },
+      C.photoDataUri ? { image:C.photoDataUri, width:34, height:34, fillColor:'#0f1c3f', margin:[3,3,0,3] } : { text:'', fillColor:'#0f1c3f' },
       { stack:[
-          { text:'GOLDEN FUTURE', color:'#c9a44c', bold:true, fontSize:15, alignment:'center' },
-          { text:'TOURS & TRAVELS', color:'#e8cf8a', bold:true, fontSize:8, alignment:'center' },
-          { text:C.companyInfo.tagline||'', color:'#e8cf8a', fontSize:7, alignment:'center', margin:[0,2,0,0] }
+          { text:'GOLDEN FUTURE', color:'#c9a44c', bold:true, fontSize:14, alignment:'center' },
+          { text:'T O U R S  &  T R A V E L S', color:'#e8cf8a', bold:true, fontSize:7.5, alignment:'center' },
+          { text:C.companyInfo.tagline||'', color:'#e8cf8a', fontSize:6.8, alignment:'center', margin:[0,2,0,0] }
         ], fillColor:'#0f1c3f', margin:[0,5,0,0] },
       { stack:[
-          { text:(C.companyInfo.phone||''), color:'#e8cf8a', fontSize:6.6, alignment:'right' },
-          { text:(C.companyInfo.email||''), color:'#e8cf8a', fontSize:6.6, alignment:'right' },
-          { text:(C.companyInfo.website||''), color:'#e8cf8a', fontSize:6.6, alignment:'right' },
-          { text:(C.companyInfo.address||''), color:'#e8cf8a', fontSize:6.6, alignment:'right' }
+          { text:(C.companyInfo.phone||''), color:'#e8cf8a', fontSize:6.3, alignment:'right' },
+          { text:(C.companyInfo.email||''), color:'#e8cf8a', fontSize:6.3, alignment:'right' },
+          { text:(C.companyInfo.website||''), color:'#e8cf8a', fontSize:6.3, alignment:'right' },
+          { text:(C.companyInfo.address||''), color:'#e8cf8a', fontSize:6.3, alignment:'right' }
         ], fillColor:'#0f1c3f', margin:[0,4,4,0] }
     ]]},
     layout:{ hLineWidth:function(){return 0;}, vLineWidth:function(){return 0;}, paddingTop:function(){return 3;}, paddingBottom:function(){return 3;} }
@@ -1039,11 +1010,14 @@ function buildContractCopyContent(C, copyLabel){
   var titleRow = {
     columns:[
       { width:'*', text:'' },
-      { width:'auto', table:{ body:[[{ text:'চুক্তিনামা', color:'#e8cf8a', bold:true, fontSize:14, fillColor:'#0f1c3f', margin:[20,5,20,5] }]] }, layout:{ hLineWidth:function(){return 1.4;}, vLineWidth:function(){return 1.4;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} } },
-      { width:'*', columns:[ {width:'*',text:''}, { width:'auto', table:{ body:[[{ stack:[
-          { text:'দলিল নং: '+C.contractNo, fontSize:8.2, color:'#0f1c3f', bold:true },
-          { text:'তারিখ: '+C.today, fontSize:8.2, color:'#0f1c3f', margin:[0,2,0,0] }
-        ], margin:[10,4,10,4] }]] }, layout:{ hLineWidth:function(){return 1.2;}, vLineWidth:function(){return 1.2;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} } } ] }
+      { width:'auto', table:{ body:[[{ text:'চুক্তিনামা', color:'#e8cf8a', bold:true, fontSize:12, fillColor:'#0f1c3f', margin:[16,4,16,4] }]] }, layout:{ hLineWidth:function(){return 1;}, vLineWidth:function(){return 1;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} } },
+      { width:'*', alignment:'right', columns:[
+          { width:'*', text:'' },
+          { width:'auto', table:{ widths:['auto'], body:[[{ stack:[
+              { text:'চুক্তি নং : '+C.contractNo, fontSize:7.2, color:'#0f1c3f', bold:true, alignment:'right' },
+              { text:'তারিখ : '+C.today, fontSize:7.2, color:'#0f1c3f', alignment:'right' }
+            ], margin:[8,4,8,4] }]] }, layout:{ hLineWidth:function(){return 0.7;}, vLineWidth:function(){return 0.7;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} } }
+        ]}
     ],
     margin:[0,5,0,4]
   };
@@ -1083,32 +1057,41 @@ function buildContractCopyContent(C, copyLabel){
     ['পরিশোধের নোট', C.lastPaymentNote]
   ]);
   var threeCol = { columns:[ {width:'*', stack:[custBox]}, {width:'*', stack:[travelBox]}, {width:'*', stack:[finBox]} ], columnGap:6, margin:[0,0,0,6] };
+  var totalPaidBar = {
+    margin:[0,0,0,6],
+    table:{ widths:['*','auto'], body:[[
+      { text:'মোট পরিশোধিত টাকা', fillColor:'#0f1c3f', color:'#e8cf8a', bold:true, fontSize:8.5, margin:[10,5,0,5] },
+      { text:'৳'+C.totalPaid, fillColor:'#0f1c3f', color:'#ffffff', bold:true, fontSize:9, alignment:'right', margin:[0,5,10,5] }
+    ]]},
+    layout:{ hLineWidth:function(){return 0;}, vLineWidth:function(){return 0;} }
+  };
+  var paymentSectionHeader = { alignment:'center', margin:[0,2,0,4], columns:[ {width:'*',text:''}, {width:'auto', table:{ body:[[{ text:'পেমেন্ট/লেনদেনের বিবরণ', fillColor:'#0f1c3f', color:'#e8cf8a', bold:true, fontSize:9, margin:[16,3,16,3] }]] }, layout:{ hLineWidth:function(){return 1;}, vLineWidth:function(){return 1;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} } }, {width:'*',text:''} ] };
   var paymentRows = [[
-    { text:'ক্রম', fillColor:'#0f1c3f', color:'#c9a44c', bold:true, fontSize:7.6, alignment:'center' },
-    { text:'তারিখ', fillColor:'#0f1c3f', color:'#c9a44c', bold:true, fontSize:7.6, alignment:'center' },
-    { text:'নোট', fillColor:'#0f1c3f', color:'#c9a44c', bold:true, fontSize:7.6, alignment:'center' },
-    { text:'টাকার পরিমাণ (৳)', fillColor:'#0f1c3f', color:'#c9a44c', bold:true, fontSize:7.6, alignment:'center' }
+    { text:'ক্রম', fillColor:'#0f1c3f', color:'#c9a44c', bold:true, fontSize:7.3, alignment:'center' },
+    { text:'তারিখ', fillColor:'#0f1c3f', color:'#c9a44c', bold:true, fontSize:7.3, alignment:'center' },
+    { text:'নোট', fillColor:'#0f1c3f', color:'#c9a44c', bold:true, fontSize:7.3, alignment:'center' },
+    { text:'টাকার পরিমাণ (৳)', fillColor:'#0f1c3f', color:'#c9a44c', bold:true, fontSize:7.3, alignment:'center' }
   ]];
   if (C.payments.length){
     C.payments.forEach(function(pmt, idx){
       paymentRows.push([
-        { text:String(idx+1), fontSize:7.6, alignment:'center' },
-        { text:pmt.dateStr, fontSize:7.6, alignment:'center' },
-        { text:pmt.note||'-', fontSize:7.6, alignment:'center' },
-        { text:'৳'+pmt.amountStr, fontSize:7.6, alignment:'center', bold:true, color:'#178f52' }
+        { text:String(idx+1), fontSize:7.3, alignment:'center' },
+        { text:pmt.dateStr, fontSize:7.3, alignment:'center' },
+        { text:pmt.note||'-', fontSize:7.3, alignment:'center' },
+        { text:'৳'+pmt.amountStr, fontSize:7.3, alignment:'center', bold:true, color:'#178f52' }
       ]);
     });
   } else {
-    paymentRows.push([{ text:'এখনো কোনো কিস্তি পরিশোধ করা হয়নি।', colSpan:4, fontSize:7.6, alignment:'center', color:'#6b6b6b' },{},{},{}]);
+    paymentRows.push([{ text:'এখনো কোনো কিস্তি পরিশোধ করা হয়নি।', colSpan:4, fontSize:7.3, alignment:'center', color:'#6b6b6b' },{},{},{}]);
   }
   var paymentTable = {
     margin:[0,0,0,6],
     table:{ headerRows:1, widths:[26,64,'*',86], body:paymentRows },
-    layout:{ hLineWidth:function(){return 0.7;}, vLineWidth:function(){return 0.7;}, hLineColor:function(){return '#d8cba7';}, vLineColor:function(){return '#d8cba7';} }
+    layout:{ hLineWidth:function(){return 0.5;}, vLineWidth:function(){return 0.5;}, hLineColor:function(){return '#d8cba7';}, vLineColor:function(){return '#d8cba7';} }
   };
-  var termsHeader = { alignment:'center', margin:[0,2,0,4], columns:[ {width:'*',text:''}, {width:'auto', table:{ body:[[{ text:'শর্তাবলী', fillColor:'#0f1c3f', color:'#e8cf8a', bold:true, fontSize:11, margin:[20,3.5,20,3.5] }]] }, layout:{ hLineWidth:function(){return 1.3;}, vLineWidth:function(){return 1.3;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} } }, {width:'*',text:''} ] };
-  var col1 = C.termsCol1.map(function(t,i){ return { text:(i+1)+'. '+t, fontSize:6.7, margin:[0,1.2,0,1.2] }; });
-  var col2 = C.termsCol2.map(function(t,i){ return { text:(C.termsCol1.length+i+1)+'. '+t, fontSize:6.7, margin:[0,1.2,0,1.2] }; });
+  var termsHeader = { alignment:'center', margin:[0,2,0,4], columns:[ {width:'*',text:''}, {width:'auto', table:{ body:[[{ text:'শর্তাবলী', fillColor:'#0f1c3f', color:'#e8cf8a', bold:true, fontSize:10, margin:[20,3,20,3] }]] }, layout:{ hLineWidth:function(){return 1;}, vLineWidth:function(){return 1;}, hLineColor:function(){return '#c9a44c';}, vLineColor:function(){return '#c9a44c';} } }, {width:'*',text:''} ] };
+  var col1 = C.termsCol1.map(function(t,i){ return { text:(i+1)+'. '+t, fontSize:6.4, margin:[0,1,0,1] }; });
+  var col2 = C.termsCol2.map(function(t,i){ return { text:(C.termsCol1.length+i+1)+'. '+t, fontSize:6.4, margin:[0,1,0,1] }; });
   if (C.remainingTermsCount>0){ col2.push({ text:'+ আরও '+C.remainingTermsCount+' টি শর্ত প্রযোজ্য (সম্পূর্ণ তালিকা অফিসে সংরক্ষিত)', fontSize:6, italics:true, color:'#6b6b6b', margin:[0,2,0,0] }); }
   var termsSection = { columns:[ {width:'*', stack:col1}, {width:'*', stack:col2} ], columnGap:10, margin:[0,0,0,6] };
   var sigSection = { columns:[ pdfmakeSigBox('কোম্পানির প্রতিনিধি','পদবি',''), pdfmakeSigBox('গ্রাহকের স্বাক্ষর','মোবাইল',C.phone) ], columnGap:8, margin:[0,0,0,6] };
@@ -1120,17 +1103,16 @@ function buildContractCopyContent(C, copyLabel){
     ],
     margin:[0,4,0,0]
   };
-  return [header, titleRow, intro, threeCol, paymentTable, termsHeader, intro, termsSection, sigSection, footer];
+  return [header, titleRow, intro, threeCol, totalPaidBar, paymentSectionHeader, paymentTable, termsHeader, intro, termsSection, sigSection, footer];
 }
 async function generateContractPdf(e,t){const n=(window._usersCache||{})[e]||{},a=getJourneyForUser(e),o=getUserName(n),s=getUserPhone(n)||"-",i=getUserPassport(n),c=getUserField(n,"nid",["nid","জাতীয় পরিচয়পত্র","এনআইডি"])||"-",r=getUserField(n,"address",["ঠিকানা","address"])||"-",d=n.custom_data||{};let u=n.photoBase64||userPhotosCache[e]||null;if(!u)try{const I=await db.ref("userPhotos/"+e).once("value");I.exists()&&(u=I.val(),userPhotosCache[e]=u)}catch{}const l={navy:"#0f1c3f",navy2:"#152552",gold:"#c9a44c",goldLight:"#e8cf8a",cream:"#faf7f0",text:"#1c1c1c",muted:"#6b6b6b",line:"#d8cba7",green:"#178f52",red:"#c0392b"},p=n.phone||"-",f=d.cf_dob?new Date(d.cf_dob).toLocaleDateString("bn-BD"):"-",m=[{label:"গ্রাম",val:d.cf_village},{label:"থানা",val:d.cf_thana},{label:"জেলা",val:d.cf_district},{label:"বিভাগ",val:d.cf_division},{label:"পোস্টাল কোড",val:d.cf_postal}].filter(I=>I.val),h=m.length?m.map(I=>I.val).join(", "):r,g=n.country||"-",w=COUNTRY_FLAGS[n.country]||"",E=n.visa_type_id&&visaTypes[n.visa_type_id]?visaTypes[n.visa_type_id].name:"-",v=n.visa_type_id&&visaTypes[n.visa_type_id]?visaTypes[n.visa_type_id]:null,y=v&&v.issue_date?new Date(v.issue_date).toLocaleDateString("bn-BD"):"-",L=v&&v.expiry_date?new Date(v.expiry_date).toLocaleDateString("bn-BD"):"-",b=a&&a.flight_datetime?new Date(a.flight_datetime).toLocaleString("bn-BD"):"এখনো নির্ধারিত হয়নি",x=a&&(STAGE_LABEL[a.current_stage]||a.current_stage)||"-",A=a&&a.agency_fee||0,Cc=a?a.payments||{}:{},S=Object.values(Cc).sort((I,M)=>(I.date||0)-(M.date||0)),R=S.reduce((I,M)=>I+(M.amount||0),0),z=A-R,P=z<0,k=P?"অতিরিক্ত পরিশোধ":"বাকি",U=P?Math.abs(z):Math.max(0,z),Y=A>0?Math.min(100,Math.max(0,Math.round(R/A*100))):0,F=S.length?S[S.length-1]:null,$=F&&F.date?new Date(F.date).toLocaleDateString("bn-BD"):"-",_=F&&F.note?F.note:"-",O=new Date().toLocaleDateString("bn-BD"),B="GF/CT/"+new Date().getFullYear()+"/"+String(e).slice(-4).toUpperCase(),q=n.visa_type_id&&visaTypes[n.visa_type_id]?visaTypes[n.visa_type_id]:null,se=t&&t.length?t:q&&q.contract_terms&&q.contract_terms.length?q.contract_terms:null,ie=se&&se.length?se:GLOBAL_DEFAULT_CONTRACT_TERMS,H=16,J=ie.slice(0,H),le=Math.max(0,ie.length-H),re=Math.ceil(J.length/2),ge=J.slice(0,re),be=J.slice(re);let G="";try{const I=COMPANY_INFO.website.startsWith("http")?COMPANY_INFO.website:"https://"+COMPANY_INFO.website;if(!await ensureQRCodeLib())throw new Error("QRCode লাইব্রেরি লোড হয়নি (ইন্টারনেট সংযোগ যাচাই করুন)");G=await QRCode.toDataURL(I,{width:160,margin:1,color:{dark:l.navy,light:"#ffffff"}})}catch(I){console.warn("QR কোড তৈরি করা যায়নি:",I)}
   if(typeof pdfMake==="undefined"){toast("PDF লাইব্রেরি (pdfMake) লোড হয়নি — ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন","error");return}
-  try{ await ensureBengaliFontEmbedded(); }catch(fontErr){ toast("বাংলা ফন্ট লোড করতে সমস্যা হয়েছে — ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন","error"); return; }
   const ce=extractDetailValue(v&&v.details,["কোম্পানি","company"])||getVisaTitleLine(v&&v.details)||"-",Be=extractDetailValue(v&&v.details,["বেতন","salary"])||"-",ve=extractDetailValue(v&&v.details,["ডিউটি","duty"])||"-",he=extractDetailValue(v&&v.details,["কন্ট্রাক্ট","চুক্তি","contract"])||"-";
   const ctx={logoDataUri:COMPANY_LOGO_DATA_URI,photoDataUri:u,companyInfo:COMPANY_INFO,contractNo:B,today:O,customerName:o,fatherName:p,phone:s,passport:i,nid:c,dob:f,address:h,country:g,flag:w,visaName:E,stageLabel:x,companyName:ce,salary:Be,duty:ve,contract:he,totalFee:A.toLocaleString("bn-BD"),totalPaid:R.toLocaleString("bn-BD"),paidPercent:Y,dueLabel:k,dueAmount:U.toLocaleString("bn-BD"),lastPaymentDate:$,lastPaymentNote:_,payments:S.map(function(pmt){return{dateStr:pmt.date?new Date(pmt.date).toLocaleDateString("bn-BD"):"-",note:pmt.note||"-",amountStr:(pmt.amount||0).toLocaleString("bn-BD")}}),termsCol1:ge,termsCol2:be,remainingTermsCount:le,qrDataUri:G};
   try{
     const copy1=buildContractCopyContent(ctx,"কাস্টমার কপি"),copy2=buildContractCopyContent(ctx,"কোম্পানি কপি");
     copy2[0].pageBreak="before";
-    const docDefinition={pageSize:"A4",pageMargins:[24,24,24,24],defaultStyle:{font:"Bengali"},content:copy1.concat(copy2)};
+    const docDefinition={pageSize:"A4",pageMargins:[24,24,24,24],defaultStyle:{font:"Bengali"},background:function(){return{canvas:[{type:'rect',x:8,y:8,w:595.28-16,h:841.89-16,r:6,lineWidth:1.6,lineColor:'#c9a44c'}]}},content:copy1.concat(copy2)};
     const fileName=("Contract_"+(o||"user")+"_"+B).replace(/[\/\\?%*:|"<>\s]+/g,"_")+".pdf";
     pdfMake.createPdf(docDefinition).download(fileName);
     toast("চুক্তিনামা PDF ডাউনলোড হচ্ছে","success")
@@ -1270,7 +1252,7 @@ async function downloadUndertakingPdfDirect(e){try{await generateDepartureUndert
     ${ce}
     ${Be}
     ${be(D)}`,he=794,De=1123,K=`width:${he}px;height:${De}px;box-sizing:border-box;background:${u.cream};
-    font-family:sans-serif;color:${u.text};overflow:hidden;
+    font-family:'Hind Siliguri','Noto Sans Bengali',Arial,sans-serif;color:${u.text};overflow:hidden;
     page-break-after:always;break-after:page;`,xe=`box-sizing:border-box;background:${u.cream};border:2px solid ${u.gold};
     border-radius:4px;padding:14px 20px;display:flex;flex-direction:column;justify-content:flex-start;
     height:100%;width:100%;transform-origin:top left;`;let W=document.getElementById("contractPrintArea");if(!W){W=document.createElement("div"),W.id="contractPrintArea",document.body.appendChild(W);const D=document.createElement("style");D.id="contractPrintStyle",D.textContent=`
